@@ -1,6 +1,7 @@
 const moment = require(`moment-timezone`);
 const TIMEZONE = process.env.TIMEZONE;
 const client = require(`../config/mongodb`);
+const { createTimeline } = require('../utils/date-handle');
 const DB = process.env.DATABASE;
 
 module.exports._getIOIReport = async (req, res, next) => {
@@ -25,21 +26,6 @@ module.exports._getIOIReport = async (req, res, next) => {
             inPeriodQuery.push({ $match: { product_id: Number(req.query.product_id) } });
             endPeriodQuery.push({ $match: { product_id: Number(req.query.product_id) } });
         }
-        if (req.query.warehouse_id) {
-            beginPeriodQuery.push({ $match: { warehouse_id: Number(req.query.warehouse_id) } });
-            inPeriodQuery.push({ $match: { warehouse_id: Number(req.query.warehouse_id) } });
-            endPeriodQuery.push({ $match: { warehouse_id: Number(req.query.warehouse_id) } });
-        }
-        if (req.query.bucket_id) {
-            beginPeriodQuery.push({ $match: { bucket_id: Number(req.query.bucket_id) } });
-            inPeriodQuery.push({ $match: { bucket_id: Number(req.query.bucket_id) } });
-            endPeriodQuery.push({ $match: { bucket_id: Number(req.query.bucket_id) } });
-        }
-        if (req.query.order_id) {
-            beginPeriodQuery.push({ $match: { order_id: Number(req.query.order_id) } });
-            inPeriodQuery.push({ $match: { order_id: Number(req.query.order_id) } });
-            endPeriodQuery.push({ $match: { order_id: Number(req.query.order_id) } });
-        }
         beginPeriodQuery.push({
             $group: {
                 ...(() => {
@@ -47,12 +33,23 @@ module.exports._getIOIReport = async (req, res, next) => {
                         return { _id: { product_id: '$product_id' }, product_id: { $first: '$product_id' } };
                     }
                     if (/^(variant)$/g.test(req.query.type)) {
-                        return { _id: { variant_id: '$variant_id' }, variant_id: { $first: '$variant_id' } };
+                        return {
+                            _id: { variant_id: '$variant_id', product_id: '$product_id' },
+                            variant_id: { $first: '$variant_id' },
+                            product_id: { $first: '$product_id' },
+                        };
                     }
                     throw new Error('400: Missing query type!');
                 })(),
                 begin_quantity: { $sum: { $subtract: ['$import_quantity', '$export_quantity'] } },
-                begin_price: { $sum: { $subtract: ['$import_price', '$export_price'] } },
+                begin_price: {
+                    $sum: {
+                        $subtract: [
+                            { $multiply: ['$import_price', '$import_quantity'] },
+                            { $multiply: ['$export_price', '$export_quantity'] },
+                        ],
+                    },
+                },
             },
         });
         inPeriodQuery.push({
@@ -62,14 +59,18 @@ module.exports._getIOIReport = async (req, res, next) => {
                         return { _id: { product_id: '$product_id' }, product_id: { $first: '$product_id' } };
                     }
                     if (/^(variant)$/g.test(req.query.type)) {
-                        return { _id: { variant_id: '$variant_id' }, variant_id: { $first: '$variant_id' } };
+                        return {
+                            _id: { variant_id: '$variant_id', product_id: '$product_id' },
+                            variant_id: { $first: '$variant_id' },
+                            product_id: { $first: '$product_id' },
+                        };
                     }
                     throw new Error('400: Missing query type!');
                 })(),
                 import_quantity: { $sum: '$import_quantity' },
-                import_price: { $sum: '$import_price' },
+                import_price: { $sum: { $multiply: ['$import_price', '$import_quantity'] } },
                 export_quantity: { $sum: '$export_quantity' },
-                export_price: { $sum: '$export_price' },
+                export_price: { $sum: { $multiply: ['$export_price', '$export_quantity'] } },
             },
         });
         endPeriodQuery.push({
@@ -79,12 +80,23 @@ module.exports._getIOIReport = async (req, res, next) => {
                         return { _id: { product_id: '$product_id' }, product_id: { $first: '$product_id' } };
                     }
                     if (/^(variant)$/g.test(req.query.type)) {
-                        return { _id: { variant_id: '$variant_id' }, variant_id: { $first: '$variant_id' } };
+                        return {
+                            _id: { variant_id: '$variant_id', product_id: '$product_id' },
+                            variant_id: { $first: '$variant_id' },
+                            product_id: { $first: '$product_id' },
+                        };
                     }
                     throw new Error('400: Missing query type!');
                 })(),
                 end_quantity: { $sum: { $subtract: ['$import_quantity', '$export_quantity'] } },
-                end_price: { $sum: { $subtract: ['$import_price', '$export_price'] } },
+                end_price: {
+                    $sum: {
+                        $subtract: [
+                            { $multiply: ['$import_price', '$import_quantity'] },
+                            { $multiply: ['$export_price', '$export_quantity'] },
+                        ],
+                    },
+                },
             },
         });
         countQuery = [...endPeriodQuery];
@@ -98,86 +110,104 @@ module.exports._getIOIReport = async (req, res, next) => {
                 $lookup: {
                     from: 'Products',
                     let: { productId: '$_id.product_id' },
-                    pipeline: [
-                        { $match: { $expr: { $eq: ['$product_id', '$$productId'] } } },
-                        {
-                            $lookup: {
-                                from: 'Customers',
-                                let: { customerId: '$customer_id' },
-                                pipeline: [{ $match: { $expr: { $eq: ['$customer_id', '$$customerId'] } } }],
-                                as: 'customer_info',
-                            },
-                        },
-                        { $unwind: { path: '$customer_info', preserveNullAndEmptyArrays: true } },
-                        {
-                            $lookup: {
-                                from: 'Units',
-                                let: { unitId: '$unit_id' },
-                                pipeline: [{ $match: { $expr: { $eq: ['$unit_id', '$$unitId'] } } }],
-                                as: 'unit_info',
-                            },
-                        },
-                        { $unwind: { path: '$unit_info', preserveNullAndEmptyArrays: true } },
-                        {
-                            $lookup: {
-                                from: 'Categories',
-                                let: { categoryId: '$group_id' },
-                                pipeline: [{ $match: { $expr: { $eq: ['$category_id', '$$categoryId'] } } }],
-                                as: 'group_info',
-                            },
-                        },
-                        { $unwind: { path: '$group_info', preserveNullAndEmptyArrays: true } },
-                        {
-                            $lookup: {
-                                from: 'Categories',
-                                let: { categoryId: '$type_id' },
-                                pipeline: [{ $match: { $expr: { $eq: ['$category_id', '$$categoryId'] } } }],
-                                as: 'type_info',
-                            },
-                        },
-                        { $unwind: { path: '$type_info', preserveNullAndEmptyArrays: true } },
-                    ],
+                    pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productId'] } } }],
                     as: 'product_info',
                 },
             },
             { $unwind: { path: '$product_info', preserveNullAndEmptyArrays: true } }
         );
-        let beginPeriods = await client.db(DB).collection('Inventories').aggregate(beginPeriodQuery).toArray();
-        let inPeriods = await client.db(DB).collection('Inventories').aggregate(inPeriodQuery).toArray();
-        let endPeriods = await client.db(DB).collection('Inventories').aggregate(endPeriodQuery).toArray();
-        let counts = client
+        if (/^(variant)$/g.test(req.query.type)) {
+            endPeriodQuery.push(
+                {
+                    $lookup: {
+                        from: 'Variants',
+                        let: { variantId: '$_id.variant_id' },
+                        pipeline: [{ $match: { $expr: { $eq: ['$variant_id', '$$variantId'] } } }],
+                        as: 'variant_info',
+                    },
+                },
+                { $unwind: { path: '$variant_info', preserveNullAndEmptyArrays: true } }
+            );
+        }
+        let beginPeriods = await client
+            .db(req.user.database)
+            .collection('Inventories')
+            .aggregate(beginPeriodQuery)
+            .toArray();
+        let inPeriods = await client.db(req.user.database).collection('Inventories').aggregate(inPeriodQuery).toArray();
+        let endPeriods = await client
+            .db(req.user.database)
+            .collection('Inventories')
+            .aggregate(endPeriodQuery)
+            .toArray();
+        let counts = await client
             .db(DB)
             .collection(`Inventories`)
             .aggregate([...countQuery, { $count: 'counts' }])
             .toArray();
-        let _beginPeriods = {};
-        beginPeriods.map((eBegin) => {
-            _beginPeriods[eBegin.product_id] = eBegin;
-        });
-        let _inPeriods = {};
-        inPeriods.map((eIn) => {
-            _inPeriods[eIn.product_id] = eIn;
-        });
-        let _endPeriods = {};
-        endPeriods.map((eEnd) => {
-            _endPeriods[eEnd.product_id] = eEnd;
-        });
-        let result = [];
-        for (let i in _endPeriods) {
-            result.push({
-                product_id: (_endPeriods[i] && _endPeriods[i].product_id) || 0,
-                begin_quantity: (_beginPeriods[i] && _beginPeriods[i].begin_quantity) || 0,
-                begin_price: (_beginPeriods[i] && _beginPeriods[i].begin_price) || 0,
-                import_quantity: (_inPeriods[i] && _inPeriods[i].import_quantity) || 0,
-                import_price: (_inPeriods[i] && _inPeriods[i].import_price) || 0,
-                export_quantity: (_inPeriods[i] && _inPeriods[i].export_quantity) || 0,
-                export_price: (_inPeriods[i] && _inPeriods[i].export_price) || 0,
-                end_quantity: (_endPeriods[i] && _endPeriods[i].end_quantity) || 0,
-                end_price: (_endPeriods[i] && _endPeriods[i].end_price) || 0,
-                product_info: (_endPeriods[i] && _endPeriods[i].product_info) || {},
+
+        if (/^(product)$/g.test(req.query.type)) {
+            let _beginPeriods = {};
+            beginPeriods.map((eBegin) => {
+                _beginPeriods[eBegin.product_id] = eBegin;
             });
+            let _inPeriods = {};
+            inPeriods.map((eIn) => {
+                _inPeriods[eIn.product_id] = eIn;
+            });
+            let _endPeriods = {};
+            endPeriods.map((eEnd) => {
+                _endPeriods[eEnd.product_id] = eEnd;
+            });
+            let result = [];
+            for (let i in _endPeriods) {
+                result.push({
+                    product_id: (_endPeriods[i] && _endPeriods[i].product_id) || 0,
+                    begin_quantity: (_beginPeriods[i] && _beginPeriods[i].begin_quantity) || 0,
+                    begin_price: (_beginPeriods[i] && _beginPeriods[i].begin_price) || 0,
+                    import_quantity: (_inPeriods[i] && _inPeriods[i].import_quantity) || 0,
+                    import_price: (_inPeriods[i] && _inPeriods[i].import_price) || 0,
+                    export_quantity: (_inPeriods[i] && _inPeriods[i].export_quantity) || 0,
+                    export_price: (_inPeriods[i] && _inPeriods[i].export_price) || 0,
+                    end_quantity: (_endPeriods[i] && _endPeriods[i].end_quantity) || 0,
+                    end_price: (_endPeriods[i] && _endPeriods[i].end_price) || 0,
+                    product_info: (_endPeriods[i] && _endPeriods[i].product_info) || {},
+                });
+            }
+            res.send({ success: true, count: counts[0] ? counts[0].counts : 0, data: result });
         }
-        res.send({ success: true, count: counts[0] ? counts[0].counts : 0, data: result });
+        if (/^(variant)$/g.test(req.query.type)) {
+            let _beginPeriods = {};
+            beginPeriods.map((eBegin) => {
+                _beginPeriods[eBegin.variant_id] = eBegin;
+            });
+            let _inPeriods = {};
+            inPeriods.map((eIn) => {
+                _inPeriods[eIn.variant_id] = eIn;
+            });
+            let _endPeriods = {};
+            endPeriods.map((eEnd) => {
+                _endPeriods[eEnd.variant_id] = eEnd;
+            });
+            let result = [];
+            for (let i in _endPeriods) {
+                result.push({
+                    product_id: (_endPeriods[i] && _endPeriods[i].product_id) || 0,
+                    variant_id: (_endPeriods[i] && _endPeriods[i].variant_id) || 0,
+                    begin_quantity: (_beginPeriods[i] && _beginPeriods[i].begin_quantity) || 0,
+                    begin_price: (_beginPeriods[i] && _beginPeriods[i].begin_price) || 0,
+                    import_quantity: (_inPeriods[i] && _inPeriods[i].import_quantity) || 0,
+                    import_price: (_inPeriods[i] && _inPeriods[i].import_price) || 0,
+                    export_quantity: (_inPeriods[i] && _inPeriods[i].export_quantity) || 0,
+                    export_price: (_inPeriods[i] && _inPeriods[i].export_price) || 0,
+                    end_quantity: (_endPeriods[i] && _endPeriods[i].end_quantity) || 0,
+                    end_price: (_endPeriods[i] && _endPeriods[i].end_price) || 0,
+                    product_info: (_endPeriods[i] && _endPeriods[i].product_info) || {},
+                    variant_info: (_endPeriods[i] && _endPeriods[i].variant_info) || {},
+                });
+            }
+            res.send({ success: true, count: counts[0] ? counts[0].counts : 0, data: result });
+        }
     } catch (err) {
         next(err);
     }

@@ -94,7 +94,7 @@ export default function ProductAdd() {
   const [valueGeneratedSku, setValueGeneratedSku] = useState('')
   const [skuProductWithEdit, setSkuProductWithEdit] = useState('')
   const [bulkPrices, setBulkPrices] = useState([
-    { min_quantity_apply: 1, max_quantity_apply: 1, price: 0 },
+    { min_quantity_apply: 1, max_quantity_apply: 999, price: 0 },
   ]) //giá sỉ
 
   const addAttribute = () => {
@@ -224,11 +224,11 @@ export default function ProductAdd() {
 
   const _addBulkPrice = () => {
     const bulkPricesNew = [...bulkPrices]
-    const bulkPrice = { min_quantity_apply: 1, max_quantity_apply: 1, price: 0 }
-    if (bulkPricesNew.length) {
-      bulkPrice.min_quantity_apply = bulkPricesNew[bulkPricesNew.length - 1].max_quantity_apply + 1
-      bulkPrice.max_quantity_apply = bulkPricesNew[bulkPricesNew.length - 1].max_quantity_apply + 10
-    }
+    const bulkPrice = { min_quantity_apply: 1, max_quantity_apply: 999, price: 0 }
+    // if (bulkPricesNew.length) {
+    //   bulkPrice.min_quantity_apply = bulkPricesNew[bulkPricesNew.length - 1].max_quantity_apply + 1
+    //   bulkPrice.max_quantity_apply = bulkPricesNew[bulkPricesNew.length - 1].max_quantity_apply + 10
+    // }
 
     bulkPricesNew.push(bulkPrice)
     setBulkPrices([...bulkPricesNew])
@@ -1228,7 +1228,7 @@ export default function ProductAdd() {
                 <div>
                   <Row wrap={false}>
                     <Button onClick={_addBulkPrice} type="primary" icon={<PlusOutlined />}>
-                      Thêm giá bán sỉ
+                      Thêm giá bán
                     </Button>
                   </Row>
                   <div style={{ marginTop: 15, marginBottom: 25 }}>
@@ -1244,7 +1244,7 @@ export default function ProductAdd() {
                             defaultValue={bulkPrice.min_quantity_apply}
                             formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                             parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                            min={bulkPrices.length > 1 ? bulkPrice.min_quantity_apply : 0}
+                            min={bulkPrices.length > 1 ? bulkPrice.min_quantity_apply : 1}
                             placeholder="Nhập số lượng tối thiểu áp dụng"
                           />
                         )
@@ -1255,6 +1255,8 @@ export default function ProductAdd() {
                               _editBulkPrice('max_quantity_apply', +value, index)
                             }}
                             style={{ width: '100%' }}
+                            min={1}
+                            max={999}
                             defaultValue={bulkPrice.max_quantity_apply}
                             formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                             parser={(value) => value.replace(/\$\s?|(,*)/g, '')}

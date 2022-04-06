@@ -41,6 +41,10 @@ module.exports._get = async (req, res, next) => {
       aggregateQuery.push({ $match: { is_print: req.query.is_print } })
     }
 
+    if (req.query.is_delivery) {
+      aggregateQuery.push({ $match: { is_delivery: true } })
+    }
+
     if (req.query.shipping_company_id) {
       aggregateQuery.push({
         $match: {
