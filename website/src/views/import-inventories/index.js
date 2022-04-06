@@ -403,14 +403,14 @@ export default function ImportInventories() {
             'Mã sản phẩm (*)': e.sku || '',
             'Mã phiên bản (*)': e.variants && (e.variants.sku || ''),
             'Giá nhập (*)': e.import_price_default || 0,
-            'Tên nơi nhập (*)': '',
+            // 'Tên nơi nhập (*)': '',
             'Số lượng nhập (*)': 0,
-            'Ngày nhập hàng': '',
-            'Chi phí dịch vụ': 0,
-            'Thuế (VND)': 0,
-            'Chiết khấu (VND)': 0,
-            'Tổng cộng (VND)': 0,
-            'Ghi chú': '',
+            // 'Ngày nhập hàng': '',
+            // 'Chi phí dịch vụ': 0,
+            // 'Thuế (VND)': 0,
+            // 'Chiết khấu (VND)': 0,
+            // 'Tổng cộng (VND)': 0,
+            // 'Ghi chú': '',
           }))
           setFileTemplated(productsExport)
         }
@@ -543,11 +543,11 @@ export default function ImportInventories() {
                 </div>
               </Row>
             }
-            fileName="nhap_kho_mau.xlsx"
+            fileName="nhap_kho_mau"
             fileTemplated={
               fileTemplated.length
                 ? fileTemplated
-                : 'https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/04/04/4029ef7f-ff28-4c0f-96eb-a024856ded01/nhap_kho_mau.xlsx'
+                : 'https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/04/06/3a3da223-8140-4ca3-8d94-28492cf4a7bc/nhap_kho_mau.xlsx'
             }
             customFileTemplated={fileTemplated.length ? true : false}
           />

@@ -78,7 +78,7 @@ export default function ProductAdd() {
   const [keyTab, setKeyTab] = useState('1')
   const [isRenderFirst, setIsRenderFirst] = useState(false)
   const [files, setFiles] = useState([])
-  const [idsWarranty, setIdsWarranty] = useState([])
+  const [idsWarranty, setIdsWarranty] = useState([''])
   const [warranties, setWarranties] = useState([])
   const [attributes, setAttributes] = useState([{ option: '', values: [] }])
   const [variants, setVariants] = useState([])
@@ -942,7 +942,10 @@ export default function ProductAdd() {
       if (product.warranties.length) {
         setIdsWarranty([...product.warranties.map((e) => e.warranty_id)])
       }
+    } else {
+      form.setFieldsValue({ unit: 'Cái' })
     }
+
     await delay(100)
     setIsRenderFirst(true)
     setKeyTab('3')
@@ -1205,7 +1208,7 @@ export default function ProductAdd() {
           <Tabs.TabPane tab="Thuộc tính" key="3">
             <Row justify="space-between">
               <Col xs={24} sm={24} md={10} lg={10} xl={10}>
-                <Form.Item label="Giá bán" name="price">
+                <Form.Item label="Giá bán lẻ" name="price">
                   <InputNumber
                     size="large"
                     min={0}
@@ -1472,7 +1475,7 @@ export default function ProductAdd() {
               </div>
             </Row>
           </Tabs.TabPane>
-          <Tabs.TabPane tab="Thông số sản phẩm" key="4">
+          <Tabs.TabPane tab="Thông tin cơ bản" key="4">
             <Row justify="space-between" align="middle">
               <Row
                 justify="space-between"
@@ -1537,6 +1540,7 @@ export default function ProductAdd() {
                       onChange={(value) => setIdsWarranty(value)}
                       value={idsWarranty}
                     >
+                      <Select.Option value={''}>Không áp dụng chính sách bảo hành</Select.Option>
                       {warranties.map((values, index) => (
                         <Select.Option value={values.warranty_id} key={index}>
                           {values.name}

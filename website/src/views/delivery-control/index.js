@@ -61,7 +61,7 @@ export default function DeliveryControl() {
   const handlePrint = useReactToPrint({ content: () => printOrderRef.current })
   const [columns, setColumns] = useState([])
   const [dataPrint, setDataPrint] = useState(null)
-  const [statusOrder, setStatusOrder] = useState([])
+  const [statusShipping, setStatusShipping] = useState([])
   const [loading, setLoading] = useState(false)
   const [orders, setOrders] = useState([])
   const [countOrder, setCountOrder] = useState(0)
@@ -228,10 +228,10 @@ export default function DeliveryControl() {
     }
   }
 
-  const _getStatus = async () => {
+  const _getStatusShipping = async () => {
     try {
       const res = await getStatusOrder()
-      if (res.status === 200) setStatusOrder(res.data.data)
+      if (res.status === 200) setStatusShipping(res.data.data)
     } catch (error) {
       console.log(error)
     }
@@ -253,7 +253,7 @@ export default function DeliveryControl() {
   }
 
   useEffect(() => {
-    _getStatus()
+    _getStatusShipping()
     _getEmployees()
     _getBranch()
     _getShippingCompany()
@@ -472,13 +472,13 @@ export default function DeliveryControl() {
                 <Select
                   size={FILTER_SIZE}
                   value={paramsFilter.bill_status}
-                  onChange={(value) => _onChangeFilter('bill_status', value)}
+                  onChange={(value) => _onChangeFilter('ship_status', value)}
                   showSearch
                   placeholder="Lọc theo trạng thái giao hàng"
                   style={{ width: '100%' }}
                   bordered={false}
                 >
-                  {statusOrder.map((status, index) => (
+                  {statusShipping.map((status, index) => (
                     <Select.Option value={status.name} key={index}>
                       {status.label}
                     </Select.Option>
@@ -619,16 +619,16 @@ export default function DeliveryControl() {
               render: (text, record, index) =>
                 (paramsFilter.page - 1) * paramsFilter.page_size + index + 1,
             }
-          if (column.key === 'address')
-            return {
-              ...column,
-              sorter: (a, b) => compare(a, b, 'address'),
-            }
-          if (column.key === 'phone')
-            return {
-              ...column,
-              sorter: (a, b) => compare(a, b, 'phone'),
-            }
+          // if (column.key === 'address')
+          //   return {
+          //     ...column,
+          //     sorter: (a, b) => compare(a, b, 'address'),
+          //   }
+          // if (column.key === 'phone')
+          //   return {
+          //     ...column,
+          //     sorter: (a, b) => compare(a, b, 'phone'),
+          //   }
           if (column.key === 'code')
             return {
               ...column,
@@ -662,14 +662,28 @@ export default function DeliveryControl() {
                   a.customer ? `${a.customer.first_name} ${a.customer.last_name}` : '',
                   b.customer ? `${b.customer.first_name} ${b.customer.last_name}` : ''
                 ),
-              render: (text, record) =>
-                record.customer ? `${record.customer.first_name} ${record.customer.last_name}` : '',
+              render: (text, record) => (
+                // record.customer ? `${record.customer.first_name} ${record.customer.last_name}` : '',
+                <div style={{display:"flex",flexDirection:"column"}}>
+                  <span>
+                    {record.customer
+                      ? `${record.customer.first_name} ${record.customer.last_name}`
+                      : ''}
+                  </span>
+                  <span>{record.customer ? record.customer.phone : ''}</span>
+                  <span>
+                    {record.customer
+                      ? `${record.customer.province} ${record.customer.district} ${record.customer.address}`
+                      : ''}
+                  </span>
+                </div>
+              ),
             }
-          if (column.key === 'bill_status')
+          if (column.key === 'ship_status')
             return {
               ...column,
               render: (text) => {
-                const status = statusOrder.find((s) => s.name === text)
+                const status = statusShipping.find((s) => s.name === text)
                 return status ? status.label : ''
               },
               sorter: (a, b) => compare(a, b, 'bill_status'),
@@ -688,7 +702,8 @@ export default function DeliveryControl() {
           if (column.key === 'total_cod')
             return {
               ...column,
-              render: (text, record) => record.shipping_info && record.shipping_info?.cod,
+              // render: (text, record) => record.shipping_info && record.shipping_info?.cod,
+              render: (text, record) => record.total_cod && record.total_cod,
             }
           if (column.key === 'fee_shipping')
             return {

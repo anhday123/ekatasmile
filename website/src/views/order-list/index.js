@@ -594,6 +594,12 @@ export default function OrderList() {
               render: (text, record) => text && moment(text).format('DD/MM/YYYY HH:mm'),
               sorter: (a, b) => moment(a.create_date).unix() - moment(b.create_date).unix(),
             }
+          if (column.key === 'channel')
+            return {
+              ...column,
+              render: (text, record, index) => <span>{text}</span>,
+              //   (paramsFilter.page - 1) * paramsFilter.page_size + index + 1,
+            }
           if (column.key === 'customer')
             return {
               ...column,

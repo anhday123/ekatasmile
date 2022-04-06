@@ -183,7 +183,7 @@ export const VERSION_APP = '1.4.1'
 export const regexPhone = /\(?([0-9]{3})\)?([ .-]?)([0-9]{3})\2([0-9]{4})/
 
 export const IMAGE_DEFAULT =
-  'https://s3.ap-northeast-1.wasabisys.com/admin-order/2021/11/08/757a2f95-f144-4963-8e11-931bafdee356/image_default.jpg'
+  'https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/04/06/28053404-5779-4c1f-905c-d7a0d62a5513/noimage.png'
 export const LOGO_DEFAULT =
   'https://s3.ap-northeast-1.wasabisys.com/ecom-fulfill/2021/09/02/95131dfc-bf13-4c49-82f3-6c7c43a7354d_logo_quantribanhang 1.png'
 
