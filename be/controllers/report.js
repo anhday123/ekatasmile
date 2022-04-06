@@ -33,12 +33,23 @@ module.exports._getIOIReport = async (req, res, next) => {
                         return { _id: { product_id: '$product_id' }, product_id: { $first: '$product_id' } };
                     }
                     if (/^(variant)$/g.test(req.query.type)) {
-                        return { _id: { variant_id: '$variant_id' }, variant_id: { $first: '$variant_id' } };
+                        return {
+                            _id: { variant_id: '$variant_id', product_id: '$product_id' },
+                            variant_id: { $first: '$variant_id' },
+                            product_id: { $first: '$product_id' },
+                        };
                     }
                     throw new Error('400: Missing query type!');
                 })(),
                 begin_quantity: { $sum: { $subtract: ['$import_quantity', '$export_quantity'] } },
-                begin_price: { $sum: { $subtract: ['$import_price', '$export_price'] } },
+                begin_price: {
+                    $sum: {
+                        $subtract: [
+                            { $multiply: ['$import_price', '$import_quantity'] },
+                            { $multiply: ['$export_price', '$export_quantity'] },
+                        ],
+                    },
+                },
             },
         });
         inPeriodQuery.push({
@@ -48,14 +59,18 @@ module.exports._getIOIReport = async (req, res, next) => {
                         return { _id: { product_id: '$product_id' }, product_id: { $first: '$product_id' } };
                     }
                     if (/^(variant)$/g.test(req.query.type)) {
-                        return { _id: { variant_id: '$variant_id' }, variant_id: { $first: '$variant_id' } };
+                        return {
+                            _id: { variant_id: '$variant_id', product_id: '$product_id' },
+                            variant_id: { $first: '$variant_id' },
+                            product_id: { $first: '$product_id' },
+                        };
                     }
                     throw new Error('400: Missing query type!');
                 })(),
                 import_quantity: { $sum: '$import_quantity' },
-                import_price: { $sum: '$import_price' },
+                import_price: { $sum: { $multiply: ['$import_price', '$import_quantity'] } },
                 export_quantity: { $sum: '$export_quantity' },
-                export_price: { $sum: '$export_price' },
+                export_price: { $sum: { $multiply: ['$export_price', '$export_quantity'] } },
             },
         });
         endPeriodQuery.push({
@@ -65,12 +80,23 @@ module.exports._getIOIReport = async (req, res, next) => {
                         return { _id: { product_id: '$product_id' }, product_id: { $first: '$product_id' } };
                     }
                     if (/^(variant)$/g.test(req.query.type)) {
-                        return { _id: { variant_id: '$variant_id' }, variant_id: { $first: '$variant_id' } };
+                        return {
+                            _id: { variant_id: '$variant_id', product_id: '$product_id' },
+                            variant_id: { $first: '$variant_id' },
+                            product_id: { $first: '$product_id' },
+                        };
                     }
                     throw new Error('400: Missing query type!');
                 })(),
                 end_quantity: { $sum: { $subtract: ['$import_quantity', '$export_quantity'] } },
-                end_price: { $sum: { $subtract: ['$import_price', '$export_price'] } },
+                end_price: {
+                    $sum: {
+                        $subtract: [
+                            { $multiply: ['$import_price', '$import_quantity'] },
+                            { $multiply: ['$export_price', '$export_quantity'] },
+                        ],
+                    },
+                },
             },
         });
         countQuery = [...endPeriodQuery];
@@ -90,6 +116,19 @@ module.exports._getIOIReport = async (req, res, next) => {
             },
             { $unwind: { path: '$product_info', preserveNullAndEmptyArrays: true } }
         );
+        if (/^(variant)$/g.test(req.query.type)) {
+            endPeriodQuery.push(
+                {
+                    $lookup: {
+                        from: 'Variants',
+                        let: { variantId: '$_id.variant_id' },
+                        pipeline: [{ $match: { $expr: { $eq: ['$variant_id', '$$variantId'] } } }],
+                        as: 'variant_info',
+                    },
+                },
+                { $unwind: { path: '$variant_info', preserveNullAndEmptyArrays: true } }
+            );
+        }
         let beginPeriods = await client
             .db(req.user.database)
             .collection('Inventories')
@@ -101,40 +140,74 @@ module.exports._getIOIReport = async (req, res, next) => {
             .collection('Inventories')
             .aggregate(endPeriodQuery)
             .toArray();
-        console.log(beginPeriodQuery);
-        let counts = client
+        let counts = await client
             .db(DB)
             .collection(`Inventories`)
             .aggregate([...countQuery, { $count: 'counts' }])
             .toArray();
-        let _beginPeriods = {};
-        beginPeriods.map((eBegin) => {
-            _beginPeriods[eBegin.product_id] = eBegin;
-        });
-        let _inPeriods = {};
-        inPeriods.map((eIn) => {
-            _inPeriods[eIn.product_id] = eIn;
-        });
-        let _endPeriods = {};
-        endPeriods.map((eEnd) => {
-            _endPeriods[eEnd.product_id] = eEnd;
-        });
-        let result = [];
-        for (let i in _endPeriods) {
-            result.push({
-                product_id: (_endPeriods[i] && _endPeriods[i].product_id) || 0,
-                begin_quantity: (_beginPeriods[i] && _beginPeriods[i].begin_quantity) || 0,
-                begin_price: (_beginPeriods[i] && _beginPeriods[i].begin_price) || 0,
-                import_quantity: (_inPeriods[i] && _inPeriods[i].import_quantity) || 0,
-                import_price: (_inPeriods[i] && _inPeriods[i].import_price) || 0,
-                export_quantity: (_inPeriods[i] && _inPeriods[i].export_quantity) || 0,
-                export_price: (_inPeriods[i] && _inPeriods[i].export_price) || 0,
-                end_quantity: (_endPeriods[i] && _endPeriods[i].end_quantity) || 0,
-                end_price: (_endPeriods[i] && _endPeriods[i].end_price) || 0,
-                product_info: (_endPeriods[i] && _endPeriods[i].product_info) || {},
+
+        if (/^(product)$/g.test(req.query.type)) {
+            let _beginPeriods = {};
+            beginPeriods.map((eBegin) => {
+                _beginPeriods[eBegin.product_id] = eBegin;
             });
+            let _inPeriods = {};
+            inPeriods.map((eIn) => {
+                _inPeriods[eIn.product_id] = eIn;
+            });
+            let _endPeriods = {};
+            endPeriods.map((eEnd) => {
+                _endPeriods[eEnd.product_id] = eEnd;
+            });
+            let result = [];
+            for (let i in _endPeriods) {
+                result.push({
+                    product_id: (_endPeriods[i] && _endPeriods[i].product_id) || 0,
+                    begin_quantity: (_beginPeriods[i] && _beginPeriods[i].begin_quantity) || 0,
+                    begin_price: (_beginPeriods[i] && _beginPeriods[i].begin_price) || 0,
+                    import_quantity: (_inPeriods[i] && _inPeriods[i].import_quantity) || 0,
+                    import_price: (_inPeriods[i] && _inPeriods[i].import_price) || 0,
+                    export_quantity: (_inPeriods[i] && _inPeriods[i].export_quantity) || 0,
+                    export_price: (_inPeriods[i] && _inPeriods[i].export_price) || 0,
+                    end_quantity: (_endPeriods[i] && _endPeriods[i].end_quantity) || 0,
+                    end_price: (_endPeriods[i] && _endPeriods[i].end_price) || 0,
+                    product_info: (_endPeriods[i] && _endPeriods[i].product_info) || {},
+                });
+            }
+            res.send({ success: true, count: counts[0] ? counts[0].counts : 0, data: result });
         }
-        res.send({ success: true, count: counts[0] ? counts[0].counts : 0, data: result });
+        if (/^(variant)$/g.test(req.query.type)) {
+            let _beginPeriods = {};
+            beginPeriods.map((eBegin) => {
+                _beginPeriods[eBegin.variant_id] = eBegin;
+            });
+            let _inPeriods = {};
+            inPeriods.map((eIn) => {
+                _inPeriods[eIn.variant_id] = eIn;
+            });
+            let _endPeriods = {};
+            endPeriods.map((eEnd) => {
+                _endPeriods[eEnd.variant_id] = eEnd;
+            });
+            let result = [];
+            for (let i in _endPeriods) {
+                result.push({
+                    product_id: (_endPeriods[i] && _endPeriods[i].product_id) || 0,
+                    variant_id: (_endPeriods[i] && _endPeriods[i].variant_id) || 0,
+                    begin_quantity: (_beginPeriods[i] && _beginPeriods[i].begin_quantity) || 0,
+                    begin_price: (_beginPeriods[i] && _beginPeriods[i].begin_price) || 0,
+                    import_quantity: (_inPeriods[i] && _inPeriods[i].import_quantity) || 0,
+                    import_price: (_inPeriods[i] && _inPeriods[i].import_price) || 0,
+                    export_quantity: (_inPeriods[i] && _inPeriods[i].export_quantity) || 0,
+                    export_price: (_inPeriods[i] && _inPeriods[i].export_price) || 0,
+                    end_quantity: (_endPeriods[i] && _endPeriods[i].end_quantity) || 0,
+                    end_price: (_endPeriods[i] && _endPeriods[i].end_price) || 0,
+                    product_info: (_endPeriods[i] && _endPeriods[i].product_info) || {},
+                    variant_info: (_endPeriods[i] && _endPeriods[i].variant_info) || {},
+                });
+            }
+            res.send({ success: true, count: counts[0] ? counts[0].counts : 0, data: result });
+        }
     } catch (err) {
         next(err);
     }
