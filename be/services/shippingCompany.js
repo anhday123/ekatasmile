@@ -175,14 +175,7 @@ module.exports._get = async (req, res, next) => {
         $match: { create_date: { $lte: req.query.to_date } },
       })
     }
-    aggregateQuery.push({
-      $lookup: {
-        from: 'CardCompareItem',
-        localField: 'card_id',
-        foreignField: 'card_id',
-        as: 'list_order',
-      },
-    })
+
     // lấy các thuộc tính tìm kiếm với độ chính xác tương đối ('1' == '1', '1' == '12',...)
     if (req.query.name) {
       aggregateQuery.push({
@@ -675,6 +668,15 @@ module.exports._getCompareCard = async (req, res, next) => {
         },
       })
     }
+
+    aggregateQuery.push({
+      $lookup: {
+        from: 'CardCompareItem',
+        localField: 'card_id',
+        foreignField: 'card_id',
+        as: 'list_order',
+      },
+    })
 
     if (req.query['today']) {
       req.query[`from_date`] = moment().tz(TIMEZONE).startOf('days').format()
