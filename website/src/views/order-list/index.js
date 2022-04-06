@@ -500,9 +500,13 @@ export default function OrderList() {
                     >
                       In đơn hàng
                     </Button>
-                    <Button style={{ width: 140 }} size="large">
-                      Sửa đơn hàng
-                    </Button>
+                    {orders && orders.bill_status === 'DRAFT' ? (
+                      <Button style={{ width: 140 }} size="large">
+                        Sửa đơn hàng
+                      </Button>
+                    ) : (
+                      ''
+                    )}
                   </Space>
                 </Row>
                 <div className="table-product-in-order">
