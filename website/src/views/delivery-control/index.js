@@ -229,15 +229,6 @@ export default function DeliveryControl() {
     }
   }
 
-  const _getStatusShipping = async () => {
-    try {
-      const res = await getStatusOrder()
-      if (res.status === 200) setStatusShipping(res.data.data)
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
   const _getBranch = async () => {
     try {
       const res = await getAllBranch()
@@ -262,7 +253,6 @@ export default function DeliveryControl() {
     }
   }
   useEffect(() => {
-    _getStatusShipping()
     _getEmployees()
     _getBranch()
     _getShippingCompany()

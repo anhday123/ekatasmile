@@ -399,6 +399,7 @@ export default function ShippingControl() {
               }
             return column
           })}
+          rowKey="_id"
           expandable={{
             expandedRowRender: (record) => {
               return (
@@ -407,7 +408,7 @@ export default function ShippingControl() {
                     style={{ width: '100%' }}
                     pagination={false}
                     columns={columnsOrder}
-                    dataSource={record.data || []}
+                    dataSource={record.list_order || []}
                     size="small"
                   />
                 </div>
