@@ -425,6 +425,7 @@ module.exports._importCompareCard = async (req, res, next) => {
         item[`${convertToSlug(i)}`] = item[`${i}`]
         return item
       })
+      console.log(item)
       var valid = validate(item, fields)
       if (!valid)
         throw new Error(
