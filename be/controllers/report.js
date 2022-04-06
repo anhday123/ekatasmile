@@ -26,21 +26,6 @@ module.exports._getIOIReport = async (req, res, next) => {
             inPeriodQuery.push({ $match: { product_id: Number(req.query.product_id) } });
             endPeriodQuery.push({ $match: { product_id: Number(req.query.product_id) } });
         }
-        if (req.query.warehouse_id) {
-            beginPeriodQuery.push({ $match: { warehouse_id: Number(req.query.warehouse_id) } });
-            inPeriodQuery.push({ $match: { warehouse_id: Number(req.query.warehouse_id) } });
-            endPeriodQuery.push({ $match: { warehouse_id: Number(req.query.warehouse_id) } });
-        }
-        if (req.query.bucket_id) {
-            beginPeriodQuery.push({ $match: { bucket_id: Number(req.query.bucket_id) } });
-            inPeriodQuery.push({ $match: { bucket_id: Number(req.query.bucket_id) } });
-            endPeriodQuery.push({ $match: { bucket_id: Number(req.query.bucket_id) } });
-        }
-        if (req.query.order_id) {
-            beginPeriodQuery.push({ $match: { order_id: Number(req.query.order_id) } });
-            inPeriodQuery.push({ $match: { order_id: Number(req.query.order_id) } });
-            endPeriodQuery.push({ $match: { order_id: Number(req.query.order_id) } });
-        }
         beginPeriodQuery.push({
             $group: {
                 ...(() => {
@@ -105,9 +90,18 @@ module.exports._getIOIReport = async (req, res, next) => {
             },
             { $unwind: { path: '$product_info', preserveNullAndEmptyArrays: true } }
         );
-        let beginPeriods = await client.db(DB).collection('Inventories').aggregate(beginPeriodQuery).toArray();
-        let inPeriods = await client.db(DB).collection('Inventories').aggregate(inPeriodQuery).toArray();
-        let endPeriods = await client.db(DB).collection('Inventories').aggregate(endPeriodQuery).toArray();
+        let beginPeriods = await client
+            .db(req.user.database)
+            .collection('Inventories')
+            .aggregate(beginPeriodQuery)
+            .toArray();
+        let inPeriods = await client.db(req.user.database).collection('Inventories').aggregate(inPeriodQuery).toArray();
+        let endPeriods = await client
+            .db(req.user.database)
+            .collection('Inventories')
+            .aggregate(endPeriodQuery)
+            .toArray();
+        console.log(beginPeriodQuery);
         let counts = client
             .db(DB)
             .collection(`Inventories`)
