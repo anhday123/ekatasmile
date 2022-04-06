@@ -47,7 +47,7 @@ import { getOrders, deleteOrders, getStatusOrder } from 'apis/order'
 import { getEmployees } from 'apis/employee'
 import { getAllBranch } from 'apis/branch'
 import { getShippings } from 'apis/shipping'
-import { getEnumPlatform } from 'apis/enum'
+import { getEnumPlatform, getShippingStatus } from 'apis/enum'
 
 const { RangePicker } = DatePicker
 const { Panel } = Collapse
@@ -61,6 +61,7 @@ export default function DeliveryControl() {
   const handlePrint = useReactToPrint({ content: () => printOrderRef.current })
   const [columns, setColumns] = useState([])
   const [dataPrint, setDataPrint] = useState(null)
+  const [statusOrder, setStatusOrder] = useState([])
   const [statusShipping, setStatusShipping] = useState([])
   const [loading, setLoading] = useState(false)
   const [orders, setOrders] = useState([])
@@ -251,13 +252,22 @@ export default function DeliveryControl() {
     setParamsFilter({ page: 1, page_size: 20 })
     setValueSearch('')
   }
-
+  const _getShippingStatus = async () => {
+    try {
+      const res = await getShippingStatus()
+      console.log(res)
+      if (res.status === 200) setStatusShipping(res.data.data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
   useEffect(() => {
     _getStatusShipping()
     _getEmployees()
     _getBranch()
     _getShippingCompany()
     _getPlatform()
+    _getShippingStatus()
   }, [])
 
   useEffect(() => {
@@ -561,10 +571,11 @@ export default function DeliveryControl() {
                               <div>Chiết khấu</div>
                               <div>
                                 {record.promotion
-                                  ? `${formatCash(+(record.promotion.value || 0))} ${record.promotion.type && record.promotion.type !== 'VALUE'
-                                    ? '%'
-                                    : ''
-                                  }`
+                                  ? `${formatCash(+(record.promotion.value || 0))} ${
+                                      record.promotion.type && record.promotion.type !== 'VALUE'
+                                        ? '%'
+                                        : ''
+                                    }`
                                   : 0}
                               </div>
                             </Row>
@@ -663,7 +674,7 @@ export default function DeliveryControl() {
                 ),
               render: (text, record) => (
                 // record.customer ? `${record.customer.first_name} ${record.customer.last_name}` : '',
-                <div style={{display:"flex",flexDirection:"column"}}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <span>
                     {record.customer
                       ? `${record.customer.first_name} ${record.customer.last_name}`
