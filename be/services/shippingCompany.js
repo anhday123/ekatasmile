@@ -428,7 +428,7 @@ module.exports._importCompareCard = async (req, res, next) => {
       var valid = validate(item, fields)
       if (!valid)
         throw new Error(
-          '401: Tên cột không đúng quy định, vui lòng xem lại file excel'
+          '400: Tên cột không đúng quy định, vui lòng xem lại file excel'
         )
 
       //   if (date_min > moment(item['ngay_nhan_don']).tz(TIMEZONE).unix())
