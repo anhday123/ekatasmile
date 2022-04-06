@@ -191,7 +191,7 @@ module.exports._getIOIReport = async (req, res, next) => {
                     export_price: (_inPeriods[i] && _inPeriods[i].export_price) || 0,
                     end_quantity: (_endPeriods[i] && _endPeriods[i].end_quantity) || 0,
                     end_price: (_endPeriods[i] && _endPeriods[i].end_price) || 0,
-                    product_info: (_endPeriods[i] && _endPeriods[i].product_info) || {},
+                    product: (_endPeriods[i] && _endPeriods[i].product) || {},
                 });
             }
             res.send({ success: true, count: counts[0] ? counts[0].counts : 0, data: result });
