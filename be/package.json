@@ -8,9 +8,9 @@
         "start": "pm2 start index.js",
         "restart": "pm2 restart index.js",
         "setup": "pm2 deploy production setup",
-        "deploy": "pm2 deploy production --force",
+        "deploy": "pm2 deploy production --env production --force",
         "sandbox_setup": "pm2 deploy sandbox setup",
-        "sandbox_deploy": "pm2 deploy sandbox --force",
+        "sandbox_deploy": "pm2 deploy sandbox --env sandbox --force",
         "app": "nodemon index.js"
     },
     "author": "",
