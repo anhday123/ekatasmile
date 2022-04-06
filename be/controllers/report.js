@@ -202,8 +202,8 @@ module.exports._getIOIReport = async (req, res, next) => {
                     export_price: (_inPeriods[i] && _inPeriods[i].export_price) || 0,
                     end_quantity: (_endPeriods[i] && _endPeriods[i].end_quantity) || 0,
                     end_price: (_endPeriods[i] && _endPeriods[i].end_price) || 0,
-                    product_info: (_endPeriods[i] && _endPeriods[i].product_info) || {},
-                    variant_info: (_endPeriods[i] && _endPeriods[i].variant_info) || {},
+                    product: (_endPeriods[i] && _endPeriods[i].product) || {},
+                    variant: (_endPeriods[i] && _endPeriods[i].variant) || {},
                 });
             }
             res.send({ success: true, count: counts[0] ? counts[0].counts : 0, data: result });
@@ -265,24 +265,24 @@ module.exports._getInventoryReport = async (req, res, next) => {
         //     },
         //     { $unwind: { path: '$branch', preserveNullAndEmptyArrays: true } }
         // );
-        // if (/^(product)$/gi.test(req.query.type) || !req.query.type) {
-        //     aggregateQuery.push({
-        //         $group: {
-        //             _id: { product_id: '$product_id' },
-        //             product_id: { $first: '$product_id' },
-        //             warehouse: {
-        //                 $push: {
-        //                     branch_id: '$branch_id',
-        //                     branch: '$branch',
-        //                     store_id: '$store_id',
-        //                     store: '$store',
-        //                     quantity: '$end_quantity',
-        //                     price: '$end_price',
-        //                 },
-        //             },
-        //         },
-        //     });
-        // }
+        if (/^(product)$/gi.test(req.query.type) || !req.query.type) {
+            aggregateQuery.push({
+                $group: {
+                    _id: { product_id: '$product_id' },
+                    product_id: { $first: '$product_id' },
+                    warehouse: {
+                        $push: {
+                            branch_id: '$branch_id',
+                            branch: '$branch',
+                            store_id: '$store_id',
+                            store: '$store',
+                            quantity: '$end_quantity',
+                            price: '$end_price',
+                        },
+                    },
+                },
+            });
+        }
 
         aggregateQuery.push(
             {
