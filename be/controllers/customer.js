@@ -68,6 +68,26 @@ module.exports._create = async (req, res, next) => {
     if (customer) {
       throw new Error(`400: Số điện thoại đã tồn tại!`)
     }
+    if (req.body.address == undefined || req.body.address == '')
+      throw new Error(`400: Không được để trống địa chỉ!`)
+    if (req.body.ward == undefined || req.body.ward == '')
+      throw new Error(`400: Không được để trống phường/xã!`)
+
+    if (req.body.province == undefined || req.body.province == '')
+      throw new Error(`400: Không được để trống tỉnh/thành phố!`)
+
+    if (req.body.district == undefined || req.body.district == '')
+      throw new Error(`400: Không được để trống quận/huyện!`)
+
+    if (
+      req.body.ward_code == undefined ||
+      req.body.province_id == undefined ||
+      req.body.district_id == undefined
+    )
+      throw new Error(
+        `400: Vui lòng truyền đầy đủ ward_code, province_id và district_id!`
+      )
+
     let customer_id = await client
       .db(req.user.database)
       .collection('AppSetting')
@@ -94,7 +114,11 @@ module.exports._create = async (req, res, next) => {
       birthday: req.body.birthday || '',
       address: req.body.address || '',
       district: req.body.district || '',
+      ward: req.body.ward || '',
       province: req.body.province || '',
+      district_id: parseInt(req.body.district_id),
+      ward_code: req.body.ward_code + '',
+      province_id: parseInt(req.body.province_id),
       balance: req.body.balance || {
         available: 0,
         debt: 0,
