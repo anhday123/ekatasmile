@@ -127,7 +127,7 @@ module.exports._getIOIReport = async (req, res, next) => {
                                 from: 'Categories',
                                 let: { categoryId: '$category_id' },
                                 pipeline: [{ $match: { $expr: { $in: ['$category_id', '$$categoryId'] } } }],
-                                as: 'categories',
+                                as: '_categories',
                             },
                         },
                     ],
@@ -235,6 +235,8 @@ module.exports._getIOIReport = async (req, res, next) => {
 
 module.exports._getInventoryReport = async (req, res, next) => {
     try {
+        let page = Number(req.query.page || 1);
+        let page_size = Number(req.query.page_size || 50);
         let aggregateQuery = [];
         if (req.query.branch_id) {
             let ids = req.query.branch_id.split('---').map((id) => {
@@ -253,6 +255,21 @@ module.exports._getInventoryReport = async (req, res, next) => {
                 $match: { create_date: { $lte: req.query.to_date } },
             });
         }
+        if (req.query.category_id) {
+            let ids = req.query.category_id.split('-').map((id) => {
+                return Number(id);
+            });
+            let products = await client
+                .db(req.user.database)
+                .collection('Products')
+                .find({ category_id: { $in: ids } })
+                .limit(page_size)
+                .toArray();
+            let productIds = products.map((eProduct) => {
+                return Number(eProduct.product_id);
+            });
+            aggregateQuery.push({ $match: { product_id: { $in: productIds } } });
+        }
         aggregateQuery.push({ $sort: { create_date: 1 } });
         aggregateQuery.push({
             $group: {
@@ -267,43 +284,54 @@ module.exports._getInventoryReport = async (req, res, next) => {
                         return {
                             _id: { branch_id: '$branch_id', product_id: '$product_id', variant_id: '$variant_id' },
                             product_id: { $first: '$product_id' },
+                            variant_id: { $first: '$variant_id' },
                         };
                     }
+                    throw new Error(`400: Missing field type`);
                 })(),
                 branch_id: { $first: '$branch_id' },
                 quantity: { $sum: '$quantity' },
+                price: { $sum: { $multiply: ['$quantity', '$import_price'] } },
             },
         });
-        // aggregateQuery.push(
-        //     {
-        //         $lookup: {
-        //             from: 'Branchs',
-        //             let: { branchId: '$branch_id' },
-        //             pipeline: [{ $match: { $expr: { $eq: ['$branch_id', '$$branchId'] } } }],
-        //             as: 'branch',
-        //         },
-        //     },
-        //     { $unwind: { path: '$branch', preserveNullAndEmptyArrays: true } }
-        // );
-        if (/^(product)$/gi.test(req.query.type) || !req.query.type) {
-            aggregateQuery.push({
-                $group: {
-                    _id: { product_id: '$product_id' },
-                    product_id: { $first: '$product_id' },
-                    warehouse: {
-                        $push: {
-                            branch_id: '$branch_id',
-                            branch: '$branch',
-                            store_id: '$store_id',
-                            store: '$store',
-                            quantity: '$end_quantity',
-                            price: '$end_price',
-                        },
+        aggregateQuery.push(
+            {
+                $lookup: {
+                    from: 'Branchs',
+                    let: { branchId: '$branch_id' },
+                    pipeline: [{ $match: { $expr: { $eq: ['$branch_id', '$$branchId'] } } }],
+                    as: 'branch',
+                },
+            },
+            { $unwind: { path: '$branch', preserveNullAndEmptyArrays: true } }
+        );
+        aggregateQuery.push({
+            $group: {
+                ...(() => {
+                    if (/^(product)$/gi.test(req.query.type)) {
+                        return { _id: { product_id: '$product_id' }, product_id: { $first: '$product_id' } };
+                    }
+                    if (/^(variant)$/gi.test(req.query.type)) {
+                        return {
+                            _id: { product_id: '$product_id', variant_id: '$variant_id' },
+                            product_id: { $first: '$product_id' },
+                            variant_id: { $first: '$variant_id' },
+                        };
+                    }
+                })(),
+                warehouse: {
+                    $push: {
+                        branch_id: '$branch_id',
+                        branch: '$branch',
+                        quantity: '$quantity',
+                        price: '$price',
                     },
                 },
-            });
-        }
-
+            },
+        });
+        let countQuery = [...aggregateQuery];
+        aggregateQuery.push({ $skip: (page - 1) * page_size }, { $limit: page_size });
+        aggregateQuery.push({ $addFields: { note: '' } });
         aggregateQuery.push(
             {
                 $lookup: {
@@ -318,7 +346,7 @@ module.exports._getInventoryReport = async (req, res, next) => {
                                 pipeline: [
                                     {
                                         $match: {
-                                            $expr: { $eq: ['$category_id', '$$categoryId'] },
+                                            $expr: { $in: ['$category_id', '$$categoryId'] },
                                         },
                                     },
                                 ],
@@ -351,44 +379,25 @@ module.exports._getInventoryReport = async (req, res, next) => {
             },
             { $unwind: { path: '$product', preserveNullAndEmptyArrays: true } }
         );
-        aggregateQuery.push({
-            $lookup: {
-                from: 'Variants',
-                let: { productId: '$product_id' },
-                pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productId'] } } }],
-                as: 'variants',
-            },
-        });
-        aggregateQuery.push(
-            {
-                $lookup: {
-                    from: 'Variants',
-                    let: { variantId: '$variant_id' },
-                    pipeline: [{ $match: { $expr: { $eq: ['$variant_id', '$$variantId'] } } }],
-                    as: 'variant',
+        if (/^(variant)$/gi.test(req.query.type)) {
+            aggregateQuery.push(
+                {
+                    $lookup: {
+                        from: 'Variants',
+                        let: { variantId: '$variant_id' },
+                        pipeline: [{ $match: { $expr: { $eq: ['$variant_id', '$$variantId'] } } }],
+                        as: 'variant',
+                    },
                 },
-            },
-            { $unwind: { path: '$variant', preserveNullAndEmptyArrays: true } }
-        );
-        if (req.query.category_id) {
-            let ids = req.query.category_id.map((id) => {
-                return Number(id);
-            });
-            aggregateQuery.push({ $match: { category_id: { $in: ids } } });
+                { $unwind: { path: '$variant', preserveNullAndEmptyArrays: true } }
+            );
         }
-        let countQuery = [...aggregateQuery];
-        if (req.query.page && req.query.page_size) {
-            let page = Number(req.query.page) || 1;
-            let page_size = Number(req.query.page_size) || 50;
-            aggregateQuery.push({ $skip: (page - 1) * page_size }, { $limit: page_size });
-        }
-        aggregateQuery.push({ $addFields: { note: '' } });
         // lấy data từ database
         let [result, counts] = await Promise.all([
-            client.db(req.user.database).collection(`VariantInventories`).aggregate(aggregateQuery).toArray(),
+            client.db(req.user.database).collection(`Locations`).aggregate(aggregateQuery).toArray(),
             client
                 .db(req.user.database)
-                .collection(`VariantInventories`)
+                .collection(`Locations`)
                 .aggregate([...countQuery, { $count: 'counts' }])
                 .toArray(),
         ]);
