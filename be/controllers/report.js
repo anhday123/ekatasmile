@@ -98,45 +98,7 @@ module.exports._getIOIReport = async (req, res, next) => {
                 $lookup: {
                     from: 'Products',
                     let: { productId: '$_id.product_id' },
-                    pipeline: [
-                        { $match: { $expr: { $eq: ['$product_id', '$$productId'] } } },
-                        {
-                            $lookup: {
-                                from: 'Customers',
-                                let: { customerId: '$customer_id' },
-                                pipeline: [{ $match: { $expr: { $eq: ['$customer_id', '$$customerId'] } } }],
-                                as: 'customer_info',
-                            },
-                        },
-                        { $unwind: { path: '$customer_info', preserveNullAndEmptyArrays: true } },
-                        {
-                            $lookup: {
-                                from: 'Units',
-                                let: { unitId: '$unit_id' },
-                                pipeline: [{ $match: { $expr: { $eq: ['$unit_id', '$$unitId'] } } }],
-                                as: 'unit_info',
-                            },
-                        },
-                        { $unwind: { path: '$unit_info', preserveNullAndEmptyArrays: true } },
-                        {
-                            $lookup: {
-                                from: 'Categories',
-                                let: { categoryId: '$group_id' },
-                                pipeline: [{ $match: { $expr: { $eq: ['$category_id', '$$categoryId'] } } }],
-                                as: 'group_info',
-                            },
-                        },
-                        { $unwind: { path: '$group_info', preserveNullAndEmptyArrays: true } },
-                        {
-                            $lookup: {
-                                from: 'Categories',
-                                let: { categoryId: '$type_id' },
-                                pipeline: [{ $match: { $expr: { $eq: ['$category_id', '$$categoryId'] } } }],
-                                as: 'type_info',
-                            },
-                        },
-                        { $unwind: { path: '$type_info', preserveNullAndEmptyArrays: true } },
-                    ],
+                    pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productId'] } } }],
                     as: 'product_info',
                 },
             },
