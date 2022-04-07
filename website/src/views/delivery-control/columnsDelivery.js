@@ -6,7 +6,7 @@ const columnsDelivery = [
     width: 50,
   },
   {
-    title: 'Mã đóng gói',
+    title: 'Mã đơn hàng',
     dataIndex: 'code',
     key: 'code',
   },
@@ -19,7 +19,7 @@ const columnsDelivery = [
     key: 'shipping_name',
   },
   {
-    title: 'Tổng COD',
+    title: 'Tiền thu hộ',
     key: 'total_cod',
   },
   {
@@ -32,29 +32,29 @@ const columnsDelivery = [
     key: 'create_date',
   },
   {
-    title: 'Tên khách hàng',
+    title: 'Người nhận',
     key: 'customer',
   },
-  {
-    title: 'Địa chỉ người nhận',
-    key: 'address',
-  },
-  {
-    title: 'SĐT người nhận',
-    key: 'phone',
-  },
-  {
-    title: 'Đơn vị giao hàng',
-    key: 'shipping_company_system',
-  },
-  {
-    title: 'Dịch vụ giao hàng',
-    key: 'shipping_company_system',
-  },
+  // {
+  //   title: 'Địa chỉ người nhận',
+  //   key: 'address',
+  // },
+  // {
+  //   title: 'SĐT người nhận',
+  //   key: 'phone',
+  // },
+  // {
+  //   title: 'Đơn vị giao hàng',
+  //   key: 'shipping_company_system',
+  // },
+  // {
+  //   title: 'Dịch vụ giao hàng',
+  //   key: 'shipping_company_system',
+  // },
   {
     title: 'Trạng thái giao hàng',
-    dataIndex: 'bill_status',
-    key: 'bill_status',
+    dataIndex: 'ship_status',
+    key: 'ship_status',
   },
 ]
 

@@ -1,28 +1,61 @@
 module.exports = {
     apps: [
         {
+            script: 'index.js',
             name: 'AdminOrder',
-            script: './index.js',
-            autorestart: true,
             watch: true,
-            // env: {
-            //     NODE_ENV: 'development',
-            // },
-            // env_production: {
-            //     NODE_ENV: 'production',
-            //     PORT: 5050,
-            // },
+            env: {
+                LOCAL_PORT: '5000',
+                GLOBAL_PORT: '5001',
+                DOMAIN: 'upsale.com.vn',
+                END_POINT: 'api',
+                TIMEZONE: 'Asia/Ho_Chi_Minh',
+                EMAIL_USER: 'support@networkdemo.site',
+                EMAIL_PASSWORD: 'u$65lxw0d8',
+                MONGO_DATABASE_URI: 'mongodb://dangluu%40:%40Luu123456@103.81.87.65:27017/',
+                DATABASE: 'RootAO',
+                access_key_wasabi: 'FPGND4WEL36P7YBI22RU',
+                secret_key_wasabi: 'iRLPt3iEwt0tCQf1rOLueI0fPAzjHsFwcd3K70e6',
+                NODE_ENV: 'sandbox',
+            },
+            env_production: {
+                LOCAL_PORT: '5000',
+                GLOBAL_PORT: '5001',
+                DOMAIN: 'upsale.com.vn',
+                END_POINT: 'api',
+                TIMEZONE: 'Asia/Ho_Chi_Minh',
+                EMAIL_USER: 'support@networkdemo.site',
+                EMAIL_PASSWORD: 'u$65lxw0d8',
+                MONGO_DATABASE_URI: 'mongodb://dangluu%40:%40Luu123456@103.81.87.65:27017/',
+                DATABASE: 'RootAO',
+                access_key_wasabi: 'FPGND4WEL36P7YBI22RU',
+                secret_key_wasabi: 'iRLPt3iEwt0tCQf1rOLueI0fPAzjHsFwcd3K70e6',
+                NODE_ENV: 'production',
+            },
         },
     ],
-
-    // deploy: {
-    //     production: {
-    //         user: 'root', // user để ssh
-    //         host: ['103.81.87.65'], // IP của server này (theo sơ đồ)
-    //         ref: 'origin/main', // branch để pull source
-    //         repo: 'git@github.com:DieepjAnhr/BE_AdminOrder.git', // repo của project
-    //         path: '/root/AdminOrder', // sẽ deploy vào thư mục này
-    //         'post-deploy': 'npm install && pm2 startOrRestart ecosystem.config.js --env production', // cmd để deploy
-    //     },
-    // },
+    deploy: {
+        sandbox: {
+            key: './key.pem',
+            user: 'root',
+            host: ['103.81.87.65'],
+            ssh_options: 'StrictHostKeyChecking=no',
+            ref: 'origin/master',
+            repo: 'git@github.com:viesoftware/System_Admin_Order.git',
+            path: '/root/System_Admin_Order',
+            'post-deploy':
+                'cd /root/System_Admin_Order/source/be && npm install && pm2 reload ecosystem.config.js --env sandbox',
+        },
+        production: {
+            key: './key.pem',
+            user: 'root',
+            host: ['103.81.87.65'],
+            ssh_options: 'StrictHostKeyChecking=no',
+            ref: 'origin/master',
+            repo: 'git@github.com:viesoftware/System_Admin_Order.git',
+            path: '/root/System_Admin_Order',
+            'post-deploy':
+                'cd /root/System_Admin_Order/source/be && npm install && pm2 reload ecosystem.config.js --env production',
+        },
+    },
 };

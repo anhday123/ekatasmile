@@ -72,9 +72,9 @@ export default function ConfigurationStore() {
                       <PartitionOutlined style={{ color: '#F060AE' }} />
                     </div>
                     <div>
-                      <div style={{ fontSize: '1rem', color: '#0015CD' }}>Quản lý nhân sự</div>
+                      <div style={{ fontSize: '1rem', color: '#0015CD' }}>Quản lý nhân viên</div>
                       <div style={{ color: 'black', fontSize: '0.75rem' }}>
-                        Tạo và quản lý tất cả tài khoản của nhân sự
+                        Tạo và quản lý tất cả tài khoản của nhân viên
                       </div>
                     </div>
                   </Row>

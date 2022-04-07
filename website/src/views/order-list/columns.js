@@ -17,7 +17,8 @@ const columnsOrder = [
   },
   {
     title: 'Kênh bán hàng',
-    dataIndex: 'chanel',
+    dataIndex: 'channel',
+    key: 'channel',
   },
   {
     title: 'Tên khách hàng',
