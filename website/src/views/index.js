@@ -74,7 +74,9 @@ import ImportInventories from './import-inventories'
 import ImportInventory from './import-inventory'
 import ImportReportFile from './import-report-file'
 import DeliveryControl from './delivery-control'
-
+import ShippingForm from './shipping/shipping-form'
+import ShippingFormGHTK from './shipping/shipping-ghtk'
+import ShippingFormGHN from './shipping/shipping-ghn'
 const DEFINE_ROUTER = [
   {
     path: ROUTES.PRODUCT_CHECK,
@@ -315,6 +317,27 @@ const DEFINE_ROUTER = [
     path: ROUTES.SHIPPING,
     Component: () => <Shipping />,
     title: 'Quản lý đối tác vận chuyển',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.SHIPPING_CREATE,
+    Component: () => <ShippingForm />,
+    title: 'Thêm đối tác vận chuyển',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.SHIPPING_CREATE_GHTK,
+    Component: () => <ShippingFormGHTK />,
+    title: 'Kết nối GHTK',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.SHIPPING_CREATE_GHN,
+    Component: () => <ShippingFormGHN />,
+    title: 'Kết nối GHN',
     permissions: [],
     exact: true,
   },

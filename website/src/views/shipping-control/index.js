@@ -37,27 +37,31 @@ export default function ShippingControl() {
   const columnsOrder = [
     {
       title: 'Mã vận đơn',
-      render: (text, record) => record.ma_van_don || '',
+      render: (text, record) => record.tracking_number || '',
     },
     {
       title: 'Phí bảo hiểm',
-      render: (text, record) => formatCash(record.phi_bao_hiem || 0),
+      render: (text, record) => formatCash(record.fee_insurance || 0),
     },
     {
       title: 'Phí giao hàng',
-      render: (text, record) => formatCash(record.phi_giao_hang || 0),
+      render: (text, record) => formatCash(record.fee_shipping || 0),
     },
     {
       title: 'Phí lưu Kho',
-      render: (text, record) => formatCash(record.phi_luu_kho || 0),
+      render: (text, record) => formatCash(record.fee_warehouse || 0),
     },
     {
       title: 'Tiền COD',
-      render: (text, record) => formatCash(record.tien_cod || 0),
+      render: (text, record) => formatCash(record.cod || 0),
     },
     {
       title: 'Trạng thái',
       render: (text, record) => record.status || '',
+    },
+    {
+      title: 'Khối lượng',
+      render: (text, record) => record.weight || '',
     },
   ]
 

@@ -154,7 +154,15 @@ export default function Shipping() {
           title={`Kết nối đối tác ${shippingCompanyName}`}
           onCancel={toggleModal}
           footer={[
-            <Button type="primary" style={{ backgroundColor: '#6D24CF', border: 'none' }}>
+            <Button
+              onClick={() =>
+                shippingCompanyName === 'GHTK'
+                  ? history.push(ROUTES.SHIPPING_CREATE_GHTK)
+                  : history.push(ROUTES.SHIPPING_CREATE_GHN)
+              }
+              type="primary"
+              style={{ backgroundColor: '#6D24CF', border: 'none' }}
+            >
               Kết nối
             </Button>,
           ]}
@@ -215,7 +223,12 @@ export default function Shipping() {
             />
             <ShippingForm reloadData={_getShippings}></ShippingForm> */}
             <Permission permissions={[PERMISSIONS.them_doi_tac_van_chuyen]}>
-              <Button icon={<PlusCircleOutlined />} type="primary" size="large">
+              <Button
+                onClick={() => history.push(ROUTES.SHIPPING_CREATE)}
+                icon={<PlusCircleOutlined />}
+                type="primary"
+                size="large"
+              >
                 Thêm đối tác
               </Button>
             </Permission>
@@ -239,7 +252,7 @@ export default function Shipping() {
                 />
                 <p>Tự giao hàng</p>
               </Col>
-              <Col span={4}>
+              <Col span={5}>
                 <Button type="primary" style={{ backgroundColor: '#68D69D', border: 'none' }}>
                   Đã kích hoạt
                 </Button>
@@ -269,7 +282,7 @@ export default function Shipping() {
                 />
                 <p>Giao hàng nhanh</p>
               </Col>
-              <Col span={4}>
+              <Col span={5}>
                 <Button
                   onClick={() => toggleModal('GHN')}
                   type="primary"
@@ -303,7 +316,7 @@ export default function Shipping() {
                 />
                 <p>Giao hàng tiết kiệm (chưa kích hoạt)</p>
               </Col>
-              <Col span={4}>
+              <Col span={5}>
                 <Button
                   type="primary"
                   onClick={() => toggleModal('GHTK')}
