@@ -45,7 +45,8 @@ export default function ShippingProduct() {
   const typingTimeoutRef = useRef(null)
 
   const branchIdApp = useSelector((state) => state.branch.branchId)
-
+  const [exportLocation, setExportLocation] = useState({})
+  const [importLocation, setImportLocation] = useState({})
   const [branches, setBranches] = useState([])
   const [columns, setColumns] = useState([])
   const [statusTransportOrder, setStatusTransportOrder] = useState([])
@@ -227,7 +228,49 @@ export default function ShippingProduct() {
             size="large"
             txt="Import phiếu chuyển hàng"
             upload={addTransportOrderWithFile}
-            title="Nhập phiếu chuyển hàng bằng file excel"
+            title={
+              <Row wrap={false} align="middle">
+                <div>Nhập phiếu chuyển hàng bằng file excel</div>
+                <div style={{ marginLeft: 20 }}>
+                  <p style={{ margin: 0, fontSize: 15 }}>Chọn chi nhánh gửi hàng</p>
+                  <Select
+                    showSearch
+                    optionFilterProp="children"
+                    // onChange={setShippingId}
+                    // value={shippingId}
+                    // defaultValue={shippingId}
+                    allowClear
+                    placeholder="Chọn chi nhánh gửi hàng"
+                    style={{ width: 250 }}
+                  >
+                    {branches.map((e, index) => (
+                      <Select.Option value={e.name} key={index}>
+                        {e.name}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </div>
+                <div style={{ marginLeft: 20 }}>
+                  <p style={{ margin: 0, fontSize: 15 }}>Chọn chi nhánh nhận hàng</p>
+                  <Select
+                    showSearch
+                    optionFilterProp="children"
+                    allowClear
+                    // onChange={setShippingId}
+                    // value={shippingId}
+                    // defaultValue={shippingId}
+                    placeholder="Chọn chi nhánh gửi hàng"
+                    style={{ width: 250 }}
+                  >
+                    {branches.map((e, index) => (
+                      <Select.Option value={e.name} key={index}>
+                        {e.name}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </div>
+              </Row>
+            }
             fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/01/18/959734bd-5279-48e0-a22d-396ec9ac0960/InventoryTransport.xlsx"
             reload={_getTransportOrders}
           />
