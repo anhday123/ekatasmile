@@ -182,7 +182,7 @@ const DEFINE_ROUTER = [
   {
     path: ROUTES.DELIVERY_CONTROL,
     Component: () => <DeliveryControl />,
-    title: 'Đối soát vận chuyển',
+    title: 'Quản lý giao hàng',
     permissions: [],
     exact: true,
   },

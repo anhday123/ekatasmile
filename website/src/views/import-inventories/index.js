@@ -513,7 +513,7 @@ export default function ImportInventories() {
 
           <ImportCSV
             reset={() => setBranchId()}
-            // keyForm={{ branch_id: branchId || '' }}
+            keyForm={{ branch_id: branchId || '' }}
             size="large"
             txt="Nhập excel"
             upload={uploadOrdersImportInventory}
@@ -522,7 +522,7 @@ export default function ImportInventories() {
               <Row wrap={false} align="middle">
                 <div style={{ marginRight: 20, fontWeight: 600 }}>Nhập hàng bằng file excel</div>
 
-                {/* <div>
+                <div>
                   <div style={{ fontSize: 13 }}>Chọn chi nhánh</div>
                   <Select
                     showSearch
@@ -540,7 +540,7 @@ export default function ImportInventories() {
                       </Select.Option>
                     ))}
                   </Select>
-                </div> */}
+                </div>
               </Row>
             }
             fileName="nhap_kho_mau"

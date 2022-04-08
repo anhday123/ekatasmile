@@ -8,6 +8,7 @@ import {
   PAGE_SIZE_OPTIONS,
   FILTER_SIZE,
   FILTER_COL_HEIGHT,
+  IMAGE_DEFAULT,
 } from 'consts'
 import { compare, formatCash, compareCustom, tableSum } from 'utils'
 import { useReactToPrint } from 'react-to-print'
@@ -142,7 +143,7 @@ export default function DeliveryControl() {
       title: 'Ảnh',
       dataIndex: 'image',
       render: (data) => (
-        <img src={data && data[0] ? data[0] : ''} style={{ maxWidth: 60, maxHeight: 60 }} alt="" />
+        <img src={data && data[0] ? data[0] : IMAGE_DEFAULT} style={{ maxWidth: 60, maxHeight: 60 }} alt="" />
       ),
     },
     {
@@ -598,7 +599,7 @@ export default function DeliveryControl() {
                           <div style={{ color: '#95a5a6' }}>
                             <div>
                               {e.time_update
-                                ? moment(e.time_update).format('LLLL')
+                                ? e.time_update
                                 : 'Đang cập nhật'}
                             </div>
                           </div>
@@ -672,9 +673,9 @@ export default function DeliveryControl() {
                   </span>
                   <span>{record.customer ? record.customer.phone : ''}</span>
                   <span>
-                    {record.customer
+                    {record.customer.province || record.customer.district || record.customer.address
                       ? `${record.customer.province} ${record.customer.district} ${record.customer.address}`
-                      : ''}
+                      : 'Chưa có địa chỉ'}
                   </span>
                 </div>
               ),
@@ -703,12 +704,12 @@ export default function DeliveryControl() {
             return {
               ...column,
               // render: (text, record) => record.shipping_info && record.shipping_info?.cod,
-              render: (text, record) => record.total_cod && record.total_cod,
+              render: (text, record) => record.total_cod && formatCash(record.total_cod),
             }
           if (column.key === 'fee_shipping')
             return {
               ...column,
-              render: (text, record) => record.shipping_info && record.shipping_info?.fee_shipping,
+              render: (text, record) => record.shipping_info && formatCash(record.shipping_info?.fee_shipping),
             }
           return column
         })}
