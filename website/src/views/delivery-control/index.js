@@ -143,7 +143,11 @@ export default function DeliveryControl() {
       title: 'Ảnh',
       dataIndex: 'image',
       render: (data) => (
-        <img src={data && data[0] ? data[0] : IMAGE_DEFAULT} style={{ maxWidth: 60, maxHeight: 60 }} alt="" />
+        <img
+          src={data && data[0] ? data[0] : IMAGE_DEFAULT}
+          style={{ maxWidth: 60, maxHeight: 60 }}
+          alt=""
+        />
       ),
     },
     {
@@ -368,30 +372,31 @@ export default function DeliveryControl() {
         </Collapse>
       </Drawer>
       <Print />
-      <TitlePage title="Quản lý giao hàng">
-        <Space>
-          <SettingColumns
-            columnsDefault={columnsDelivery}
-            nameColumn="columnsDelivery"
-            columns={columns}
-            setColumns={setColumns}
-          />
-          <Button onClick={toggleDrawer} size="large" type="primary">
-            Bộ lọc khác
-          </Button>
-          <Permissions permissions={[PERMISSIONS.tao_don_hang]}>
-            <Button
-              onClick={() => history.push(ROUTES.ORDER_CREATE)}
-              size="large"
-              type="primary"
-              icon={<PlusCircleOutlined />}
-            >
-              Tạo đơn và giao hàng
+      <Affix offsetTop={60}>
+        <TitlePage title="Quản lý giao hàng">
+          <Space>
+            <SettingColumns
+              columnsDefault={columnsDelivery}
+              nameColumn="columnsDelivery"
+              columns={columns}
+              setColumns={setColumns}
+            />
+            <Button onClick={toggleDrawer} size="large" type="primary">
+              Bộ lọc khác
             </Button>
-          </Permissions>
-        </Space>
-      </TitlePage>
-
+            <Permissions permissions={[PERMISSIONS.tao_don_hang]}>
+              <Button
+                onClick={() => history.push(ROUTES.ORDER_CREATE)}
+                size="large"
+                type="primary"
+                icon={<PlusCircleOutlined />}
+              >
+                Tạo đơn và giao hàng
+              </Button>
+            </Permissions>
+          </Space>
+        </TitlePage>
+      </Affix>
       <div style={{ marginTop: 15 }}>
         <Row gutter={[16, 16]} justify="space-between" style={{ marginRight: 0, marginLeft: 0 }}>
           <Col
@@ -597,11 +602,7 @@ export default function DeliveryControl() {
                         <div>
                           <div style={{ fontWeight: 600, fontSize: 18 }}>{e.label}</div>
                           <div style={{ color: '#95a5a6' }}>
-                            <div>
-                              {e.time_update
-                                ? e.time_update
-                                : 'Đang cập nhật'}
-                            </div>
+                            <div>{e.time_update ? e.time_update : 'Đang cập nhật'}</div>
                           </div>
                         </div>
                       </Timeline.Item>
@@ -709,7 +710,8 @@ export default function DeliveryControl() {
           if (column.key === 'fee_shipping')
             return {
               ...column,
-              render: (text, record) => record.shipping_info && formatCash(record.shipping_info?.fee_shipping),
+              render: (text, record) =>
+                record.shipping_info && formatCash(record.shipping_info?.fee_shipping),
             }
           return column
         })}

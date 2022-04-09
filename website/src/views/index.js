@@ -467,6 +467,13 @@ const DEFINE_ROUTER = [
     permissions: [],
     exact: true,
   },
+  {
+    path: ROUTES.SELL,
+    Component: () => <Sell />,
+    title: 'Bán hàng',
+    permissions: [],
+    exact: true,
+  },
 ]
 
 const AUTH_ROUTER = [
@@ -518,14 +525,6 @@ const AUTH_ROUTER = [
     exact: true,
     title: 'Forget password',
     permissions: [],
-  },
-
-  {
-    path: ROUTES.SELL,
-    Component: () => <Sell />,
-    title: 'Bán hàng',
-    permissions: [],
-    exact: true,
   },
 
   {
