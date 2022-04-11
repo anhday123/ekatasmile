@@ -46,8 +46,8 @@ export default function ShippingProduct() {
   const typingTimeoutRef = useRef(null)
 
   const branchIdApp = useSelector((state) => state.branch.branchId)
-  const [exportLocation, setExportLocation] = useState({})
-  const [importLocation, setImportLocation] = useState({})
+  const [exportLocationId, setExportLocationId] = useState('')
+  const [importLocationId, setImportLocationId] = useState('')
   const [branches, setBranches] = useState([])
   const [columns, setColumns] = useState([])
   const [statusTransportOrder, setStatusTransportOrder] = useState([])
@@ -180,13 +180,14 @@ export default function ShippingProduct() {
       if (value) paramsFilter.code = value
       else delete paramsFilter.code
 
-      paramsFilter.setParamsFilter({ ...paramsFilter, page: 1 })
+      setParamsFilter({ ...paramsFilter, page: 1 })
     }, 750)
   }
 
   const _getBranches = async () => {
     try {
       const res = await getAllBranch()
+      console.log(res)
       if (res.status === 200) setBranches(res.data.data)
     } catch (error) {
       console.log(error)
@@ -230,6 +231,8 @@ export default function ShippingProduct() {
               size="large"
               txt="Import phiếu chuyển hàng"
               upload={addTransportOrderWithFile}
+              exportId={exportLocationId}
+              importId={importLocationId}
               title={
                 <Row wrap={false} align="middle">
                   <div>Nhập phiếu chuyển hàng bằng file excel</div>
@@ -238,8 +241,8 @@ export default function ShippingProduct() {
                     <Select
                       showSearch
                       optionFilterProp="children"
-                      // onChange={setShippingId}
-                      // value={shippingId}
+                      onChange={(value) => setExportLocationId(value)}
+                      value={exportLocationId}
                       // defaultValue={shippingId}
                       allowClear
                       placeholder="Chọn chi nhánh gửi hàng"
@@ -258,8 +261,8 @@ export default function ShippingProduct() {
                       showSearch
                       optionFilterProp="children"
                       allowClear
-                      // onChange={setShippingId}
-                      // value={shippingId}
+                      onChange={(value) => setImportLocationId(value)}
+                      value={importLocationId}
                       // defaultValue={shippingId}
                       placeholder="Chọn chi nhánh gửi hàng"
                       style={{ width: 250 }}
@@ -470,11 +473,11 @@ export default function ShippingProduct() {
               size={FILTER_SIZE}
               placeholder="Lọc theo nơi chuyển"
               style={{ width: '100%' }}
-              onChange={(value) => _onFilters('export_location_name', value)}
+              onChange={(value) => _onFilters('export_location_id', value)}
               bordered={false}
             >
               {branches.map((e, index) => (
-                <Select.Option value={e.name} key={index}>
+                <Select.Option value={e.branch_id} key={index}>
                   {e.name}
                 </Select.Option>
               ))}
@@ -486,11 +489,11 @@ export default function ShippingProduct() {
               size={FILTER_SIZE}
               placeholder="Lọc theo nơi nhận"
               style={{ width: '100%' }}
-              onChange={(value) => _onFilters('import_location_name', value)}
+              onChange={(value) => _onFilters('import_location_id', value)}
               bordered={false}
             >
               {branches.map((e, index) => (
-                <Select.Option value={e.name} key={index}>
+                <Select.Option value={e.branch_id} key={index}>
                   {e.name}
                 </Select.Option>
               ))}
