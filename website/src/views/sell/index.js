@@ -1071,6 +1071,7 @@ export default function Sell() {
         note: invoices[indexInvoice].noteInvoice || '',
         tags: [],
         channel: invoices[indexInvoice].salesChannel,
+        is_delivery: invoices[indexInvoice].isDelivery,
       }
 
       //encrypt body create order
