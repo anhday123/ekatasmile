@@ -302,7 +302,7 @@ module.exports._create = async (req, res, next) => {
             customer_debt: req.body.customer_debt,
             // DRAFT  - PROCESSING - COMPLETE - CANCEL - REFUND
             bill_status: req.body.bill_status,
-            // DRAFT - WATTING_FOR_SHIPPING - SHIPPING - COMPLETE - CANCEL
+            // DRAFT - WAITING_FOR_SHIPPING - SHIPPING - COMPLETE - CANCEL
             ship_status: req.body.ship_status,
             note: req.body.note,
             tags: req.body.tags,

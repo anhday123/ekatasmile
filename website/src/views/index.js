@@ -74,7 +74,9 @@ import ImportInventories from './import-inventories'
 import ImportInventory from './import-inventory'
 import ImportReportFile from './import-report-file'
 import DeliveryControl from './delivery-control'
-
+import ShippingForm from './shipping/shipping-form'
+import ShippingFormGHTK from './shipping/shipping-ghtk'
+import ShippingFormGHN from './shipping/shipping-ghn'
 const DEFINE_ROUTER = [
   {
     path: ROUTES.PRODUCT_CHECK,
@@ -180,7 +182,7 @@ const DEFINE_ROUTER = [
   {
     path: ROUTES.DELIVERY_CONTROL,
     Component: () => <DeliveryControl />,
-    title: 'Đối soát vận chuyển',
+    title: 'Quản lý giao hàng',
     permissions: [],
     exact: true,
   },
@@ -319,6 +321,27 @@ const DEFINE_ROUTER = [
     exact: true,
   },
   {
+    path: ROUTES.SHIPPING_CREATE,
+    Component: () => <ShippingForm />,
+    title: 'Thêm đối tác vận chuyển',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.SHIPPING_CREATE_GHTK,
+    Component: () => <ShippingFormGHTK />,
+    title: 'Kết nối GHTK',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.SHIPPING_CREATE_GHN,
+    Component: () => <ShippingFormGHN />,
+    title: 'Kết nối GHN',
+    permissions: [],
+    exact: true,
+  },
+  {
     path: ROUTES.CUSTOMER,
     Component: () => <Customer />,
     title: 'Quản lý khách hàng',
@@ -444,6 +467,13 @@ const DEFINE_ROUTER = [
     permissions: [],
     exact: true,
   },
+  {
+    path: ROUTES.SELL,
+    Component: () => <Sell />,
+    title: 'Bán hàng',
+    permissions: [],
+    exact: true,
+  },
 ]
 
 const AUTH_ROUTER = [
@@ -495,14 +525,6 @@ const AUTH_ROUTER = [
     exact: true,
     title: 'Forget password',
     permissions: [],
-  },
-
-  {
-    path: ROUTES.SELL,
-    Component: () => <Sell />,
-    title: 'Bán hàng',
-    permissions: [],
-    exact: true,
   },
 
   {

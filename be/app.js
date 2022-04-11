@@ -4,7 +4,6 @@ const createError = require(`http-errors`);
 const moment = require(`moment-timezone`);
 const TIMEZONE = process.env.TIMEZONE;
 const app = express();
-const endPoint = process.env.END_POINT;
 
 const router = require(`./routers/index`);
 const client = require('./config/mongodb');
@@ -32,7 +31,7 @@ app.use(cors()).use((req, res, next) => {
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use('/app', express.static(__dirname + '/assets'));
-app.use(`/` + endPoint, router)
+app.use(`/api`, router)
     .use((req, res, next) => {
         next(new Error(`404: Endpoint is not exists!`));
     })

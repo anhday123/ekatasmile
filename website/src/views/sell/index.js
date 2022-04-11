@@ -47,6 +47,7 @@ import {
   Tag,
   notification,
   Col,
+  Checkbox,
 } from 'antd'
 
 //icons antd
@@ -2152,6 +2153,9 @@ export default function Sell() {
           <div style={{ marginBottom: 60, marginTop: 10 }}>
             Ghi chú <EditOutlined />
             <NoteInvoice />
+            {/* <div>
+              <Checkbox ></Checkbox>
+            </div> */}
           </div>
 
           <Row justify="center" align="middle" className={styles['sell-right__footer-btn']}>

@@ -82,7 +82,7 @@ export default function Promotion() {
   const columnsPromotion = [
     {
       title: 'Thông tin',
-      width: 200,
+      // width: 200,
       sorter: (a, b) => compare(a, b, 'name'),
       render: (data) => (
         <>
@@ -102,16 +102,16 @@ export default function Promotion() {
     {
       title: 'Loại khuyến mãi',
       dataIndex: 'type',
-      width: 150,
+      // width: 150,
       render(data) {
-        return data == 'percent' ? 'Phần trăm' : 'Giá trị'
+        return data == 'PERCENT' ? 'Phần trăm' : 'Giá trị'
       },
       sorter: (a, b) => compare(a, b, 'type'),
     },
     {
       title: 'Giá trị khuyến mãi',
       dataIndex: 'value',
-      width: 150,
+      // width: 150,
       render(data, record) {
         if (record.type.toLowerCase() === 'value') return formatCash(data.toString()) + ' VND'
         return formatCash(data.toString()) + '%'
@@ -121,7 +121,7 @@ export default function Promotion() {
     {
       title: 'Người tạo',
       dataIndex: '_creator',
-      width: 150,
+      // width: 150,
       render: (text, record) => `${text.first_name} ${text.last_name}`,
       sorter: (a, b) =>
         (a._creator && a._creator.first_name + ' ' + a._creator.last_name).length -
@@ -130,7 +130,7 @@ export default function Promotion() {
     {
       title: 'Số lượng khuyến mãi',
       dataIndex: 'limit',
-      width: 150,
+      // width: 150,
       render(data) {
         return data.amount
       },
@@ -139,7 +139,7 @@ export default function Promotion() {
     {
       title: 'Chi nhánh áp dụng',
       dataIndex: 'limit',
-      width: 150,
+      // width: 150,
       sorter: (a, b) => compare(a, b, 'description'),
       render: (data) => {
         return data.stores
@@ -154,7 +154,7 @@ export default function Promotion() {
     {
       title: 'Trạng thái',
       dataIndex: 'active',
-      width: 100,
+      // width: 100,
       render(data, record) {
         return (
           <Space size="middle">
@@ -253,6 +253,7 @@ export default function Promotion() {
     try {
       setLoading(true)
       const res = await getPromotions({ ...params, ...pagination, _creator: true })
+      console.log(res)
       if (res.status === 200) {
         setListPromotion(res.data.data)
       } else {
@@ -462,6 +463,10 @@ export default function Promotion() {
                         VND
                       </Text>
                     </Table.Summary.Cell>
+
+                    <Table.Summary.Cell>
+                      <Text></Text>
+                    </Table.Summary.Cell>
                     <Table.Summary.Cell>
                       <Text>{formatCash(tableSum(pageData, 'limit.amount'))}</Text>
                     </Table.Summary.Cell>
@@ -477,15 +482,10 @@ export default function Promotion() {
                     <Table.Summary.Cell>
                       <Text></Text>
                     </Table.Summary.Cell>
-                    <Table.Summary.Cell>
+
+                    {/* <Table.Summary.Cell>
                       <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Text></Text>
-                    </Table.Summary.Cell>
+                    </Table.Summary.Cell> */}
                   </Table.Summary.Row>
                 </Table.Summary>
               )
