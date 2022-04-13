@@ -1331,21 +1331,17 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
         let importLocation = await client
             .db(req.user.database)
             .collection('Branchs')
-            .findOne({ branch_id: Number(req.body.import_branch_id) });
-
+            .findOne({ branch_id: Number(req.body.import_location_id) });
         if (!importLocation) {
             throw new Error(`400: Địa điểm nhập hàng không chính xác!`);
         }
         let exportLocation = await client
             .db(req.user.database)
             .collection('Branchs')
-            .findOne({ branch_id: Number(req.body.export_branch_id) });
-
+            .findOne({ branch_id: Number(req.body.export_location_id) });
         if (!exportLocation) {
             throw new Error(`400: Địa điểm xuất hàng không chính xác!`);
         }
-        console.log(importLocation);
-        return;
         let _products = {};
         let _productIds = [];
         products.map((eProduct) => {
@@ -1444,10 +1440,7 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
         if (!insert.insertedIds) {
             throw new Error(`500: Tạo phiếu chuyển thất bại!`);
         }
-        res.send({
-            success: true,
-            data: orders,
-        });
+        res.send({ success: true, data: orders });
     } catch (err) {
         next(err);
     }
@@ -1470,43 +1463,41 @@ module.exports._updateTransportOrder = async (req, res, next) => {
         });
         productIds = [...new Set(productIds)];
         variantIds = [...new Set(variantIds)];
-        let [products, variants] = await Promise.all([
-            client
-                .db(req.user.database)
-                .collection('Products')
-                .find({ product_id: { $in: productIds } })
-                .toArray(),
-            client
-                .db(req.user.database)
-                .collection('Variants')
-                .find({ product_id: { $in: productIds } })
-                .toArray(),
-        ]);
+        let products = await client
+            .db(req.user.database)
+            .collection('Products')
+            .find({ product_id: { $in: productIds } })
+            .toArray();
+        let variants = await client
+            .db(req.user.database)
+            .collection('Variants')
+            .find({ product_id: { $in: productIds } })
+            .toArray();
+
         let _products = {};
         products.map((product) => {
-            _products[String(product.product_id)] = product;
+            _products[product.product_id] = product;
         });
         let _variants = {};
         variants.map((variant) => {
-            _variants[String(variant.variant_id)] = variant;
+            _variants[variant.variant_id] = variant;
         });
         let total_cost = 0;
         let total_discount = 0;
         let final_cost = 0;
         let total_quantity = 0;
-        _order.products = _order.products.map((product) => {
-            total_cost += product.quantity * product.import_price;
-            total_discount += product.discount || 0;
-            final_cost += product.quantity * product.import_price - product.discount || 0;
-            total_quantity += product.quantity;
+        _order.products = _order.products.map((eProduct) => {
+            total_cost += eProduct.quantity * eProduct.import_price;
+            total_discount += eProduct.discount || 0;
+            final_cost += eProduct.quantity * eProduct.import_price - eProduct.discount || 0;
+            total_quantity += eProduct.quantity;
             return {
-                ...product,
-                product_info: _products[product.product_id],
-                variant_info: _variants[product.variant_id],
+                ...eProduct,
+                product_info: _products[eProduct.product_id],
+                variant_info: _variants[eProduct.variant_id],
             };
         });
         _order = {
-            business_id: Number(_order.business_id),
             order_id: _order.order_id,
             code: _order.code,
             export_location: _order.export_location,
@@ -1940,6 +1931,7 @@ module.exports._getInventoryNote = async (req, res, next) => {
         next(err);
     }
 };
+
 module.exports._createInventoryNote = async (req, res, next) => {
     try {
         let inventoryNoteMaxId = await client
@@ -2010,12 +2002,14 @@ module.exports._createInventoryNote = async (req, res, next) => {
         next(err);
     }
 };
+
 module.exports._createInventoryNoteFile = async (req, res, next) => {
     try {
     } catch (err) {
         next(err);
     }
 };
+
 module.exports._updateInventoryNote = async (req, res, next) => {
     try {
         req.params.inventory_note_id = Number(req.params.inventory_note_id);
@@ -2141,6 +2135,7 @@ module.exports._updateInventoryNote = async (req, res, next) => {
         next(err);
     }
 };
+
 module.exports._deleteInventoryNote = async (req, res, next) => {
     try {
     } catch (err) {

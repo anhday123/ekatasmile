@@ -7,113 +7,6 @@ const orderService = require(`../services/order`);
 
 var CryptoJS = require('crypto-js');
 
-let removeUnicode = (text, removeSpace) => {
-    /*
-        string là chuỗi cần remove unicode
-        trả về chuỗi ko dấu tiếng việt ko khoảng trắng
-    */
-    if (typeof text != 'string') {
-        return '';
-    }
-    if (removeSpace && typeof removeSpace != 'boolean') {
-        throw new Error('Type of removeSpace input must be boolean!');
-    }
-    text = text
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/đ/g, 'd')
-        .replace(/Đ/g, 'D');
-    if (removeSpace) {
-        text = text.replace(/\s/g, '');
-    }
-    return text;
-};
-
-let changePoint = async (database, order) => {
-    try {
-        let pointSetting = await client
-            .db(database)
-            .collection('PointSettings')
-            .findOne({
-                $or: [{ all_branch: true }, { branch_id: order.sale_location.branch_id }],
-            });
-        if (!pointSetting) {
-            throw new Error(`400: Địa điểm bán hàng không áp dụng chương trình tích điểm!`);
-        }
-        let customer = await client.db(database).collection('Customers').findOne({ customer_id: order.customer_id });
-        if (!pointSetting.customer_type_id.includes(customer.type_id) && !pointSetting.all_customer_type) {
-            throw new Error(`400: Khách hàng thuộc nhóm không thể sử dụng tích điểm!`);
-        }
-        let increasePoint = 0;
-        let decreasePoint = 0;
-        order.order_details.map((eDetail) => {
-            let categoryIds = [...pointSetting.category_id, ...eDetail.category_id];
-            if (pointSetting.all_category || [...new Set(categoryIds)].length != categoryIds.length) {
-                increasePoint += (eDetail.price * eDetail.quantity) / pointSetting.exchange_point_rate;
-            }
-        });
-        order.payments.map((ePayment) => {
-            let _method = removeUnicode(ePayment.method, true).toLowerCase();
-            if (_method == 'diemtichluy' && ePayment.is_use) {
-                decreasePoint += ePayment.value / pointSetting.exchange_money_rate;
-            }
-        });
-        customer.point += increasePoint;
-        customer.point -= decreasePoint;
-        customer.used_point += decreasePoint;
-        customer.order_quantity += 1;
-        customer.order_total_cost += order.total_cost;
-        let pointUseMaxId = await client.db(database).collection('AppSetting').findOne({ name: 'PointUseHistories' });
-        let pointUseId = (() => {
-            if (pointUseMaxId && pointUseMaxId.value) {
-                return pointUseMaxId.value;
-            }
-            return 0;
-        })();
-        return Promise.all([
-            client
-                .db(database)
-                .collection('AppSetting')
-                .updateOne(
-                    { name: 'PointUseHistories' },
-                    { $set: { name: 'PointUseHistories', value: pointUseId + 2 } }
-                ),
-            client
-                .db(database)
-                .collection('Customers')
-                .updateOne({ customer_id: customer.customer_id }, { $set: customer }),
-            client
-                .db(database)
-                .collection('PointUseHistories')
-                .insertOne({
-                    point_use_id: pointUseId + 1,
-                    type: 'ACCUMULATE',
-                    customer_id: customer.customer_id,
-                    branch_id: branch.branch_id,
-                    order_id: order.order_id,
-                    point_used: 0,
-                    point_accumulated: increasePoint,
-                    create_date: moment().tz(TIMEZONE).format(),
-                }),
-            client
-                .db(database)
-                .collection('PointUseHistories')
-                .insertOne({
-                    point_use_id: pointUseId + 2,
-                    type: 'USE',
-                    customer_id: customer.customer_id,
-                    branch_id: branch.branch_id,
-                    order_id: order.order_id,
-                    point_used: decreasePoint,
-                    point_accumulated: 0,
-                    create_date: moment().tz(TIMEZONE).format(),
-                }),
-        ]);
-    } catch (err) {
-        throw err;
-    }
-};
-
 module.exports.enumStatusOrder = async (req, res, next) => {
     try {
         var enums = await client.db(DB).collection('EnumStatusOrder').find({}).toArray();
@@ -157,62 +50,71 @@ module.exports._create = async (req, res, next) => {
 
         if (req.body.channel == undefined) throw new Error('400: Không lòng truyền thuộc tính channel!');
 
-        let [orderMaxId] = await Promise.all([
-            client.db(req.user.database).collection('AppSetting').findOne({ name: 'Orders' }),
-        ]);
-        let order_id = (() => {
-            if (orderMaxId && orderMaxId.value) {
-                return orderMaxId.value;
-            }
-            return 0;
-        })();
+        let customer = await client
+            .db(req.user.database)
+            .collection('Customers')
+            .findOne({ customer_id: req.body.customer_id });
+        if (!customer) {
+            throw new Error('400: Khách hàng không khả dụng!');
+        }
+        let employee = await client
+            .db(req.user.database)
+            .collection('Employees')
+            .findOne({ employee_id: req.body.employee_id });
+        if (!employee) {
+            throw new Error(`400: Nhân viên không khả dụng!`);
+        }
+        let orderMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Orders' });
+        let orderId = (orderMaxId && orderMaxId.value) || 0;
         let productIds = [];
         let variantIds = [];
+        let categoryIds = [];
         req.body.order_details.map((detail) => {
             productIds.push(detail.product_id);
             variantIds.push(detail.variant_id);
         });
-        let [products, variants] = await Promise.all([
-            client
-                .db(req.user.database)
-                .collection('Products')
-                .aggregate([
-                    { $match: { product_id: { $in: productIds } } },
-                    {
-                        $lookup: {
-                            from: 'Variants',
-                            let: { productId: '$product_id' },
-                            pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productId'] } } }],
-                            as: 'variants',
-                        },
+
+        let products = await client
+            .db(req.user.database)
+            .collection('Products')
+            .aggregate([
+                { $match: { product_id: { $in: productIds } } },
+                {
+                    $lookup: {
+                        from: 'Variants',
+                        let: { productId: '$product_id' },
+                        pipeline: [{ $match: { $expr: { $eq: ['$product_id', '$$productId'] } } }],
+                        as: 'variants',
                     },
-                ])
-                .toArray(),
-            client
-                .db(req.user.database)
-                .collection('Variants')
-                .aggregate([{ $match: { variant_id: { $in: variantIds } } }])
-                .toArray(),
-        ]);
+                },
+            ])
+            .toArray();
+        let variants = await client
+            .db(req.user.database)
+            .collection('Variants')
+            .aggregate([{ $match: { variant_id: { $in: variantIds } } }])
+            .toArray();
         let _products = {};
         products.map((eProduct) => {
-            _products[String(eProduct.product_id)] = eProduct;
+            _products[eProduct.product_id] = eProduct;
+            categoryIds = [...categoryIds, ...eProduct.category_id];
         });
         let _variants = {};
         variants.map((eVariant) => {
-            _variants[String(eVariant.variant_id)] = eVariant;
+            _variants[eVariant.variant_id] = eVariant;
         });
         let totalCost = 0;
-
-        var total_quantity = 0;
+        var totalQuantity = 0;
         req.body.order_details = req.body.order_details.map((eDetail) => {
             let _detail = {
-                ..._products[`${eDetail.product_id}`],
-                ..._variants[`${eDetail.variant_id}`],
+                ..._products[eDetail.product_id],
+                ..._variants[eDetail.variant_id],
                 ...eDetail,
+                product_info: _products[eDetail.product_id],
+                variant_info: _variants[eDetail.variant_id],
             };
             totalCost += eDetail.price * eDetail.quantity;
-            total_quantity += eDetail.quantity;
+            totalQuantity += eDetail.quantity;
             _detail = {
                 product_id: _detail.product_id,
                 variant_id: _detail.variant_id,
@@ -228,40 +130,30 @@ module.exports._create = async (req, res, next) => {
                 quantity: _detail.quantity,
                 total_base_price: _detail.total_base_price || 0,
                 total_cost: _detail.price * _detail.quantity,
-                tax_amount: _detail.tax_amount || 0,
-                discount: _detail.discount || 0,
+                total_tax: _detail.total_tax || 0,
+                total_discount: _detail.total_discount || 0,
                 final_cost: _detail.price * _detail.quantity - _detail.total_tax || 0 - _detail.total_discount || 0,
-                fulfillment_service: '',
-                fulfillment_id: '',
-                fulfillment_status: '',
-                fulfillable_quantity: 0,
-                requires_shipping: false,
-                tracking_number: '',
-                gift_card: false,
-                carrier: '',
-                status: '',
+                product_info: _detail.product_info,
+                variant_info: _detail.variant_info,
             };
             return _detail;
         });
         if (totalCost != req.body.total_cost) {
             throw new Error('400: Tổng giá trị đơn hàng không chính xác!');
         }
-        order_id++;
         let _order = {
-            order_id: order_id,
-            code: String(order_id).padStart(6, '0'),
+            order_id: ++orderId,
+            code: String(orderId).padStart(6, '0'),
             platform_id: req.body.platform_id || 1,
-            channel: req.body.channel || '',
-            is_confirm_delivery: false,
-            is_print: false,
+            channel: req.body.channel || 'POS',
             sale_location: req.body.sale_location,
-            customer_id: req.body.customer_id,
-            employee_id: req.body.employee_id,
+            customer_id: customer.user_id,
+            employee_id: employee.user_id,
             order_details: req.body.order_details,
             shipping_company_id: req.body.shipping_company_id,
             shipping_info: ((data) => {
                 if (!data) {
-                    return {};
+                    data = {};
                 }
                 return {
                     tracking_number: data.tracking_number || '',
@@ -291,6 +183,7 @@ module.exports._create = async (req, res, next) => {
             })(req.body.shipping_info),
             voucher: req.body.voucher,
             promotion: req.body.promotion,
+            total_quantity: totalQuantity,
             total_cost: req.body.total_cost,
             total_tax: req.body.total_tax,
             total_discount: req.body.total_discount,
@@ -325,24 +218,10 @@ module.exports._create = async (req, res, next) => {
             total_cod: 0,
             // hmac: hmac,
         };
-        /*
-        await Promise.all(
-            _order.payments.map((payment, index) => {
-                if (
-                    payment.method &&
-                    removeUnicode(String(payment.method).toLowerCase(), true) == 'diemtichluy' &&
-                    !payment.is_used
-                ) {
-                    _order.payments[index].is_used = true;
-                    return changePoint(req.user.database, { customer_id: req.body.customer_id }, 10);
-                }
-            })
-        );
-        */
         await client
             .db(req.user.database)
             .collection('AppSetting')
-            .updateOne({ name: 'Orders' }, { $set: { name: 'Orders', value: order_id } }, { upsert: true });
+            .updateOne({ name: 'Orders' }, { $set: { name: 'Orders', value: orderId } }, { upsert: true });
         if (!/^(draft)|(pre-order)$/gi.test(_order.bill_status)) {
             let sortQuery = (() => {
                 if (req.user._business.price_recipe == 'FIFO') {
@@ -369,91 +248,134 @@ module.exports._create = async (req, res, next) => {
                     _locations[eLocation.variant_id].push(eLocation);
                 }
             });
-            let prices = await client
+            let inventoryMaxId = await client
                 .db(req.user.database)
-                .collection('Prices')
-                .find({ variant_id: { $in: variantIds } })
-                .toArray();
-            let _prices = {};
-            prices.map((ePrice) => {
-                _prices[String(ePrice.price_id)] = ePrice;
-            });
-            let _updates = [];
+                .collection('Inventories')
+                .findOne({ name: 'Inventories' });
+            let inventoryId = (inventoryMaxId && inventoryMaxId.value) || 0;
+            let pointSetting = await client
+                .db(req.user.database)
+                .collection('PointSettings')
+                .findOne({
+                    $or: [{ all_branch: true }, { branch_id: { $in: [_order.sale_location.branch_id] } }],
+                    $or: [{ all_customer_type: true }, { customer_type_id: { $in: [customer.type_id] } }],
+                    $or: [{ all_category: true }, { category_id: { $in: productIds } }],
+                    $or: [{ all_product: true }, { product_id: { $in: categoryIds } }],
+                });
+            let updateLocations = [];
+            let insertInventories = [];
+            let increasePoint = 0;
             var total_base_price = 0;
             var total_profit = 0;
             _order.order_details = _order.order_details.map((eDetail) => {
-                if (!_locations[`${eDetail.variant_id}`]) {
+                if (!_locations[eDetail.variant_id]) {
                     throw new Error('400: Sản phẩm không được cung cấp tại địa điểm bán!');
                 }
+                if (pointSetting) {
+                    if (pointSetting.all_category || pointSetting.all_product) {
+                        increasePoint += eDetail.total_cost / pointSetting.exchange_point_rate;
+                    } else {
+                        if (
+                            pointSetting.product_id.includes(eDetail.product_id) ||
+                            [
+                                ...new Set([
+                                    ...pointSetting.category_id,
+                                    ...((eDetail.product_info && eDetail.product_info.category_id) || ['']),
+                                ]),
+                            ].length !=
+                                [
+                                    ...pointSetting.category_id,
+                                    ...((eDetail.product_info && eDetail.product_info.category_id) || ['']),
+                                ]
+                        ) {
+                            increasePoint += eDetail.total_cost / pointSetting.exchange_point_rate;
+                        }
+                    }
+                }
                 let detailQuantity = eDetail.quantity;
-                for (let i in _locations[`${eDetail.variant_id}`]) {
-                    location = _locations[`${eDetail.variant_id}`][i];
+                for (let i in _locations[eDetail.variant_id]) {
+                    let _location = _locations[eDetail.variant_id][i];
                     if (detailQuantity == 0) {
                         break;
                     }
                     let _basePrice = {
-                        location_id: location.location_id,
-                        branch_id: location.branch_id,
-                        product_id: location.product_id,
-                        variant_id: location.variant_id,
-                        price_id: location.price_id,
+                        location_id: _location.location_id,
+                        branch_id: _location.branch_id,
+                        product_id: _location.product_id,
+                        variant_id: _location.variant_id,
+                        base_price: _location.import_price,
                         quantity: 0,
-                        base_price: location.import_price,
                     };
-                    if (detailQuantity <= location.quantity) {
-                        eDetail.total_base_price += detailQuantity * location.import_price;
+                    if (detailQuantity <= _location.quantity) {
                         _basePrice.quantity = detailQuantity;
-                        location.quantity -= detailQuantity;
+                        eDetail.total_base_price += detailQuantity * _location.import_price;
+                        _location.quantity -= detailQuantity;
                         detailQuantity = 0;
                     }
-                    if (detailQuantity > location.quantity) {
-                        eDetail.total_base_price += location.quantity * _prices[location.price_id].import_price;
-                        _basePrice.quantity = location.quantity;
-                        detailQuantity -= location.quantity;
-                        location.quantity = 0;
+                    if (detailQuantity > _location.quantity) {
+                        _basePrice.quantity = _location.quantity;
+                        eDetail.total_base_price += _location.quantity * _location.import_price;
+                        detailQuantity -= _location.quantity;
+                        _location.quantity = 0;
                     }
                     total_base_price += eDetail.total_base_price;
                     total_profit += parseFloat(eDetail.total_cost) - parseFloat(eDetail.total_base_price);
                     eDetail.base_prices.push(_basePrice);
-
-                    _updates.push(location);
+                    updateLocations.push({
+                        ...location,
+                        last_update: moment().tz(TIMEZONE).format(),
+                        updater_id: req.user.user_id,
+                    });
+                    insertInventories.push({
+                        inventory_id: ++inventoryId,
+                        product_id: eDetail.product_id,
+                        variant_id: eDetail.variant_id,
+                        branch_id: (_order.sale_location && _order.sale_location.branch_id) || 0,
+                        type: 'sale-order-export',
+                        import_quantity: 0,
+                        import_price: 0,
+                        export_quantity: _basePrice.quantity,
+                        export_price: _location.import_price,
+                        create_date: moment().tz(TIMEZONE).format(),
+                        creator_id: req.user.user_id,
+                        last_update: moment().tz(TIMEZONE).format(),
+                        updater_id: req.user.user_id,
+                    });
                 }
                 if (detailQuantity > 0) {
                     throw new Error('400: Sản phẩm tại địa điểm bán không đủ số lượng cung cấp!');
                 }
                 return eDetail;
             });
-            await Promise.all(
-                _updates.map((eUpdate) => {
-                    delete eUpdate._id;
-                    return client
+            if (updateLocations.length > 0) {
+                for (let i in updateLocations) {
+                    await client
                         .db(req.user.database)
                         .collection('Locations')
-                        .updateOne({ location_id: eUpdate.location_id }, { $set: eUpdate });
-                })
-            );
+                        .updateOne({ location_id: updateLocations[i].location_id }, { $set: updateLocations[i] });
+                }
+            }
+            if (insertInventories.length > 0) {
+                await client
+                    .db(req.user.database)
+                    .collection('AppSetting')
+                    .updateOne({ name: 'Inventories' }, { $set: inventoryId }, { upsert: true });
+                await client.db(req.user.database).collection('Inventories').insertMany(insertInventories);
+            }
             let receiptMaxId = await client
                 .db(req.user.database)
                 .collection('AppSetting')
                 .findOne({ name: 'Finances' });
-            let receipt_id = (() => {
-                if (receiptMaxId && receiptMaxId.value) {
-                    return receiptMaxId.value;
-                }
-                return 0;
-            })();
-            receipt_id++;
+            let receiptId = (receiptMaxId && receiptMaxId.value) || 0;
             let _finance = {
-                receipt_id: receipt_id,
+                receipt_id: ++receiptId,
                 source: req.body.source || 'AUTO',
                 //REVENUE - EXPENDITURE
                 type: req.body.type || 'REVENUE',
                 payments: req.body.payments || [],
                 value: req.body.final_cost || 0,
-                payer: (() => {
-                    req.body;
-                })(),
-                receiver: req.user.user_id,
+                payer: _order.customer_id,
+                receiver: _order.employee_id,
                 status: 'COMPLETE',
                 note: req.body.note || '',
                 create_date: moment().tz(TIMEZONE).format(),
@@ -464,8 +386,33 @@ module.exports._create = async (req, res, next) => {
             await client
                 .db(req.user.database)
                 .collection('AppSetting')
-                .updateOne({ name: 'Finances' }, { $set: { name: 'Finances', value: receipt_id } }, { $upsert: true });
-            let insert = await client.db(req.user.database).collection('Finances').insertOne(_finance);
+                .updateOne({ name: 'Finances' }, { $set: { name: 'Finances', value: receiptId } }, { upsert: true });
+            let insertFinance = await client.db(req.user.database).collection('Finances').insertOne(_finance);
+            await client
+                .db(req.user.database)
+                .collection('Users')
+                .updateOne({ user_id: customer.user_id }, { $inc: { point: increasePoint } });
+            await client
+                .db(req.user.database)
+                .collection('Customers')
+                .updateOne({ customer_id: customer.customer_id }, { $inc: { point: increasePoint } });
+
+            if (pointSetting) {
+                let decreasePoint = 0;
+                for (let i in _order.payments) {
+                    if (payments[i].method == 'POINT') {
+                        decreasePoint = payments[i].value / pointSetting.exchange_money_rate;
+                    }
+                }
+                await client
+                    .db(req.user.database)
+                    .collection('Users')
+                    .updateOne({ user_id: customer.user_id }, { $inc: { point: -decreasePoint } });
+                await client
+                    .db(req.user.database)
+                    .collection('Customers')
+                    .updateOne({ customer_id: customer.customer_id }, { $inc: { point: -decreasePoint } });
+            }
         }
         _order.total_base_price = total_base_price;
         _order.total_profit = total_profit;
