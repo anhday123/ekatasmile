@@ -913,10 +913,10 @@ module.exports.importFileC = async (req, res, next) => {
                         }
                         return [];
                     })(),
-                    length: eRow['chieudai(cm)'] || 0,
-                    width: eRow['chieurong(cm)'] || 0,
-                    height: eRow['chieucao(cm)'] || 0,
-                    weight: eRow['khoiluong(g)'] || 0,
+                    length: (!isNaN(Number(eRow['chieudai(cm)'])) && Number(eRow['chieudai(cm)'])) || 0,
+                    width: (!isNaN(Number(eRow['chieurong(cm)'])) && Number(eRow['chieurong(cm)'])) || 0,
+                    height: (!isNaN(Number(eRow['chieucao(cm)'])) && Number(eRow['chieucao(cm)'])) || 0,
+                    weight: (!isNaN(Number(eRow['khoiluong(g)'])) && Number(eRow['khoiluong(g)'])) || 0,
                     unit: eRow['donvi'] || '',
                     brand_id: _brands[eRow['_tenthuonghieu']].brand_id,
                     origin_code: _origins[eRow['_noixuatxu']]?.origin_code,

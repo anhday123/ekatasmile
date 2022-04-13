@@ -24,7 +24,8 @@ viesoftware
 -   Windows:
 
     -   Setup (1 lần đầu tiên):
-        -   ??????
+        -   1: ssh-keygen
+        -   2: type C:\Users\<username>\.ssh\id_rsa.pub | ssh root@103.81.87.65 'cat >> .ssh/authorized_keys'
     -   Steps:
         -   1: Push code lên git:
         -   2: chạy lệnh:
