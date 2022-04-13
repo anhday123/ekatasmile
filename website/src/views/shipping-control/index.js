@@ -1,6 +1,6 @@
 import { SearchOutlined } from '@ant-design/icons'
 //antd
-import { Col, DatePicker, Input, Row, Select, Space, Table } from 'antd'
+import { Affix, Col, DatePicker, Input, Row, Select, Space, Table } from 'antd'
 import { getEmployees } from 'apis/employee'
 //apis
 import { addShippingControlWithFile, getShippingControlList, getShippings } from 'apis/shipping'
@@ -140,46 +140,47 @@ export default function ShippingControl() {
 
   return (
     <div className="card">
-      <TitlePage title="Đối soát vận chuyển">
-        <Space>
-          <ImportCsv
-            size="large"
-            shippingId={shippingId}
-            txt="Import phiếu đối soát"
-            upload={addShippingControlWithFile}
-            title={
-              <Row wrap={false} align="middle">
-                <div>Nhập phiếu đối soát bằng file excel</div>
-                <div style={{ marginLeft: 20 }}>
-                  <p style={{ margin: 0, fontSize: 12 }}>Chọn đơn vị vận chuyển</p>
-                  <Select
-                    showSearch
-                    optionFilterProp="children"
-                    onChange={setShippingId}
-                    value={shippingId}
-                    defaultValue={shippingId}
-                    placeholder="Chọn đơn vị vận chuyển"
-                    style={{ width: 250 }}
-                  >
-                    {shippings.map((shipping, index) => (
-                      <Select.Option value={shipping.shipping_company_id} key={index}>
-                        {shipping.name}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </div>
-              </Row>
-            }
-            fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/03/13/d5937240-928b-46f1-b532-51e8f9cbed1d/file_mau_doi_soat.xlsx"
-            reload={_getShippingControlList}
-          />
-          <SettingColumns
-            columns={columns}
-            setColumns={setColumns}
-            columnsDefault={columnsShippingControl}
-            nameColumn="columnsShippingControl"
-          />
-          {/* <Permission permissions={[PERMISSIONS.them_phieu_doi_soat_van_chuyen]}>
+      <Affix offsetTop={60}>
+        <TitlePage title="Đối soát vận chuyển">
+          <Space>
+            <ImportCsv
+              size="large"
+              shippingId={shippingId}
+              txt="Import phiếu đối soát"
+              upload={addShippingControlWithFile}
+              title={
+                <Row wrap={false} align="middle">
+                  <div>Nhập phiếu đối soát bằng file excel</div>
+                  <div style={{ marginLeft: 20 }}>
+                    <p style={{ margin: 0, fontSize: 12 }}>Chọn đơn vị vận chuyển</p>
+                    <Select
+                      showSearch
+                      optionFilterProp="children"
+                      onChange={setShippingId}
+                      value={shippingId}
+                      defaultValue={shippingId}
+                      placeholder="Chọn đơn vị vận chuyển"
+                      style={{ width: 250 }}
+                    >
+                      {shippings.map((shipping, index) => (
+                        <Select.Option value={shipping.shipping_company_id} key={index}>
+                          {shipping.name}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </div>
+                </Row>
+              }
+              fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/03/13/d5937240-928b-46f1-b532-51e8f9cbed1d/file_mau_doi_soat.xlsx"
+              reload={_getShippingControlList}
+            />
+            <SettingColumns
+              columns={columns}
+              setColumns={setColumns}
+              columnsDefault={columnsShippingControl}
+              nameColumn="columnsShippingControl"
+            />
+            {/* <Permission permissions={[PERMISSIONS.them_phieu_doi_soat_van_chuyen]}>
             <Button
               size="large"
               icon={<PlusCircleOutlined />}
@@ -189,9 +190,9 @@ export default function ShippingControl() {
               Thêm phiếu đối soát
             </Button>
           </Permission> */}
-        </Space>
-      </TitlePage>
-
+          </Space>
+        </TitlePage>
+      </Affix>
       <div style={{ marginTop: 10 }}>
         <Row style={{ width: '100%', border: '1px solid #d9d9d9', borderRadius: 5 }}>
           <Col xs={24} sm={24} md={24} lg={6} xl={6} style={{ height: FILTER_COL_HEIGHT }}>

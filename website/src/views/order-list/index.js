@@ -249,6 +249,7 @@ export default function OrderList() {
   return (
     <div className="card">
       <Print />
+      <Affix offsetTop={60}>
       <TitlePage title="Danh sách hóa đơn bán hàng">
         <Space>
           <SettingColumns
@@ -269,7 +270,7 @@ export default function OrderList() {
           </Permissions>
         </Space>
       </TitlePage>
-
+      </Affix>
       <div style={{ marginTop: 15 }}>
         <Row gutter={[16, 16]} justify="space-between" style={{ marginRight: 0, marginLeft: 0 }}>
           <Col

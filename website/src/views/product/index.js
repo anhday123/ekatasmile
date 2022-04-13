@@ -25,6 +25,7 @@ import {
   Tag,
   TreeSelect,
   Badge,
+  Affix,
 } from 'antd'
 
 //components
@@ -241,14 +242,17 @@ export default function Product() {
         let dataExport = []
 
         res.data.data.map((e) => {
-          const findCategory = categories.find((c) => c.category_id === e.category_id)
-
+          const findCategory = categories.find((c) => e.category_id.includes(c.category_id))
+          // console.log(findCategory)
           const findSupplier = suppliers.find((s) => s.supplier_id === e.supplier_id)
 
           let objProduct = {
             'Tên sản phẩm': e.name || '',
             'Mã sản phẩm': e.sku || '',
-            'Loại sản phẩm': findCategory ? findCategory.name : '',
+            'Nhóm sản phẩm': findCategory ? findCategory.name : '',
+            // 'Nhóm sản phẩm': e._categories.map((item) => {
+            //   return <p>{item.name}</p>
+            // }),
             'Nhà cung cấp': findSupplier ? findSupplier.name : '',
             'Chiều dài': e.length,
             'Chiều rộng': e.width,
@@ -788,42 +792,43 @@ export default function Product() {
   return (
     <>
       <div className="card">
-        <TitlePage title="Danh sách sản phẩm">
-          <Space>
-            <Button
-              size="large"
-              style={{ display: Object.keys(paramsFilter).length <= 2 && 'none' }}
-              onClick={onClickClear}
-              type="primary"
-              danger
-            >
-              Xóa tất cả lọc
-            </Button>
-            <SettingColumns
-              columns={columns}
-              setColumns={setColumns}
-              columnsDefault={columnsProduct}
-              nameColumn="columnsProductStore"
-            />
-            <ImportCSV
-              size="large"
-              txt="Import sản phẩm"
-              upload={importProducts}
-              title="Nhập sản phẩm bằng file excel"
-              fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/01/12/93eab748-117c-4ebf-8125-5b823999b535/ImportProductAO.xlsx"
-              reload={_getProducts}
-            />
-            <ModalOptionExportProducts />
-            <Permission permissions={[PERMISSIONS.them_san_pham]}>
-              <Link to={ROUTES.PRODUCT_ADD}>
-                <Button size="large" type="primary" icon={<PlusCircleOutlined />}>
-                  Thêm sản phẩm
-                </Button>
-              </Link>
-            </Permission>
-          </Space>
-        </TitlePage>
-
+        <Affix offsetTop={60}>
+          <TitlePage title="Danh sách sản phẩm">
+            <Space>
+              <Button
+                size="large"
+                style={{ display: Object.keys(paramsFilter).length <= 2 && 'none' }}
+                onClick={onClickClear}
+                type="primary"
+                danger
+              >
+                Xóa tất cả lọc
+              </Button>
+              <SettingColumns
+                columns={columns}
+                setColumns={setColumns}
+                columnsDefault={columnsProduct}
+                nameColumn="columnsProductStore"
+              />
+              <ImportCSV
+                size="large"
+                txt="Import sản phẩm"
+                upload={importProducts}
+                title="Nhập sản phẩm bằng file excel"
+                fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/01/12/93eab748-117c-4ebf-8125-5b823999b535/ImportProductAO.xlsx"
+                reload={_getProducts}
+              />
+              <ModalOptionExportProducts />
+              <Permission permissions={[PERMISSIONS.them_san_pham]}>
+                <Link to={ROUTES.PRODUCT_ADD}>
+                  <Button size="large" type="primary" icon={<PlusCircleOutlined />}>
+                    Thêm sản phẩm
+                  </Button>
+                </Link>
+              </Permission>
+            </Space>
+          </TitlePage>
+        </Affix>
         <Row gutter={[16, 16]} justify="space-between" style={{ marginLeft: 0, marginTop: 20 }}>
           <Col
             xs={24}

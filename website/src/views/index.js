@@ -182,7 +182,7 @@ const DEFINE_ROUTER = [
   {
     path: ROUTES.DELIVERY_CONTROL,
     Component: () => <DeliveryControl />,
-    title: 'Đối soát vận chuyển',
+    title: 'Quản lý giao hàng',
     permissions: [],
     exact: true,
   },
@@ -467,6 +467,13 @@ const DEFINE_ROUTER = [
     permissions: [],
     exact: true,
   },
+  {
+    path: ROUTES.SELL,
+    Component: () => <Sell />,
+    title: 'Bán hàng',
+    permissions: [],
+    exact: true,
+  },
 ]
 
 const AUTH_ROUTER = [
@@ -518,14 +525,6 @@ const AUTH_ROUTER = [
     exact: true,
     title: 'Forget password',
     permissions: [],
-  },
-
-  {
-    path: ROUTES.SELL,
-    Component: () => <Sell />,
-    title: 'Bán hàng',
-    permissions: [],
-    exact: true,
   },
 
   {
