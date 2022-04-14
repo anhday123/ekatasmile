@@ -59,8 +59,8 @@ module.exports._create = async (req, res, next) => {
         }
         let employee = await client
             .db(req.user.database)
-            .collection('Employees')
-            .findOne({ employee_id: req.body.employee_id });
+            .collection('Users')
+            .findOne({ employee_id: req.user.user_id });
         if (!employee) {
             throw new Error(`400: Nhân viên không khả dụng!`);
         }
