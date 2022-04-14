@@ -492,11 +492,11 @@ module.exports.deleteProductC = async (req, res, next) => {
             .deleteMany({ product_id: { $in: req.body.product_id } });
         await client
             .db(req.user.database)
-            .collection('Prices')
+            .collection('Locations')
             .deleteMany({ product_id: { $in: req.body.product_id } });
         await client
             .db(req.user.database)
-            .collection('Locations')
+            .collection('Inventories')
             .deleteMany({ product_id: { $in: req.body.product_id } });
         await client
             .db(req.user.database)
