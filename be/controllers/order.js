@@ -144,7 +144,7 @@ module.exports._create = async (req, res, next) => {
             platform_id: req.body.platform_id || 1,
             channel: req.body.channel || 'POS',
             sale_location: req.body.sale_location,
-            customer_id: customer.user_id,
+            customer_id: customer.customer_id,
             employee_id: employee.user_id,
             order_details: req.body.order_details,
             shipping_company_id: req.body.shipping_company_id,
@@ -403,7 +403,11 @@ module.exports._create = async (req, res, next) => {
                 await client
                     .db(req.user.database)
                     .collection('AppSetting')
-                    .updateOne({ name: 'Inventories' }, { $set: inventoryId }, { upsert: true });
+                    .updateOne(
+                        { name: 'Inventories' },
+                        { $set: { name: 'Inventories', value: inventoryId } },
+                        { upsert: true }
+                    );
                 await client.db(req.user.database).collection('Inventories').insertMany(insertInventories);
             }
             let receiptMaxId = await client
@@ -427,6 +431,7 @@ module.exports._create = async (req, res, next) => {
                 last_update: moment().tz(TIMEZONE).format(),
                 updater_id: req.user.user_id,
             };
+
             await client
                 .db(req.user.database)
                 .collection('AppSetting')
