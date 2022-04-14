@@ -581,8 +581,8 @@ module.exports._createImportOrderFile = async (req, res, next) => {
                             }
                             throw new Error(`400: Sản phẩm ${eRow['ma-san-pham']} chưa có số lượng nhập!`);
                         })(),
-                        product_info: _products[eRow['masanpham']],
-                        variant_info: _variants[eRow['maphienban']],
+                        product_info: _products[eRow['ma-san-pham']],
+                        variant_info: _variants[eRow['ma-phien-ban']],
                     });
                     _orders[eRow['ma-phieu-nhap']].total_quantity += eRow['so-luong-nhap'];
                     _orders[eRow['ma-phieu-nhap']].total_cost += eRow['gia-nhap'] * eRow['so-luong-nhap'];
@@ -592,8 +592,6 @@ module.exports._createImportOrderFile = async (req, res, next) => {
                     _orders[eRow['ma-phieu-nhap']].fee_shipping = eRow['phi-van-chuyen'] || 0;
                     _orders[eRow['ma-phieu-nhap']].final_cost = eRow['tong-cong'] || 0;
                     _orders[eRow['ma-phieu-nhap']].note = eRow['ghi-chu'] || '';
-                } else {
-                    throw new Error(`400: Sản phẩm thứ ${i} không tồn tại!`);
                 }
             }
         });
