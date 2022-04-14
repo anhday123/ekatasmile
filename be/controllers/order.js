@@ -393,7 +393,7 @@ module.exports._create = async (req, res, next) => {
             }
             if (updateLocations.length > 0) {
                 for (let i in updateLocations) {
-                    delete updateLocations[i];
+                    delete updateLocations[i]._id;
                     await client
                         .db(req.user.database)
                         .collection('Locations')
