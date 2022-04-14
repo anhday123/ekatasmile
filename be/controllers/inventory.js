@@ -502,7 +502,7 @@ module.exports._createImportOrderFile = async (req, res, next) => {
         let orderMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'ImportOrders' });
         let orderId = (orderMaxId && orderMaxId.value) || 0;
         let _orders = {};
-        rows.map((eRow) => {
+        rows.map((eRow, index) => {
             if (!_orders[eRow['ma-phieu-nhap']]) {
                 _orders[eRow['ma-phieu-nhap']] = {
                     order_id: ++orderId,
@@ -592,6 +592,8 @@ module.exports._createImportOrderFile = async (req, res, next) => {
                     _orders[eRow['ma-phieu-nhap']].fee_shipping = eRow['phi-van-chuyen'] || 0;
                     _orders[eRow['ma-phieu-nhap']].final_cost = eRow['tong-cong'] || 0;
                     _orders[eRow['ma-phieu-nhap']].note = eRow['ghi-chu'] || '';
+                } else {
+                    throw new Error(`400: Sản phẩm thứ ${i} không tồn tại!`);
                 }
             }
         });

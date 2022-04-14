@@ -265,7 +265,46 @@ module.exports._update = async (req, res, next) => {
             })(),
         };
         req['_product'] = _product;
-        let _attributes = [];
+        let _attributes = {};
+        product.attributes.map((eAttribute) => {
+            _attributes[eAttribute.attribute_id] = eAttribute;
+        });
+        let updateAttributes = [];
+        let insertAttributes = [];
+        if (req.body.attributes) {
+            req.body.attributes.map((eAttribute) => {
+                if (_attributes[eAttribute.attribute_id]) {
+                    delete eAttribute._id;
+                    delete eAttribute.attribute_id;
+                    delete eAttribute.product_id;
+                    delete eAttribute.create_date;
+                    delete eAttribute.creator_id;
+                    let _attribute = { ..._attributes[eAttribute.attribute_id], ...eAttribute };
+                    _attribute = {
+                        attribute_id: _attribute.attribute_id,
+                        product_id: _attribute.product_id,
+                        option: _attribute.option.toUpperCase(),
+                        values: (() => {
+                            return _attribute.values.map((eValue) => {
+                                return eValue.toUpperCase();
+                            });
+                        })(),
+                        create_date: _attribute.create_date,
+                        creator_id: _attribute.creator_id,
+                        last_update: moment().tz(TIMEZONE).format(),
+                        updater_id: req.user.user_id,
+                        active: _attribute.active,
+                        slug_option: stringHandle(_attribute.option, { createSlug: true }),
+                        slug_values: (() => {
+                            return _attribute.values.map((eValue) => {
+                                return stringHandle(eValue, { createSlug: true });
+                            });
+                        })(),
+                    };
+                } else {
+                }
+            });
+        }
         req.body.attributes.map((eAttribute) => {
             let exists = false;
             for (let i in product.attributes) {
@@ -287,13 +326,14 @@ module.exports._update = async (req, res, next) => {
                             });
                         })(),
                         create_date: _attribute.create_date,
-                        last_update: moment().tz(TIMEZONE).format(),
                         creator_id: _attribute.creator_id,
+                        last_update: moment().tz(TIMEZONE).format(),
+                        updater_id: req.user.user_id,
                         active: _attribute.active,
-                        slug_option: removeUnicode(String(_attribute.option), true).toLowerCase(),
+                        slug_option: stringHandle(String(_attribute.option), { createSlug: true }),
                         slug_values: (() => {
                             return _attribute.values.map((eValue) => {
-                                return removeUnicode(String(eValue), true).toLowerCase();
+                                return stringHandle(String(eValue), { createSlug: true });
                             });
                         })(),
                     };
@@ -325,7 +365,7 @@ module.exports._update = async (req, res, next) => {
                 _attributes.push(_attribute);
             }
         });
-        req['_attributes'] = _attributes;
+        req['_attributes'] = attributes;
         let _variants = [];
         if (!req.body.variants) {
             req.body.variants = [];
