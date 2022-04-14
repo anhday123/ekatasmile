@@ -1653,7 +1653,7 @@ module.exports._updateTransportOrder = async (req, res, next) => {
                 await client.db(req.user.database).collection('Inventories').insertMany(insertInventories);
             }
         }
-        if (_order.status == 'COMPLETE' && order.status != 'COMPLETE') {
+        if (_order.status == 'COMPLETE' && order.status == 'VERIFY') {
             _order['completer_id'] = Number(req.user.user_id);
             _order['complete_date'] = moment().tz(TIMEZONE).format();
             let locationMaxId = await client
@@ -1722,6 +1722,8 @@ module.exports._updateTransportOrder = async (req, res, next) => {
             if (insertInventories.length > 0) {
                 await client.db(req.user.database).collection('Inventories').insertMany(insertInventories);
             }
+        } else {
+            throw new Error(`400: Phiếu chuyển hàng chưa được xác nhận!`);
         }
         if (_order.status == 'CANCEL' && order.status != 'CANCEL') {
             _order['canceler_id'] = Number(req.user.user_id);
