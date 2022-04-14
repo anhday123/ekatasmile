@@ -34,6 +34,25 @@
 
 # Deploy
 
--   Đưa folder lên server qua git/ssh, di chuyển vào folder dự án, npm install, pm2 start index.js --name <tên dự án> --watch true
+-   Mac:
 
-scp -r ./out root@103.81.87.65:/var/www/gaucho/website-online/out
+    -   Setup (1 lần đầu tiên): Bỏ qua nếu đã thực hiện ở dự án khác
+        -   1: ssh-keygen -t rsa
+        -   4: ssh-copy-id root@103.81.87.65
+        -   5: nhập password: viesoftware
+    -   Steps:
+        -   1: Push code lên git:
+        -   2: chạy lệnh:
+            -   npm run deploy-sandbox với phiên bản sandbox
+            -   npm run deploy-production với phiên bản production
+
+-   Windows:
+
+    -   Setup (1 lần đầu tiên):
+        -   1: ssh-keygen
+        -   2: type C:\Users\<username>\.ssh\id_rsa.pub | ssh root@103.81.87.65 'cat >> .ssh/authorized_keys'
+    -   Steps:
+        -   1: Push code lên git:
+        -   2: chạy lệnh:
+            -   npm run deploy-sandbox với phiên bản sandbox
+            -   npm run deploy-production với phiên bản production

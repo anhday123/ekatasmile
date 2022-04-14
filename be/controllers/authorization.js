@@ -78,18 +78,18 @@ module.exports._register = async (req, res, next) => {
         req.body.username = String(req.body.username).trim().toLowerCase();
         req.body.email = String(req.body.email).trim().toLowerCase();
         req.body.password = bcrypt.hash(String(req.body.password));
-        if (/^((admin)|(root)|(app)|(login)|(register))$/gi.test(req.body.prefix)) {
+        if (/^((viesoftware)|(admin)|(root)|(app)|(login)|(register))$/gi.test(req.body.prefix)) {
             throw new Error(`400: Bạn không thể sử dụng tên doanh nghiệp này!`);
         }
-
-        let business = await client.db(SDB).collection('Business').findOne({ prefix: req.body.prefix });
-        let user = await client
-            .db(SDB)
-            .collection('Business')
-            .findOne({
-                $or: [{ username: req.body.username }, { email: { $ne: '', $eq: req.body.email } }],
-            });
-
+        let [business, user] = await Promise.all([
+            client.db(SDB).collection('Business').findOne({ prefix: req.body.prefix }),
+            client
+                .db(SDB)
+                .collection('Business')
+                .findOne({
+                    $or: [{ username: req.body.username }, { email: { $ne: '', $eq: req.body.email } }],
+                }),
+        ]);
         if (business) {
             throw new Error(`400: Tên doanh nghiệp đã được đăng ký!`);
         }
@@ -109,14 +109,17 @@ module.exports._register = async (req, res, next) => {
             verify_link: verifyLink,
             verify_timelife: moment().tz(TIMEZONE).add(5, `minutes`).format(),
         };
-        await mail.sendMail(req.body.email, `Yêu cầu xác thực`, verifyMail(otpCode, verifyLink));
-        await client.db(SDB).collection('VerifyLinks').insertOne(_verifyLink);
+        await Promise.all([
+            mail.sendMail(req.body.email, `Yêu cầu xác thực`, verifyMail(otpCode, verifyLink)),
+            client.db(SDB).collection('VerifyLinks').insertOne(_verifyLink),
+        ]);
         let verifyMessage = `[VIESOFTWARE] Mã OTP của quý khách là ${otpCode}`;
         sendSMS([req.body.username], verifyMessage, 2, 'VIESOFTWARE');
         business_id++;
         system_user_id++;
         let _business = {
             business_id: business_id,
+            system_user_id: system_user_id,
             prefix: req.body.prefix,
             business_name: req.body.business_name,
             database_name: DB,
@@ -143,13 +146,49 @@ module.exports._register = async (req, res, next) => {
                 }
                 return 'PHONE';
             })(),
+
+            system_user_id: system_user_id,
+            system_code: String(system_user_id).padStart(6, '0'),
+            user_id: 1,
+            code: String(1).padStart(6, '0'),
+            business_id: business_id,
+            username: req.body.username,
+            password: req.body.password,
+            system_role_id: 2,
+            role_id: 1,
+            email: req.body.email || '',
+            avatar: req.body.avatar || '',
+            first_name: req.body.first_name || '',
+            last_name: req.body.last_name || '',
+            name: req.body.first_name || '' + req.body.last_name || '',
+            birth_day: req.body.birth_day || moment().tz(TIMEZONE).format(),
+            address: req.body.address || '',
+            district: req.body.district || '',
+            province: req.body.province || '',
+            branch_id: 1,
+            store_id: 1,
+            otp_code: otpCode,
+            otp_timelife: moment().tz(TIMEZONE).add(5, 'minutes').format(),
+            last_login: moment().tz(TIMEZONE).format(),
+            create_date: moment().tz(TIMEZONE).format(),
+            creator_id: system_user_id,
+            last_update: moment().tz(TIMEZONE).format(),
+            updater_id: system_user_id,
+            active: false,
+            slug_business_name: stringHandle(req.body.business_name, {
+                createSlug: true,
+            }),
+            slug_name: removeUnicode(`${req.body.first_name || ''}${req.body.last_name || ''}`, true).toLowerCase(),
+            slug_address: removeUnicode(`${req.body.address || ''}`, true).toLowerCase(),
+            slug_district: removeUnicode(`${req.body.district || ''}`, true).toLowerCase(),
+            slug_province: removeUnicode(`${req.body.province || ''}`, true).toLowerCase(),
         };
         let _admin = {
-            user_id: -1,
+            user_id: 1,
             code: String(1).padStart(6, '0'),
             username: req.body.username,
             password: req.body.password,
-            role_id: -1,
+            role_id: 1,
             email: req.body.email || '',
             avatar: req.body.avatar || 'https://' + process.env.DOMAIN + '/app/logo.png',
             first_name: req.body.first_name || '',
@@ -169,15 +208,45 @@ module.exports._register = async (req, res, next) => {
             last_update: moment().tz(TIMEZONE).format(),
             updater_id: 1,
             active: false,
-            slug_name: stringHandle(req.body.first_name || '' + req.body.last_name || '', { createSlug: true }),
-            slug_address: stringHandle(req.body.address || '', { createSlug: true }),
-            slug_district: stringHandle(req.body.district || '', { createSlug: true }),
-            slug_province: stringHandle(req.body.province || '', { createSlug: true }),
+            slug_name: removeUnicode(`${req.body.first_name || ''}${req.body.last_name || ''}`, true).toLowerCase(),
+            slug_address: removeUnicode(`${req.body.address || ''}`, true).toLowerCase(),
+            slug_district: removeUnicode(`${req.body.district || ''}`, true).toLowerCase(),
+            slug_province: removeUnicode(`${req.body.province || ''}`, true).toLowerCase(),
+        };
+        let _employee = {
+            user_id: 2,
+            code: String(2).padStart(6, '0'),
+            username: 'nhanvienmacdinh',
+            password: 'nhanvienmacdinh',
+            role_id: 2,
+            email: '',
+            avatar: 'https://' + process.env.DOMAIN + '/app/logo.png',
+            first_name: 'Nhân viên mặc định',
+            last_name: '',
+            name: 'Nhân viên mặc định',
+            birth_day: moment().tz(TIMEZONE).format(),
+            address: '',
+            district: '',
+            province: '',
+            branch_id: 1,
+            store_id: 1,
+            otp_code: false,
+            otp_timelife: false,
+            last_login: moment().tz(TIMEZONE).format(),
+            create_date: moment().tz(TIMEZONE).format(),
+            creator_id: 1,
+            last_update: moment().tz(TIMEZONE).format(),
+            updater_id: 1,
+            active: true,
+            slug_name: removeUnicode('Nhân viên mặc định', true).toLowerCase(),
+            slug_address: removeUnicode('', true).toLowerCase(),
+            slug_district: removeUnicode('', true).toLowerCase(),
+            slug_province: removeUnicode('', true).toLowerCase(),
         };
         let _supplier = {
             supplier_id: 1,
             code: String(1).padStart(6, '0'),
-            name: 'Nhà cung cấp mặc định',
+            name: 'Mặc định',
             logo: 'https://' + process.env.DOMAIN + '/app/logo.png',
             phone: '',
             email: '',
@@ -189,10 +258,10 @@ module.exports._register = async (req, res, next) => {
             last_update: moment().tz(TIMEZONE).format(),
             updater_id: 1,
             active: true,
-            slug_name: stringHandle('Nhà cung cấp mặc định', { createSlug: true }),
-            slug_address: stringHandle('', { createSlug: true }),
-            slug_district: stringHandle('', { createSlug: true }),
-            slug_province: stringHandle('', { createSlug: true }),
+            slug_name: removeUnicode(String('Mặc định'), true).toLowerCase(),
+            slug_address: removeUnicode(String(''), true).toLowerCase(),
+            slug_district: removeUnicode(String(''), true).toLowerCase(),
+            slug_province: removeUnicode(String(''), true).toLowerCase(),
         };
         let _customer = {
             customer_id: 1,
