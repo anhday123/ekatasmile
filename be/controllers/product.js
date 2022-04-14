@@ -911,10 +911,26 @@ module.exports.importFileC = async (req, res, next) => {
                         }
                         return [];
                     })(),
-                    length: (!isNaN(Number(eRow['chieudai(cm)'])) && Number(eRow['chieudai(cm)'])) || 0,
-                    width: (!isNaN(Number(eRow['chieurong(cm)'])) && Number(eRow['chieurong(cm)'])) || 0,
-                    height: (!isNaN(Number(eRow['chieucao(cm)'])) && Number(eRow['chieucao(cm)'])) || 0,
-                    weight: (!isNaN(Number(eRow['khoiluong(g)'])) && Number(eRow['khoiluong(g)'])) || 0,
+                    length:
+                        (!isNaN(Number(eRow['chieudai(cm)'])) && Number(eRow['chieudai(cm)'])) ||
+                        (() => {
+                            throw new Error('400: Chiều dài không hợp lệ');
+                        })(),
+                    width:
+                        (!isNaN(Number(eRow['chieurong(cm)'])) && Number(eRow['chieurong(cm)'])) ||
+                        (() => {
+                            throw new Error('400: Chiều rộng không hợp lệ');
+                        })(),
+                    height:
+                        (!isNaN(Number(eRow['chieucao(cm)'])) && Number(eRow['chieucao(cm)'])) ||
+                        (() => {
+                            throw new Error('400: Chiều cao không hợp lệ');
+                        })(),
+                    weight:
+                        (!isNaN(Number(eRow['khoiluong(g)'])) && Number(eRow['khoiluong(g)'])) ||
+                        (() => {
+                            throw new Error('400: Khối lượng không hợp lệ');
+                        })(),
                     unit: eRow['donvi'] || '',
                     brand_id: _brands[eRow['_tenthuonghieu']].brand_id,
                     origin_code: _origins[eRow['_noixuatxu']]?.origin_code,
@@ -1043,7 +1059,11 @@ module.exports.importFileC = async (req, res, next) => {
                     })(),
                     supplier: _suppliers[eRow['_nhacungcap']]?.name,
                     import_price_default: eRow['gianhap'],
-                    price: eRow['giaban'],
+                    price:
+                        (!isNaN(Number(eRow['giaban'])) && Number(eRow['giaban'])) ||
+                        (() => {
+                            throw new Error('400: Giá bán không hợp lệ');
+                        })(),
                     enable_bulk_price: (() => {
                         if (
                             eRow['apdunggiabansi'] &&
@@ -1061,36 +1081,44 @@ module.exports.importFileC = async (req, res, next) => {
                             if (i == 0) {
                                 if (eRow[`soluongsiapdung`]) {
                                     let [minQuantity, maxQuantity] = eRow[`soluongsiapdung`].split('-');
-                                    bulkPrice['min_quantity_apply'] = Number(minQuantity);
-                                    bulkPrice['max_quantity_apply'] = Number(maxQuantity);
-                                    bulkPrice['price'] = Number(eRow[`giabansiapdung`]);
-                                    if (
-                                        isNaN(bulkPrice['min_quantity_apply']) ||
-                                        isNaN(bulkPrice['min_quantity_apply'])
-                                    ) {
-                                        throw new Error(`400: Số lượng sỉ áp dụng phải là số!`);
-                                    }
-                                    if (isNaN(bulkPrice['price'])) {
-                                        throw new Error('400: Giá bán sỉ áp dụng phải là số');
-                                    }
+                                    bulkPrice['min_quantity_apply'] =
+                                        (!isNaN(Number(minQuantity)) && Number(minQuantity)) ||
+                                        (() => {
+                                            throw new Error('400: Số lượng sỉ áp dụng phải là số!');
+                                        })();
+
+                                    bulkPrice['max_quantity_apply'] =
+                                        (!isNaN(Number(maxQuantity)) && Number(maxQuantity)) ||
+                                        (() => {
+                                            throw new Error('400: Số lượng sỉ áp dụng phải là số!');
+                                        })();
+                                    bulkPrice['price'] =
+                                        (!isNaN(Number(eRow['giabansiapdung'])) && Number(eRow['giabansiapdung'])) ||
+                                        (() => {
+                                            throw new Error('400: Giá bán sỉ áp dụng phải là số');
+                                        })();
                                 } else {
                                     break;
                                 }
                             } else {
                                 if (eRow[`soluongsiapdung_${i}`]) {
                                     let [minQuantity, maxQuantity] = eRow[`soluongsiapdung_${i}`].split('-');
-                                    bulkPrice['min_quantity_apply'] = Number(minQuantity);
-                                    bulkPrice['max_quantity_apply'] = Number(maxQuantity);
-                                    bulkPrice['price'] = Number(eRow[`giabansiapdung_${i}`]);
-                                    if (
-                                        isNaN(bulkPrice['min_quantity_apply']) ||
-                                        isNaN(bulkPrice['min_quantity_apply'])
-                                    ) {
-                                        throw new Error(`400: Số lượng sỉ áp dụng phải là số!`);
-                                    }
-                                    if (isNaN(bulkPrice['price'])) {
-                                        throw new Error('400: Giá bán sỉ áp dụng phải là số');
-                                    }
+                                    bulkPrice['min_quantity_apply'] =
+                                        (!isNaN(Number(minQuantity)) && Number(minQuantity)) ||
+                                        (() => {
+                                            throw new Error('400: Số lượng sỉ áp dụng phải là số!');
+                                        })();
+
+                                    bulkPrice['max_quantity_apply'] =
+                                        (!isNaN(Number(maxQuantity)) && Number(maxQuantity)) ||
+                                        (() => {
+                                            throw new Error('400: Số lượng sỉ áp dụng phải là số!');
+                                        })();
+                                    bulkPrice['price'] =
+                                        (!isNaN(Number(eRow['giabansiapdung'])) && Number(eRow['giabansiapdung'])) ||
+                                        (() => {
+                                            throw new Error('400: Giá bán sỉ áp dụng phải là số');
+                                        })();
                                 } else {
                                     break;
                                 }
