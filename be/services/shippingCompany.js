@@ -390,9 +390,7 @@ module.exports._update = async (req, res, next) => {
         .db(req.user.database)
         .collection(`Actions`)
         .insertOne(_action)
-    } catch (err) {
-      console.log(err)
-    }
+    } catch (err) {}
     res.send({ success: true, data: req.body })
   } catch (err) {
     next(err)
@@ -439,7 +437,6 @@ let uploadWSB = async (file) => {
         },
         (err, data) => {
           if (err) {
-            console.log(err)
           }
           resolve(
             'https://s3.ap-northeast-1.wasabisys.com/admin-order/' +
@@ -492,6 +489,14 @@ module.exports._importCompareCard = async (req, res, next) => {
         name: 'CardConfirmShipping',
       })
 
+    if (appSetting == undefined) {
+      appSetting = { value: 1 }
+      await client.db(req.user.database).collection('AppSetting').insert({
+        value: 1,
+        name: 'CardConfirmShipping',
+      })
+    }
+
     card_confirm_shipping.card_id = parseInt(appSetting.value) + 1
     await client
       .db(DB)
@@ -521,7 +526,6 @@ module.exports._importCompareCard = async (req, res, next) => {
         item[`${convertToSlug(i)}`] = item[`${i}`]
         return item
       })
-      console.log(item)
       var valid = validate(item, fields)
       if (!valid)
         throw new Error(
