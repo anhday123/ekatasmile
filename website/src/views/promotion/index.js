@@ -239,7 +239,7 @@ export default function Promotion() {
   ]
   const openNotification = (e) => {
     notification.success({
-      description: e ? t('promotion.active_successful') : t('promotion.deactivation_successful'),
+      description: e ? 'Kích hoạt khuyến mãi thành công' : 'Hủy kích hoạt khuyến mãi thành công',
     })
   }
 
@@ -272,14 +272,14 @@ export default function Promotion() {
       if (res.status === 200) {
         if (res.data.success) {
           _getPromotions()
-          notification.success({ message: t('promotion.delete_promotion_success') })
+          notification.success({ message: 'Xóa khuyến mãi thành công' })
         } else
           notification.error({
-            message: res.data.message || t('promotion.delete_failed'),
+            message: res.data.message || 'Xóa khuyến mãi thất bại',
           })
       } else
         notification.error({
-          message: res.data.message || t('promotion.delete_failed'),
+          message: res.data.message || 'Xóa khuyến mãi thất bại',
         })
     } catch (err) {
       console.log(err)
@@ -432,14 +432,14 @@ export default function Promotion() {
         >
           <Space>
             <Permission permissions={[PERMISSIONS.them_khuyen_mai]}>
-              <ModalAddPromotion>{t('promotion.add_promotion')}</ModalAddPromotion>
+              <ModalAddPromotion>Thêm khuyến mãi</ModalAddPromotion>
             </Permission>
           </Space>
         </TitlePage>
         <Row style={{ marginTop: 15 }} justify="space-between">
           <Input
             style={{ width: '28%' }}
-            placeholder='Tất cả loại khuyến mãi'
+            placeholder="Tất cả loại khuyến mãi"
             // bordered={false}
             onChange={_search}
             allowClear
@@ -841,7 +841,7 @@ export default function Promotion() {
           setDataUpdate([])
         }}
         title={
-          dataUpdate.length === 0 ? t('promotion.add_promotion') : t('promotion.edit_promotion')
+          dataUpdate.length === 0 ? 'Thêm khuyến mãi' : 'Cập nhật khuyến mãi'
         }
         width="75%"
       >
