@@ -25,7 +25,6 @@ import {
   Switch,
   Modal,
   Tooltip,
-  Col,
 } from 'antd'
 
 //icons
@@ -216,20 +215,8 @@ export default function Category() {
 
   const _addOrUpdateCategory = async () => {
     try {
-      await form.validateFields()
-      let checkCondition = false
-      conditions.map((item) => {
-        if (item.value) {
-          checkCondition = true
-        } else {
-          checkCondition = false
-        }
-      })
-      if (!checkCondition) {
-        notification.error({ message: 'Từ khóa ở bộ điều kiện ko đc để trống' })
-        return
-      }
       dispatch({ type: ACTION.LOADING, data: true })
+      await form.validateFields()
       const dataForm = form.getFieldsValue()
 
       const image = await uploadFile(fileUpload)
@@ -369,88 +356,71 @@ export default function Category() {
                 </Row>
                 {conditions.map((condition, index) => (
                   <>
-                    <Row
-                      gutter={[10, 10]}
-                      wrap={false}
-                      justify="space-between"
-                      style={{ marginTop: 20 }}
-                    >
-                      <Col span={7}>
-                        <Select
-                          style={{ width: '100%' }}
-                          value={condition.name}
-                          onChange={(value) => {
-                            const conditionsNew = [...conditions]
-                            conditionsNew[index].name = value
-                            const labelFind = ARCHIVES.find((e) => e.actives.includes(value))
-                            if (labelFind)
-                              conditionsNew[index].operator = Object.keys(labelFind.name)[0]
-                            setConditions([...conditionsNew])
-                          }}
-                        >
-                          {PRODUCT_TYPES.map((objectType, index) => {
-                            const type = Object.keys(objectType)
+                    <Row wrap={false} justify="space-between" style={{ marginTop: 20 }}>
+                      <Select
+                        style={{ width: '50%' }}
+                        value={condition.name}
+                        onChange={(value) => {
+                          const conditionsNew = [...conditions]
+                          conditionsNew[index].name = value
+                          const labelFind = ARCHIVES.find((e) => e.actives.includes(value))
+                          if (labelFind)
+                            conditionsNew[index].operator = Object.keys(labelFind.name)[0]
+                          setConditions([...conditionsNew])
+                        }}
+                      >
+                        {PRODUCT_TYPES.map((objectType, index) => {
+                          const type = Object.keys(objectType)
 
-                            return (
-                              <Select.Option key={index} value={type[0]}>
-                                {objectType[type[0]]}
-                              </Select.Option>
-                            )
-                          })}
-                        </Select>
-                      </Col>
-                      <Col span={7}>
-                        <Select
-                          style={{ width: '100%' }}
-                          value={condition.operator}
-                          onChange={(value) => {
-                            const conditionsNew = [...conditions]
-                            conditionsNew[index].operator = value
-                            setConditions([...conditionsNew])
-                          }}
-                        >
-                          {ARCHIVES.map((archive, index) => (
-                            <Select.Option key={index} value={Object.keys(archive.name)[0]}>
-                              {archive.name[Object.keys(archive.name)[0]]}
+                          return (
+                            <Select.Option key={index} value={type[0]}>
+                              {objectType[type[0]]}
                             </Select.Option>
-                          ))}
-                        </Select>
-                      </Col>
-                      <Col span={7}>
-                        <div>
-                          <Input
-                            placeholder="Từ khóa"
-                            defaultValue={condition.value}
-                            onBlur={(e) => {
-                              const conditionsNew = [...conditions]
-                              conditionsNew[index].value = e.target.value || ''
-                              setConditions([...conditionsNew])
-                            }}
-                            style={{ width: '100%' }}
-                          />
-                          <div
-                            style={{
-                              color: 'red',
-                              fontSize: 12,
-                              display: condition.value && 'none',
-                              marginTop: 5,
-                            }}
-                          >
-                            * Không được để trống
-                          </div>
-                        </div>
-                      </Col>
-                      <Col span={3}>
-                        <Button
-                          onClick={() => {
+                          )
+                        })}
+                      </Select>
+                      <Select
+                        style={{ width: '50%' }}
+                        value={condition.operator}
+                        onChange={(value) => {
+                          const conditionsNew = [...conditions]
+                          conditionsNew[index].operator = value
+                          setConditions([...conditionsNew])
+                        }}
+                      >
+                        {ARCHIVES.map((archive, index) => (
+                          <Select.Option key={index} value={Object.keys(archive.name)[0]}>
+                            {archive.name[Object.keys(archive.name)[0]]}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                      <div style={{ width: '50%' }}>
+                        <Input
+                          placeholder="Từ khóa"
+                          defaultValue={condition.value}
+                          onBlur={(e) => {
                             const conditionsNew = [...conditions]
-                            conditionsNew.splice(index, 1)
+                            conditionsNew[index].value = e.target.value || ''
                             setConditions([...conditionsNew])
                           }}
+                          style={{ width: '100%' }}
+                        />
+                        <div
+                          style={{ color: 'red', fontSize: 12, display: condition.value && 'none' }}
                         >
-                          <DeleteOutlined />
-                        </Button>
-                      </Col>
+                          Không được để trống
+                        </div>
+                      </div>
+
+                      <Button
+                        onClick={() => {
+                          const conditionsNew = [...conditions]
+                          conditionsNew.splice(index, 1)
+                          setConditions([...conditionsNew])
+                        }}
+                      >
+                        <DeleteOutlined />
+                      </Button>
                     </Row>
                     {/* <Row
                     style={{

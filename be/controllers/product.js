@@ -6,7 +6,6 @@ const DB = process.env.DATABASE;
 const productService = require(`../services/product`);
 
 const XLSX = require('xlsx');
-const { stringHandle } = require('../utils/string-handle');
 
 let removeUnicode = (text, removeSpace) => {
     /*
@@ -46,33 +45,51 @@ module.exports._create = async (req, res, next) => {
             }
         });
         [req.body] = req.body.products;
-
-        let productMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Products' });
-        let productId = (productMaxId && productMaxId.value) || 0;
-        let attributeMaxId = await client
-            .db(req.user.database)
-            .collection('AppSetting')
-            .findOne({ name: 'Attributes' });
-        let attributeId = (attributeMaxId && attributeMaxId.value) || 0;
-        let variantMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Variants' });
-        let variantId = (variantMaxId && variantMaxId.value) || 0;
-        let supplier = await client
-            .db(req.user.database)
-            .collection('Suppliers')
-            .findOne({ supplier_id: Number(req.body.supplier_id) });
-
+        let [productMaxId, attributeMaxId, variantMaxId, supplier] = await Promise.all([
+            client.db(req.user.database).collection('AppSetting').findOne({ name: 'Products' }),
+            client.db(req.user.database).collection('AppSetting').findOne({ name: 'Attributes' }),
+            client.db(req.user.database).collection('AppSetting').findOne({ name: 'Variants' }),
+            client
+                .db(req.user.database)
+                .collection('Suppliers')
+                .findOne({ supplier_id: Number(req.body.supplier_id) }),
+        ]).catch((err) => {
+            throw new Error(err.message);
+        });
+        let productId = (() => {
+            if (productMaxId && productMaxId.value) {
+                return productMaxId.value;
+            }
+            return 0;
+        })();
+        let attributeId = (() => {
+            if (attributeMaxId && attributeMaxId.value) {
+                return attributeMaxId.value;
+            }
+            return 0;
+        })();
+        let variantId = (() => {
+            if (variantMaxId && variantMaxId.value) {
+                return variantMaxId.value;
+            }
+            return 0;
+        })();
         if (req.body.sku == undefined) throw new Error('400: Vui lòng truyền mã định danh sản phẩm (SKU)');
+
         var productAlready = await client.db(req.user.database).collection('Products').findOne({
             sku: req.body.sku,
         });
+
         if (productAlready != undefined) throw new Error(`400: Mã định danh sản phẩm (SKU) ${req.body.sku} đã tồn tại`);
+
+        productId++;
         req['_product'] = {
-            product_id: ++productId,
+            product_id: productId,
             code: String(productId).padStart(6, '0'),
             sku: req.body.sku,
             images: req.body.images || [],
-            name: req.body.name,
-            slug: stringHandle(req.body.name, { createSlug: true }),
+            name: String(req.body.name).toUpperCase(),
+            slug: removeUnicode(String(req.body.name), false).toLowerCase().replace(/\s/gi, '-'),
             supplier_id: req.body.supplier_id || [],
             category_id: req.body.category_id || [],
             tax_id: req.body.tax_id || [],
@@ -94,11 +111,11 @@ module.exports._create = async (req, res, next) => {
             last_update: moment().tz(TIMEZONE).format(),
             updater_id: req.user.user_id,
             active: true,
-            slug_name: stringHandle(req.body.name, { createSlug: true }),
+            slug_name: removeUnicode(String(req.body.name), true).toLowerCase(),
             slug_tags: (() => {
                 if (req.body.tags) {
                     req.body.tags.map((tag) => {
-                        return stringHandle(tag, { createSlug: true });
+                        return removeUnicode(String(tag), true).toLowerCase();
                     });
                 }
                 return [];
@@ -107,10 +124,11 @@ module.exports._create = async (req, res, next) => {
         req['_attributes'] = [];
         req.body.attributes.map((eAttribute) => {
             if (eAttribute) {
+                attributeId++;
                 req._attributes.push({
-                    attribute_id: ++attributeId,
+                    product_id: Number(productId),
+                    attribute_id: Number(attributeId),
                     code: String(attributeId).padStart(6, '0'),
-                    product_id: productId,
                     option: eAttribute.option,
                     values: eAttribute.values,
                     create_date: moment().tz(TIMEZONE).format(),
@@ -118,10 +136,10 @@ module.exports._create = async (req, res, next) => {
                     last_update: moment().tz(TIMEZONE).format(),
                     updater_id: req.user.user_id,
                     active: true,
-                    slug_option: stringHandle(eAttribute.option, { createSlug: true }),
+                    slug_option: removeUnicode(String(eAttribute.option), true).toLowerCase(),
                     slug_values: (() => {
                         return eAttribute.values.map((eValue) => {
-                            return stringHandle(eValue, { createSlug: true });
+                            return removeUnicode(String(eValue), true).toLowerCase();
                         });
                     })(),
                 });
@@ -130,12 +148,13 @@ module.exports._create = async (req, res, next) => {
         req['_variants'] = [];
         req.body.variants.map((eVariant) => {
             if (eVariant) {
+                variantId++;
                 req._variants.push({
-                    variant_id: ++variantId,
+                    variant_id: Number(variantId),
                     code: String(variantId).padStart(6, '0'),
-                    product_id: productId,
-                    title: eVariant.title,
-                    sku: eVariant.sku,
+                    product_id: Number(productId),
+                    title: String(eVariant.title).toUpperCase(),
+                    sku: String(eVariant.sku).toUpperCase(),
                     image: eVariant.image || [],
                     options: eVariant.options || [],
                     ...(() => {
@@ -148,37 +167,42 @@ module.exports._create = async (req, res, next) => {
                         }
                         return {};
                     })(),
-                    supplier: (() => {
+                    supplier: ((supplier) => {
                         if (supplier && supplier.name) {
                             return supplier.name;
                         }
                         return '';
-                    })(),
+                    })(supplier),
                     import_price_default: eVariant.import_price || 0,
                     price: eVariant.price,
                     enable_bulk_price: eVariant.enable_bulk_price || false,
                     bulk_prices: eVariant.bulk_prices,
                     create_date: moment().tz(TIMEZONE).format(),
-                    creator_id: req.user.user_id,
                     last_update: moment().tz(TIMEZONE).format(),
-                    updater_id: req.user.user_id,
+                    creator_id: Number(req.user.user_id),
                     active: true,
-                    slug_title: stringHandle(eVariant.title, { createSlug: true }),
+                    slug_title: removeUnicode(String(eVariant.title), true).toLowerCase(),
                 });
             }
         });
-        await client
-            .db(req.user.database)
-            .collection('AppSetting')
-            .updateOne({ name: 'Products' }, { $set: { name: 'Products', value: productId } }, { upsert: true });
-        await client
-            .db(req.user.database)
-            .collection('AppSetting')
-            .updateOne({ name: 'Attributes' }, { $set: { name: 'Attributes', value: attributeId } }, { upsert: true });
-        await client
-            .db(req.user.database)
-            .collection('AppSetting')
-            .updateOne({ name: 'Variants' }, { $set: { name: 'Variants', value: variantId } }, { upsert: true });
+        await Promise.all([
+            client
+                .db(req.user.database)
+                .collection('AppSetting')
+                .updateOne({ name: 'Products' }, { $set: { name: 'Products', value: productId } }, { upsert: true }),
+            client
+                .db(req.user.database)
+                .collection('AppSetting')
+                .updateOne(
+                    { name: 'Attributes' },
+                    { $set: { name: 'Attributes', value: attributeId } },
+                    { upsert: true }
+                ),
+            client
+                .db(req.user.database)
+                .collection('AppSetting')
+                .updateOne({ name: 'Variants' }, { $set: { name: 'Variants', value: variantId } }, { upsert: true }),
+        ]);
         await productService._create(req, res, next);
     } catch (err) {
         next(err);
@@ -211,16 +235,30 @@ module.exports._update = async (req, res, next) => {
                 },
             ])
             .toArray();
-        if (!product) {
-            throw new Error('400: Sản phẩm không tồn tại!');
-        }
-        let attributeMaxId = await client
-            .db(req.user.database)
-            .collection('AppSetting')
-            .findOne({ name: 'Attributes' });
-        let attributeId = (attributeMaxId && attributeMaxId.value) || 0;
-        let variantMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Variants' });
-        let variantId = (variantMaxId && variantMaxId.value) || 0;
+        let [attribute_id, variant_id] = await Promise.all([
+            client
+                .db(req.user.database)
+                .collection('AppSetting')
+                .findOne({ name: 'Attributes' })
+                .then((doc) => {
+                    if (doc && doc.value) {
+                        return doc.value;
+                    }
+                    return 0;
+                }),
+            client
+                .db(req.user.database)
+                .collection('AppSetting')
+                .findOne({ name: 'Variants' })
+                .then((doc) => {
+                    if (doc && doc.value) {
+                        return doc.value;
+                    }
+                    return 0;
+                }),
+        ]).catch((err) => {
+            throw new Error(err.message);
+        });
         delete req.body._id;
         delete req.body.product_id;
         delete req.body.code;
@@ -230,10 +268,11 @@ module.exports._update = async (req, res, next) => {
         let _product = { ...product, ...req.body };
         _product = {
             product_id: _product.product_id,
-            code: _product.code,
-            name: _product.name,
-            sku: _product.sku,
-            slug: stringHandle(_product.name, { createSlug: true }),
+            code: _product.code || String(_product.product_id).padStart(6, '0'),
+            name: String(_product.name).toUpperCase(),
+            sku: String(_product.sku).toUpperCase(),
+            images: _product.images || [],
+            slug: removeUnicode(String(_product.name || ''), false).replace(/\s/g, '-'),
             supplier_id: _product.supplier_id || 0,
             category_id: _product.category_id || [],
             tax_id: _product.tax_id || [],
@@ -255,55 +294,19 @@ module.exports._update = async (req, res, next) => {
             last_update: moment().tz(TIMEZONE).format(),
             creator_id: _product.creator_id,
             active: _product.active,
-            slug_name: stringHandle(_product.name, { createSlug: true }),
+            slug_name: removeUnicode(String(_product.name || ''), true).toLowerCase(),
             slug_tags: (() => {
                 if (_product.tags) {
                     return _product.tags.map((tag) => {
-                        return stringHandle(tag, { createSlug: true });
+                        return removeUnicode(String(tag), true).toLowerCase();
                     });
                 }
             })(),
         };
         req['_product'] = _product;
-        let _attributes = {};
-        product.attributes.map((eAttribute) => {
-            _attributes[eAttribute.attribute_id] = eAttribute;
-        });
-        let updateAttributes = [];
-        let insertAttributes = [];
-        if (req.body.attributes) {
-            req.body.attributes.map((eAttribute) => {
-                if (_attributes[eAttribute.attribute_id]) {
-                    delete eAttribute._id;
-                    delete eAttribute.attribute_id;
-                    delete eAttribute.product_id;
-                    delete eAttribute.create_date;
-                    delete eAttribute.creator_id;
-                    let _attribute = { ..._attributes[eAttribute.attribute_id], ...eAttribute };
-                    _attribute = {
-                        attribute_id: _attribute.attribute_id,
-                        product_id: _attribute.product_id,
-                        option: _attribute.option.toUpperCase(),
-                        values: (() => {
-                            return _attribute.values.map((eValue) => {
-                                return eValue.toUpperCase();
-                            });
-                        })(),
-                        create_date: _attribute.create_date,
-                        creator_id: _attribute.creator_id,
-                        last_update: moment().tz(TIMEZONE).format(),
-                        updater_id: req.user.user_id,
-                        active: _attribute.active,
-                        slug_option: stringHandle(_attribute.option, { createSlug: true }),
-                        slug_values: (() => {
-                            return _attribute.values.map((eValue) => {
-                                return stringHandle(eValue, { createSlug: true });
-                            });
-                        })(),
-                    };
-                } else {
-                }
-            });
+        let _attributes = [];
+        if (!req.body.attributes) {
+            req.body.attributes = [];
         }
         req.body.attributes.map((eAttribute) => {
             let exists = false;
@@ -326,14 +329,13 @@ module.exports._update = async (req, res, next) => {
                             });
                         })(),
                         create_date: _attribute.create_date,
-                        creator_id: _attribute.creator_id,
                         last_update: moment().tz(TIMEZONE).format(),
-                        updater_id: req.user.user_id,
+                        creator_id: _attribute.creator_id,
                         active: _attribute.active,
-                        slug_option: stringHandle(String(_attribute.option), { createSlug: true }),
+                        slug_option: removeUnicode(String(_attribute.option), true).toLowerCase(),
                         slug_values: (() => {
                             return _attribute.values.map((eValue) => {
-                                return stringHandle(String(eValue), { createSlug: true });
+                                return removeUnicode(String(eValue), true).toLowerCase();
                             });
                         })(),
                     };
@@ -365,7 +367,7 @@ module.exports._update = async (req, res, next) => {
                 _attributes.push(_attribute);
             }
         });
-        req['_attributes'] = attributes;
+        req['_attributes'] = _attributes;
         let _variants = [];
         if (!req.body.variants) {
             req.body.variants = [];
@@ -911,10 +913,10 @@ module.exports.importFileC = async (req, res, next) => {
                         }
                         return [];
                     })(),
-                    length: (!isNaN(Number(eRow['chieudai(cm)'])) && Number(eRow['chieudai(cm)'])) || 0,
-                    width: (!isNaN(Number(eRow['chieurong(cm)'])) && Number(eRow['chieurong(cm)'])) || 0,
-                    height: (!isNaN(Number(eRow['chieucao(cm)'])) && Number(eRow['chieucao(cm)'])) || 0,
-                    weight: (!isNaN(Number(eRow['khoiluong(g)'])) && Number(eRow['khoiluong(g)'])) || 0,
+                    length: eRow['chieudai(cm)'] || 0,
+                    width: eRow['chieurong(cm)'] || 0,
+                    height: eRow['chieucao(cm)'] || 0,
+                    weight: eRow['khoiluong(g)'] || 0,
                     unit: eRow['donvi'] || '',
                     brand_id: _brands[eRow['_tenthuonghieu']].brand_id,
                     origin_code: _origins[eRow['_noixuatxu']]?.origin_code,

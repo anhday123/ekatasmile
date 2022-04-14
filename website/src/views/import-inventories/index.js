@@ -30,7 +30,6 @@ import {
   notification,
   Input,
   Tooltip,
-  Affix,
 } from 'antd'
 
 //icons
@@ -436,139 +435,134 @@ export default function ImportInventories() {
   return (
     <div className="card">
       <Print />
-      <Affix offsetTop={60}>
-        <TitlePage title="Nhập hàng">
-          <Space>
-            <Button
-              size="large"
-              onClick={() => setParamsFilter({ page: 1, page_size: 20 })}
-              style={{ display: Object.keys(paramsFilter).length === 2 && 'none' }}
-              danger
-              type="primary"
-            >
-              Xóa bộ lọc
-            </Button>
-            <Button
-              size="large"
-              onClick={toggleProductsToSupplier}
-              icon={<VerticalAlignTopOutlined />}
-              style={{ backgroundColor: 'green', borderColor: 'green', color: 'white' }}
-            >
-              Xuất excel
-            </Button>
-            <Modal
-              style={{ top: 20 }}
-              footer={null}
-              title="Xuất file excel sản phẩm từ nhà cung cấp"
-              width={920}
-              visible={visibleProductsToSupplier}
-              onCancel={toggleProductsToSupplier}
-            >
-              <Row justify="space-between" wrap={false} align="middle">
-                <Select
-                  value={supplierId}
-                  onChange={(value) => {
-                    setSupplierId(value)
-                    _getProductsToSupplier(value)
-                  }}
-                  showSearch
-                  style={{ width: 250, marginBottom: 10 }}
-                  placeholder="Chọn nhà cung cấp"
-                >
-                  {suppliers.map((supplier, index) => (
-                    <Select.Option key={index} value={supplier.supplier_id}>
-                      {supplier.name}
-                    </Select.Option>
-                  ))}
-                </Select>
-                <Button
-                  onClick={() => {
-                    const dataExport = productsSupplier.map((record, index) => ({
-                      STT: index + 1,
-                      'Tên sản phẩm': record.product_name || '',
-                      'Mã sản phẩm': record.product_sku || '',
-                      'Loại sản phẩm': record.categories || '',
-                      'Mã phiên bản': record.sku || '',
-                      'Nhà cung cấp': record.supplier || '',
-                      'Đơn vị': record.unit || '',
-                      'Đơn giá nhập': record.import_price || '',
-                      'Số lượng nhập': record.quantity || '',
-                    }))
-                    exportToCSV(dataExport, 'Danh sách sản phẩm')
-                  }}
-                  type="primary"
-                  style={{ display: !productsSupplier.length && 'none' }}
-                >
-                  Tải xuống
-                </Button>
+      <TitlePage title="Nhập hàng">
+        <Space>
+          <Button
+            size="large"
+            onClick={() => setParamsFilter({ page: 1, page_size: 20 })}
+            style={{ display: Object.keys(paramsFilter).length === 2 && 'none' }}
+            danger
+            type="primary"
+          >
+            Xóa bộ lọc
+          </Button>
+          <Button
+            size="large"
+            onClick={toggleProductsToSupplier}
+            icon={<VerticalAlignTopOutlined />}
+            style={{ backgroundColor: 'green', borderColor: 'green', color: 'white' }}
+          >
+            Xuất excel
+          </Button>
+          <Modal
+            style={{ top: 20 }}
+            footer={null}
+            title="Xuất file excel sản phẩm từ nhà cung cấp"
+            width={920}
+            visible={visibleProductsToSupplier}
+            onCancel={toggleProductsToSupplier}
+          >
+            <Row justify="space-between" wrap={false} align="middle">
+              <Select
+                value={supplierId}
+                onChange={(value) => {
+                  setSupplierId(value)
+                  _getProductsToSupplier(value)
+                }}
+                showSearch
+                style={{ width: 250, marginBottom: 10 }}
+                placeholder="Chọn nhà cung cấp"
+              >
+                {suppliers.map((supplier, index) => (
+                  <Select.Option key={index} value={supplier.supplier_id}>
+                    {supplier.name}
+                  </Select.Option>
+                ))}
+              </Select>
+              <Button
+                onClick={() => {
+                  const dataExport = productsSupplier.map((record, index) => ({
+                    STT: index + 1,
+                    'Tên sản phẩm': record.product_name || '',
+                    'Mã sản phẩm': record.product_sku || '',
+                    'Loại sản phẩm': record.categories || '',
+                    'Mã phiên bản': record.sku || '',
+                    'Nhà cung cấp': record.supplier || '',
+                    'Đơn vị': record.unit || '',
+                    'Đơn giá nhập': record.import_price || '',
+                    'Số lượng nhập': record.quantity || '',
+                  }))
+                  exportToCSV(dataExport, 'Danh sách sản phẩm')
+                }}
+                type="primary"
+                style={{ display: !productsSupplier.length && 'none' }}
+              >
+                Tải xuống
+              </Button>
+            </Row>
+            <Table
+              size="small"
+              loading={loading}
+              dataSource={productsSupplier}
+              columns={columnsProductsToSupplier}
+              pagination={false}
+              style={{ width: '100%' }}
+              scroll={{ y: 450 }}
+            />
+          </Modal>
+
+          <ImportCSV
+            reset={() => setBranchId()}
+            keyForm={{ branch_id: branchId || '' }}
+            size="large"
+            txt="Nhập excel"
+            upload={uploadOrdersImportInventory}
+            reload={_getOrdersImportInventory}
+            title={
+              <Row wrap={false} align="middle">
+                <div style={{ marginRight: 20, fontWeight: 600 }}>Nhập hàng bằng file excel</div>
+
+                <div>
+                  <div style={{ fontSize: 13 }}>Chọn chi nhánh</div>
+                  <Select
+                    showSearch
+                    optionFilterProp="children"
+                    value={branchId}
+                    onChange={setBranchId}
+                    placeholder="Chọn chi nhánh"
+                    size="small"
+                    style={{ width: 250 }}
+                    allowClear
+                  >
+                    {branches.map((branch, index) => (
+                      <Select.Option key={index} value={branch.branch_id}>
+                        {branch.name}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </div>
               </Row>
-              <Table
-                size="small"
-                loading={loading}
-                dataSource={productsSupplier}
-                columns={columnsProductsToSupplier}
-                pagination={false}
-                style={{ width: '100%' }}
-                scroll={{ y: 450 }}
-              />
-            </Modal>
+            }
+            fileName="nhap_kho_mau"
+            fileTemplated={
+              fileTemplated.length
+                ? fileTemplated
+                : 'https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/04/06/3a3da223-8140-4ca3-8d94-28492cf4a7bc/nhap_kho_mau.xlsx'
+            }
+            customFileTemplated={fileTemplated.length ? true : false}
+          />
+          <SettingColumns
+            columns={columns}
+            setColumns={setColumns}
+            columnsDefault={columnsImportInventories}
+            nameColumn="columnsImportInventories"
+          />
+          <Button size="large" type="primary" onClick={() => history.push(ROUTES.IMPORT_INVENTORY)}>
+            Tạo đơn nhập hàng
+          </Button>
+        </Space>
+      </TitlePage>
 
-            <ImportCSV
-              reset={() => setBranchId()}
-              keyForm={{ branch_id: branchId || '' }}
-              size="large"
-              txt="Nhập excel"
-              upload={uploadOrdersImportInventory}
-              reload={_getOrdersImportInventory}
-              title={
-                <Row wrap={false} align="middle">
-                  <div style={{ marginRight: 20, fontWeight: 600 }}>Nhập hàng bằng file excel</div>
-
-                  <div>
-                    <div style={{ fontSize: 13 }}>Chọn chi nhánh</div>
-                    <Select
-                      showSearch
-                      optionFilterProp="children"
-                      value={branchId}
-                      onChange={setBranchId}
-                      placeholder="Chọn chi nhánh"
-                      size="small"
-                      style={{ width: 250 }}
-                      allowClear
-                    >
-                      {branches.map((branch, index) => (
-                        <Select.Option key={index} value={branch.branch_id}>
-                          {branch.name}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </div>
-                </Row>
-              }
-              fileName="nhap_kho_mau"
-              fileTemplated={
-                fileTemplated.length
-                  ? fileTemplated
-                  : 'https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/04/06/3a3da223-8140-4ca3-8d94-28492cf4a7bc/nhap_kho_mau.xlsx'
-              }
-              customFileTemplated={fileTemplated.length ? true : false}
-            />
-            <SettingColumns
-              columns={columns}
-              setColumns={setColumns}
-              columnsDefault={columnsImportInventories}
-              nameColumn="columnsImportInventories"
-            />
-            <Button
-              size="large"
-              type="primary"
-              onClick={() => history.push(ROUTES.IMPORT_INVENTORY)}
-            >
-              Tạo đơn nhập hàng
-            </Button>
-          </Space>
-        </TitlePage>
-      </Affix>
       <div style={{ marginTop: 10 }}>
         <Row style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}>
           {/* <Space wrap={true}> */}

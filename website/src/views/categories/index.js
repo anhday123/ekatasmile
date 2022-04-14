@@ -32,7 +32,6 @@ import {
   notification,
   DatePicker,
   Tag,
-  Affix,
 } from 'antd'
 
 //icons
@@ -593,7 +592,6 @@ export default function Category() {
 
   return (
     <div className="card">
-      <Affix offsetTop={60}>
       <TitlePage title="Nhóm sản phẩm">
         <div>
           <Button
@@ -610,7 +608,6 @@ export default function Category() {
           </Button>
         </div>
       </TitlePage>
-      </Affix>
       <div style={{ marginBottom: 15 }}>
         <Row style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}>
           <Col xs={24} sm={24} md={24} lg={10} xl={10}>

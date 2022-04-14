@@ -72,9 +72,6 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
         address: values.address || '',
         province: values.province || '',
         district: values.district || '',
-        province_id: wardValue.province_id || '',
-        district_id: wardValue.district_id || '',
-        ward_code: wardValue.ward_code || '',
         ward: wardValue,
         balance: [],
       }
@@ -331,7 +328,6 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
               showSearch
               onChange={(e) => {
                 const value = ward.filter((value) => value.ward_name === e)
-                // console.log(value)
                 value.map((item) => setWardValue(item))
               }}
               optionFilterProp="children"

@@ -1,41 +1,25 @@
 import React, { useEffect, useState } from 'react'
 
 //antd
-import {
-  Form,
-  Drawer,
-  Row,
-  Col,
-  Button,
-  Input,
-  Select,
-  Upload,
-  notification,
-  Checkbox,
-  Space,
-} from 'antd'
+import { Form, Drawer, Row, Col, Button, Input, Select, Upload, notification, Checkbox } from 'antd'
 
 //icons
-import { ArrowLeftOutlined, LoadingOutlined, PlusOutlined } from '@ant-design/icons'
+import { LoadingOutlined, PlusOutlined } from '@ant-design/icons'
 
 //apis
 import { getWards, getDistricts, getProvinces } from 'apis/address'
 import { uploadFile } from 'apis/upload'
 import { addShipping, updateShipping } from 'apis/shipping'
-import { getEmployees } from 'apis/employee'
-import TitlePage from 'components/title-page'
-import { ROUTES } from 'consts'
-import { useHistory } from 'react-router-dom'
 
 const { Option } = Select
 export default function ShippingForm({ children, reloadData, record }) {
   const [form] = Form.useForm()
-  const [employees, setEmployees] = useState([])
+
   const [image, setImage] = useState('')
   const [loading, setLoading] = useState(false)
   const [visible, setVisible] = useState(false)
   const toggle = () => setVisible(!visible)
-  const history = useHistory()
+
   const [districtMain, setDistrictMain] = useState([])
   const [districtsDefault, setDistrictsDefault] = useState([])
   const [provinces, setProvinces] = useState([])
@@ -93,15 +77,6 @@ export default function ShippingForm({ children, reloadData, record }) {
     }
   }
 
-  const _getEmployees = async () => {
-    try {
-      const res = await getEmployees()
-      if (res.status === 200) setEmployees(res.data.data)
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
   const _getProvinces = async (params) => {
     try {
       const res = await getProvinces(params)
@@ -139,7 +114,6 @@ export default function ShippingForm({ children, reloadData, record }) {
     _getProvinces()
     _getDistricts()
     _getWards()
-    _getEmployees()
   }, [])
 
   useEffect(() => {
@@ -155,214 +129,184 @@ export default function ShippingForm({ children, reloadData, record }) {
   }, [visible])
 
   return (
-    <div className="card">
-      <TitlePage
-        title={
-          <Row
-            wrap={false}
-            align="middle"
-            style={{ cursor: 'pointer' }}
-            onClick={() => history.push(ROUTES.SHIPPING)}
-          >
-            <ArrowLeftOutlined style={{ marginRight: 8 }} />
-            Thêm đối tác vận chuyển
+    <>
+      <div onClick={toggle}>{children}</div>
+      <Drawer
+        width="70%"
+        footer={
+          <Row justify="end">
+            <Button
+              onClick={_addOrEditShipping}
+              loading={loading}
+              size="large"
+              type="primary"
+              style={{ width: 120 }}
+            >
+              {record ? 'Cập nhật' : 'Thêm'}
+            </Button>
           </Row>
         }
+        title={`${record ? 'Cập nhật' : 'Thêm'} đối tác vận chuyển`}
+        placement="right"
+        onClose={toggle}
+        visible={visible}
       >
-        <Space>
-          {/* <Permission permissions={[PERMISSIONS.them_doi_tac_van_chuyen]}></Permission> */}
-          <Button 
-          // onClick={_addOrEditShipping} 
-          type="primary" size="default">
-            Thêm đối tác
-          </Button>
-        </Space>
-      </TitlePage>
-      <Form form={form} layout="vertical">
-        <div style={{ marginBottom: 10, marginTop: 15 }}>
-          <Upload
-            data={_uploadImage}
-            name="avatar"
-            listType="picture-card"
-            className="upload-shipping"
-            showUploadList={false}
-            action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-          >
-            {image ? (
-              <img src={image} alt="avatar" style={{ width: '100%' }} />
-            ) : (
-              <div>
-                {loading ? <LoadingOutlined /> : <PlusOutlined />}
-                <div style={{ marginTop: 8 }}>Tải lên</div>
-              </div>
-            )}
-          </Upload>
-        </div>
+        <Form form={form} layout="vertical">
+          <div style={{ marginBottom: 10 }}>
+            <Upload
+              data={_uploadImage}
+              name="avatar"
+              listType="picture-card"
+              className="upload-shipping"
+              showUploadList={false}
+              action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+            >
+              {image ? (
+                <img src={image} alt="avatar" style={{ width: '100%' }} />
+              ) : (
+                <div>
+                  {loading ? <LoadingOutlined /> : <PlusOutlined />}
+                  <div style={{ marginTop: 8 }}>Tải lên</div>
+                </div>
+              )}
+            </Upload>
+          </div>
 
-        <Row gutter={[15, 15]} align="middle">
-          <Col xs={24} sm={24} md={8}>
-            <Form.Item
-              label={<div style={{ color: 'black', fontWeight: '600' }}>Tên đối tác</div>}
-              name="name"
-              rules={[{ required: true, message: 'Vui lòng nhập tên đối tác!' }]}
-            >
-              <Input size="large" placeholder="Nhập tên đối tác" />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={24} md={8}>
-            <Form.Item
-              label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
-              name="phone"
-              rules={[{ required: true, message: 'Vui lòng nhập liên hệ!' }]}
-            >
-              <Input placeholder="Nhập liên hệ" size="large" />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={24} md={8}>
-            <Form.Item
-              label={<div style={{ color: 'black', fontWeight: '600' }}>Email</div>}
-              name="email"
-              // rules={[{ required: true, message: 'Vui lòng nhập email!' }]}
-            >
-              <Input placeholder="Nhập email" size="large" />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={24} md={8}>
-            <Form.Item
-              label={<div style={{ color: 'black', fontWeight: '600' }}>Loại đối tác</div>}
-              name="email"
-              rules={[{ required: true, message: 'Vui lòng chọn loại đối tác' }]}
-            >
-              <Select allowClear placeholder="Chọn loại đối tác">
-                <Select.Option value="GHTK">GHTK</Select.Option>
-                <Select.Option value="GHN">GHN</Select.Option>
-              </Select>
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={24} md={8}>
-            <Form.Item
-              label={<div style={{ color: 'black', fontWeight: '600' }}>Nhân viên phụ trách</div>}
-              name="email"
-              rules={[{ required: true, message: 'Vui lòng chọn nhân viên phụ trách' }]}
-            >
-              <Select allowClear placeholder="Chọn nhân viên phụ trách">
-                {employees.map((employee, index) => (
-                  <Select.Option value={employee.first_name + ' ' + employee.last_name} key={index}>
-                    {employee.first_name} {employee.last_name}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={24} md={8}>
-            <Form.Item
-              label={<div style={{ color: 'black', fontWeight: '600' }}>Địa chỉ</div>}
-              name="address"
-            >
-              <Input placeholder="Nhập địa chỉ" size="large" />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={24} md={8}>
-            <Form.Item
-              name="province"
-              label={<div style={{ color: 'black', fontWeight: '600' }}>Tỉnh/thành phố</div>}
-              rules={[{ required: true, message: 'Vui lòng nhập tỉnh/thành phố!' }]}
-            >
-              <Select
-                size="large"
-                showSearch
-                style={{ width: '100%' }}
-                placeholder="Chọn tỉnh/thành phố"
-                optionFilterProp="children"
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                }
-                onChange={(value) => {
-                  if (value) {
-                    const districtsNew = districtsDefault.filter((e) => e.province_name === value)
-                    setDistrictMain([...districtsNew])
-                  } else setDistrictMain([...districtsDefault])
-                }}
+          <Row justify="space-between" align="middle">
+            <Col xs={24} sm={24} md={11} lg={11} xl={11}>
+              <Form.Item
+                label={<div style={{ color: 'black', fontWeight: '600' }}>Tên đối tác</div>}
+                name="name"
+                rules={[{ required: true, message: 'Vui lòng nhập tên đối tác!' }]}
               >
-                {provinces.map((province, index) => {
-                  return (
-                    <Option value={province.province_name} key={index}>
-                      {province.province_name}
-                    </Option>
-                  )
-                })}
-              </Select>
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={24} md={8}>
-            <Form.Item
-              name="district"
-              label={<div style={{ color: 'black', fontWeight: '600' }}>Quận/huyện</div>}
-              rules={[{ required: true, message: 'Vui lòng nhập quận/huyện!' }]}
-            >
-              <Select
-                allowClear
-                size="large"
-                showSearch
-                style={{ width: '100%' }}
-                placeholder="Chọn quận/huyện"
-                optionFilterProp="children"
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                }
-                onChange={(value) => {
-                  if (value) {
-                    const wardNew = wardMainDefault.filter((e) => e.district_name === value)
-                    setWardMain([...wardNew])
-                  } else setWardMain([...wardMainDefault])
-                }}
+                <Input size="large" placeholder="Nhập tên đối tác" />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={24} md={11} lg={11} xl={11}>
+              <Form.Item
+                label={<div style={{ color: 'black', fontWeight: '600' }}>Địa chỉ</div>}
+                name="address"
               >
-                {districtMain.map((district, index) => {
-                  return (
-                    <Option value={district.district_name} key={index}>
-                      {district.district_name}
-                    </Option>
-                  )
-                })}
-              </Select>
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={24} md={8}>
-            <Form.Item
-              name="ward"
-              label={<div style={{ color: 'black', fontWeight: '600' }}>Phường/xã</div>}
-              rules={[{ required: true, message: 'Vui lòng nhập phường/xã!' }]}
-            >
-              <Select
-                allowClear
-                size="large"
-                showSearch
-                style={{ width: '100%' }}
-                placeholder="Chọn quận/huyện"
-                optionFilterProp="children"
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                }
+                <Input placeholder="Nhập địa chỉ" size="large" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row justify="space-between" align="middle">
+            <Col xs={24} sm={24} md={11} lg={11} xl={11}>
+              <Form.Item
+                label={<div style={{ color: 'black', fontWeight: '600' }}>Liên hệ</div>}
+                name="phone"
+                rules={[{ required: true, message: 'Vui lòng nhập liên hệ!' }]}
               >
-                {wardMain.map((ward, index) => {
-                  return (
-                    <Option value={ward.ward_name} key={index}>
-                      {ward.ward_name}
-                    </Option>
-                  )
-                })}
-              </Select>
-            </Form.Item>
-          </Col>
-        </Row>
-        {/* <Row>
-          <Col xs={24} sm={24} md={11}>
-            <Form.Item name="default" valuePropName="checked">
-              <Checkbox>Chọn làm mặc định</Checkbox>
-            </Form.Item>
-          </Col>
-        </Row> */}
-      </Form>
-    </div>
+                <Input placeholder="Nhập liên hệ" size="large" />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={24} md={11} lg={11} xl={11}>
+              <Form.Item
+                name="province"
+                label={<div style={{ color: 'black', fontWeight: '600' }}>Tỉnh/thành phố</div>}
+                rules={[{ required: true, message: 'Vui lòng nhập tỉnh/thành phố!' }]}
+              >
+                <Select
+                  size="large"
+                  showSearch
+                  style={{ width: '100%' }}
+                  placeholder="Chọn tỉnh/thành phố"
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                  onChange={(value) => {
+                    if (value) {
+                      const districtsNew = districtsDefault.filter((e) => e.province_name === value)
+                      setDistrictMain([...districtsNew])
+                    } else setDistrictMain([...districtsDefault])
+                  }}
+                >
+                  {provinces.map((province, index) => {
+                    return (
+                      <Option value={province.province_name} key={index}>
+                        {province.province_name}
+                      </Option>
+                    )
+                  })}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row justify="space-between" align="middle">
+            <Col xs={24} sm={24} md={11} lg={11} xl={11}>
+              <Form.Item
+                name="district"
+                label={<div style={{ color: 'black', fontWeight: '600' }}>Quận/huyện</div>}
+                rules={[{ required: true, message: 'Vui lòng nhập quận/huyện!' }]}
+              >
+                <Select
+                  allowClear
+                  size="large"
+                  showSearch
+                  style={{ width: '100%' }}
+                  placeholder="Chọn quận/huyện"
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                  onChange={(value) => {
+                    if (value) {
+                      const wardNew = wardMainDefault.filter((e) => e.district_name === value)
+                      setWardMain([...wardNew])
+                    } else setWardMain([...wardMainDefault])
+                  }}
+                >
+                  {districtMain.map((district, index) => {
+                    return (
+                      <Option value={district.district_name} key={index}>
+                        {district.district_name}
+                      </Option>
+                    )
+                  })}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={24} md={11} lg={11} xl={11}>
+              <Form.Item
+                name="ward"
+                label={<div style={{ color: 'black', fontWeight: '600' }}>Phường/xã</div>}
+                rules={[{ required: true, message: 'Vui lòng nhập phường/xã!' }]}
+              >
+                <Select
+                  allowClear
+                  size="large"
+                  showSearch
+                  style={{ width: '100%' }}
+                  placeholder="Chọn quận/huyện"
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                >
+                  {wardMain.map((ward, index) => {
+                    return (
+                      <Option value={ward.ward_name} key={index}>
+                        {ward.ward_name}
+                      </Option>
+                    )
+                  })}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row>
+            <Col xs={24} sm={24} md={11} lg={11} xl={11}>
+              <Form.Item name="default" valuePropName="checked">
+                <Checkbox>Chọn làm mặc định</Checkbox>
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
+      </Drawer>
+    </>
   )
 }

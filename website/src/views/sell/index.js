@@ -47,7 +47,6 @@ import {
   Tag,
   notification,
   Col,
-  Checkbox,
 } from 'antd'
 
 //icons antd
@@ -563,7 +562,7 @@ export default function Sell() {
   const ModalQuantityProductInStores = ({ product, btn }) => {
     const [visible, setVisible] = useState(false)
     const toggle = () => setVisible(!visible)
-    // console.log(product)
+
     const [locations, setLocations] = useState([])
 
     const column = [
@@ -600,9 +599,8 @@ export default function Sell() {
     useEffect(() => {
       for (let i = 0; i < productsAllBranch.length; i++) {
         for (let j = 0; j < productsAllBranch[i].variants.length; j++) {
-          const findVariant = productsAllBranch[i].variants.find((e) => e.variant_id === product.variant_id)
+          const findVariant = productsAllBranch[i].variants.find((e) => e._id === product._id)
           if (findVariant) {
-            // console.log(findVariant)
             setLocations([...findVariant.locations])
             break
           }
@@ -1073,7 +1071,6 @@ export default function Sell() {
         note: invoices[indexInvoice].noteInvoice || '',
         tags: [],
         channel: invoices[indexInvoice].salesChannel,
-        is_delivery: invoices[indexInvoice].isDelivery,
       }
 
       //encrypt body create order
@@ -1202,7 +1199,6 @@ export default function Sell() {
   const _getProducts = async () => {
     try {
       const res = await getProducts({ merge: true, branch_id: branchIdApp || '' })
-      console.log(res)
       if (res.status === 200) setProductsAllBranch(res.data.data)
     } catch (error) {
       console.log(error)
@@ -1227,7 +1223,7 @@ export default function Sell() {
       setLoadingProductRelated(true)
 
       const res = await getProducts({ branch_id: branchIdApp || '', detach: true, ...params })
-      console.log(res)
+
       if (res.status === 200) {
         setProductsRelated(res.data.data.map((e) => ({ ...e.variants, active: e.active })))
         setCountProducts(res.data.count)
@@ -2155,9 +2151,6 @@ export default function Sell() {
           <div style={{ marginBottom: 60, marginTop: 10 }}>
             Ghi chú <EditOutlined />
             <NoteInvoice />
-            {/* <div>
-              <Checkbox ></Checkbox>
-            </div> */}
           </div>
 
           <Row justify="center" align="middle" className={styles['sell-right__footer-btn']}>

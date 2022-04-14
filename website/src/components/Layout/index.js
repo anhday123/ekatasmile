@@ -84,15 +84,7 @@ const BaseLayout = (props) => {
   const [isMobile, setIsMobile] = useState(false)
 
   const [openKeys, setOpenKeys] = useState([])
-  const rootSubmenuKeys = [
-    'store',
-    'warehouse',
-    'offer',
-    'report',
-    'transport',
-    'commerce',
-    ROUTES.PRODUCT,
-  ]
+  const rootSubmenuKeys = ['store', 'warehouse', 'offer', 'report', 'transport', 'commerce']
   const onOpenChange = (keys) => {
     const latestOpenKey = keys.find((key) => openKeys.indexOf(key) === -1)
     if (rootSubmenuKeys.indexOf(latestOpenKey) === -1) {
@@ -355,18 +347,17 @@ const BaseLayout = (props) => {
     <Permission permissions={_menu.permissions} key={_menu.path}>
       {_menu.menuItems ? (
         <Menu.SubMenu
-          // className={`${styles['edit-submenu-arrow']} edit-submenu-arrow`}
+          className={`${styles['edit-submenu-arrow']} edit-submenu-arrow`}
           style={{
-            // height: 40,
+            height: 40,
             backgroundColor:
               (location.pathname === _menu.path || _menu.pathsChild.includes(location.pathname)) &&
               '#e7e9fb',
             width: '100%',
-            // height: collapsed ? 40 : '',
             display: 'block',
           }}
           key={_menu.path}
-          // onTitleClick={() => history.push(_menu.path)}
+          onTitleClick={() => history.push(_menu.path)}
           title={
             <Link
               style={{
@@ -530,7 +521,7 @@ const BaseLayout = (props) => {
           onOpenChange={onOpenChange}
           openKeys={openKeys}
           selectedKeys={routeMatch.path}
-          mode="inline"
+          mode="vertical"
         >
           {MENUS.map(renderMenuItem)}
           <Menu.Item key={ROUTES.LOGIN} onClick={onSignOut} icon={<LogoutOutlined />}>

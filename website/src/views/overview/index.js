@@ -21,7 +21,7 @@ const Overview = () => {
 
   const [statisticalProduct, setStatisticalProduct] = useState({})
   const [statisticalToday, setStatisticalToday] = useState({})
-  const [statisticalChart, setStatisticalChart] = useState([])
+  const [statisticalChart, setStatisticalChart] = useState({})
   const [loadingSkeleton, setLoadingSkeleton] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
 

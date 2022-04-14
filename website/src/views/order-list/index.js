@@ -41,7 +41,7 @@ import columnsOrder from './columns'
 import TitlePage from 'components/title-page'
 
 //apis
-import { getOrders, deleteOrders, updateOrder } from 'apis/order'
+import { getOrders, deleteOrders } from 'apis/order'
 import { getEmployees } from 'apis/employee'
 import { getStatusShipping } from 'apis/shipping'
 
@@ -52,8 +52,7 @@ export default function OrderList() {
   const history = useHistory()
   const typingTimeoutRef = useRef(null)
   const handlePrint = useReactToPrint({ content: () => printOrderRef.current })
-  const [editOrder, setEditOrder] = useState(false)
-  const [noteTag, setNoteTag] = useState({ tags: [], note: '' })
+
   const [columns, setColumns] = useState([])
   const [dataPrint, setDataPrint] = useState(null)
   const [statusOrder, setStatusOrder] = useState([])
@@ -103,35 +102,6 @@ export default function OrderList() {
         notification.error({
           message: res.data.message || 'Xóa đơn hàng thất bại, vui lòng thử lại',
         })
-    } catch (error) {
-      setLoading(false)
-      console.log(error)
-    }
-  }
-
-  const _updateOrders = async (id) => {
-    try {
-      setLoading(true)
-      const data = {
-        tags: noteTag.tags,
-        note: noteTag.note,
-      }
-      const res = await updateOrder(data, id)
-      console.log(res)
-      if (res.status === 200) {
-        if (res.data.success) {
-          notification.success({ message: 'Cập nhật đơn hàng thành công!' })
-          setEditOrder(false)
-          _getOrders()
-        } else
-          notification.error({
-            message: res.data.message || 'Cập nhật đơn hàng thất bại, vui lòng thử lại',
-          })
-      } else
-        notification.error({
-          message: res.data.message || 'Cập nhật đơn hàng thất bại, vui lòng thử lại',
-        })
-      setLoading(false)
     } catch (error) {
       setLoading(false)
       console.log(error)
@@ -249,7 +219,6 @@ export default function OrderList() {
   return (
     <div className="card">
       <Print />
-      <Affix offsetTop={60}>
       <TitlePage title="Danh sách hóa đơn bán hàng">
         <Space>
           <SettingColumns
@@ -270,7 +239,7 @@ export default function OrderList() {
           </Permissions>
         </Space>
       </TitlePage>
-      </Affix>
+
       <div style={{ marginTop: 15 }}>
         <Row gutter={[16, 16]} justify="space-between" style={{ marginRight: 0, marginLeft: 0 }}>
           <Col
@@ -485,50 +454,21 @@ export default function OrderList() {
                       <div style={{ width: '33.33333%', padding: '0px 25px' }}>
                         <div style={{ marginBottom: 10 }}>
                           <p style={{ fontWeight: 700, marginBottom: 4 }}>Ghi chú đơn hàng</p>
-                          {editOrder ? (
-                            <Input.TextArea
-                              onBlur={(e) => setNoteTag({ ...noteTag, note: e.target.value })}
-                              rows={4}
-                              defaultValue={record.note}
-                            />
-                          ) : (
-                            <div style={{ color: record.note ? '' : '#747C87' }}>
-                              {record.note ? record.note : 'Đơn hàng không có ghi chú'}
-                            </div>
-                          )}
+                          <div style={{ color: record.note ? '' : '#747C87' }}>
+                            {record.note ? record.note : 'Đơn hàng không có ghi chú'}
+                          </div>
                         </div>
                         <div>
                           <p style={{ fontWeight: 700, marginBottom: 4 }}>Tags</p>
-                          {editOrder ? (
-                            <Select
-                              mode="tags"
-                              style={{ width: '100%' }}
-                              placeholder="Tags Mode"
-                              defaultValue={record.tags}
-                              onChange={(value) => setNoteTag({ ...noteTag, tags: value })}
-                            ></Select>
-                          ) : (
-                            <div
-                              style={{
-                                color: !record.tags || !record.tags.length ? '#747C87' : '',
-                              }}
-                            >
-                              {record.tags && record.tags.length
-                                ? record.tags.join(',')
-                                : 'Đơn hàng chưa có tag'}
-                            </div>
-                          )}
-                        </div>
-                        <div
-                          style={{
-                            textAlign: 'right',
-                            marginTop: 15,
-                            display: !editOrder ? 'none' : '',
-                          }}
-                        >
-                          <Button onClick={() => _updateOrders(record.order_id)} type="primary">
-                            Lưu
-                          </Button>
+                          <div
+                            style={{
+                              color: !record.tags || !record.tags.length ? '#747C87' : '',
+                            }}
+                          >
+                            {record.tags && record.tags.length
+                              ? record.tags.join(',')
+                              : 'Đơn hàng chưa có tag'}
+                          </div>
                         </div>
                       </div>
                     </Row>
@@ -560,16 +500,13 @@ export default function OrderList() {
                     >
                       In đơn hàng
                     </Button>
-                    {/* {orders && orders.bill_status === 'DRAFT' ? (
+                    {orders && orders.bill_status === 'DRAFT' ? (
                       <Button style={{ width: 140 }} size="large">
                         Sửa đơn hàng
                       </Button>
                     ) : (
                       ''
-                    )} */}
-                    <Button onClick={() => setEditOrder(true)} style={{ width: 140 }} size="large">
-                      Sửa đơn hàng
-                    </Button>
+                    )}
                   </Space>
                 </Row>
                 <div className="table-product-in-order">

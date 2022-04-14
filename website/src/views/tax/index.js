@@ -380,18 +380,7 @@ export default function Tax() {
             margin: '1rem 0',
           }}
         >
-          <Col
-            style={{
-              borderRight: 'none',
-              border: '1px solid #d9d9d9',
-              borderRadius: '5px 0px 0px 5px',
-            }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
+          <Col style={{ borderRight: 'none', border: '1px solid #d9d9d9', borderRadius: '5px 0px 0px 5px' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <Input
               style={{ width: '100%' }}
               name="name"
@@ -403,22 +392,15 @@ export default function Tax() {
               bordered={false}
             />
           </Col>
-          <Col
-            style={{ border: '1px solid #d9d9d9', borderRadius: '0px 5px 5px 0px' }}
-            xs={24}
-            sm={24}
-            md={11}
-            lg={11}
-            xl={7}
-          >
+          <Col style={{ border: '1px solid #d9d9d9', borderRadius: '0px 5px 5px 0px' }} xs={24} sm={24} md={11} lg={11} xl={7}>
             <RangePicker
               className="br-15__date-picker"
               value={
                 clear === 1
                   ? []
                   : start !== ''
-                  ? [moment(start, dateFormat), moment(end, dateFormat)]
-                  : []
+                    ? [moment(start, dateFormat), moment(end, dateFormat)]
+                    : []
               }
               style={{ width: '100%' }}
               ranges={{
@@ -518,7 +500,7 @@ export default function Tax() {
             <Col style={{ width: '100%' }} xs={24} sm={24} md={11} lg={11} xl={11}>
               <div>
                 <Form.Item
-                  label={<div style={{ color: 'black', fontWeight: '600' }}>Giá trị (%)</div>}
+                  label={<div style={{ color: 'black', fontWeight: '600' }}>Giá trị</div>}
                   name="value"
                   rules={[{ required: true, message: 'Giá trị rỗng!' }]}
                 >
@@ -568,7 +550,7 @@ export default function Tax() {
             }}
           >
             <b style={{ marginRight: '0.25rem' }}>Chú ý:</b> bạn không thể sửa giá trị thuế khi đã
-            sử dụng thuế đó trong một đơn hàng đã đặt
+            sử dụng thuế đó trong một đơn hàng.
           </div>
 
           <Row

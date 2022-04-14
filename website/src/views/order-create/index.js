@@ -61,7 +61,6 @@ import CustomerForm from 'views/customer/customer-form'
 import ChangeDelivery from './change-delivery'
 import ModalPromotion from './promotion'
 import TitlePage from 'components/title-page'
-import { apiOrderVoucher } from 'apis/order'
 
 export default function OrderCreateShipping() {
   let history = useHistory()
@@ -469,82 +468,76 @@ export default function OrderCreateShipping() {
     },
   ]
 
-  const createOrder = async () => {
-    // if (voucher) {
-    //   try {
-    //     const res = await apiCheckPromotion({ voucher })
-    //     if (!res.data.success) {
-    //       notification.error({
-    //         message: 'Voucher không tồn tại hoặc đã được sử dụng',
-    //       })
-    //       return
-    //     }
-    //   } catch (e) {
-    //     notification.error({
-    //       message: 'Voucher không tồn tại hoặc đã được sử dụng',
-    //     })
-    //     return
-    //   }
-    // }
-    try {
-      let totalDiscount =
-        (discount.value / 100) * productData.reduce((a, b) => a + b.quantity * b.sale_price, 0)
-      const dataList = productData.map((product) => {
-        let productDiscount = 0
-        if (totalDiscount >= product.sale_price * product.quantity) {
-          productDiscount = product.sale_price * product.quantity
-          totalDiscount -= product.sale_price * product.quantity
-        } else {
-          productDiscount = totalDiscount
-          totalDiscount = 0
-        }
-        const data = {
-          product_id: product.product_id,
-          sku: product.sku,
-          supplier: product.suppliers.supplier_id,
-          options: product.options,
-          // has_variable: product.has_variable,
-          quantity: product.quantity,
-          total_cost: product.sale_price * product.quantity,
-          discount: productDiscount,
-          final_cost: product.sale_price * product.quantity - productDiscount,
-        }
+  // const createOrder = async () => {
+  //   if (voucher) {
+  //     try {
+  //       const res = await apiCheckPromotion({ voucher })
+  //       if (!res.data.success) {
+  //         notification.error({
+  //           message: 'Voucher không tồn tại hoặc đã được sử dụng',
+  //         })
+  //         return
+  //       }
+  //     } catch (e) {
+  //       notification.error({
+  //         message: 'Voucher không tồn tại hoặc đã được sử dụng',
+  //       })
+  //       return
+  //     }
+  //   }
+  //   let totalDiscount =
+  //     (discount.value / 100) * productData.reduce((a, b) => a + b.quantity * b.sale_price, 0)
+  //   const dataList = productData.map((product) => {
+  //     let productDiscount = 0
+  //     if (totalDiscount >= product.sale_price * product.quantity) {
+  //       productDiscount = product.sale_price * product.quantity
+  //       totalDiscount -= product.sale_price * product.quantity
+  //     } else {
+  //       productDiscount = totalDiscount
+  //       totalDiscount = 0
+  //     }
+  //     const data = {
+  //       product_id: product.product_id,
+  //       sku: product.sku,
+  //       supplier: product.suppliers.supplier_id,
+  //       options: product.options,
+  //       // has_variable: product.has_variable,
+  //       quantity: product.quantity,
+  //       total_cost: product.sale_price * product.quantity,
+  //       discount: productDiscount,
+  //       final_cost: product.sale_price * product.quantity - productDiscount,
+  //     }
 
-        return voucher
-          ? { ...data, voucher: productDiscount ? voucher : ' ' }
-          : { ...data, promotion: productDiscount ? promotion : ' ' }
-      })
-      const data = {
-        branch: branchIdApp,
-        // customer: customerInfo.customer_id,
-        order_details: dataList,
-        payment: '1',
-        tax_list: tax,
-        // voucher: voucher,
-        transport: '1',
-        total_cost: dataList.reduce((a, b) => a + b.final_cost, 0),
-        discount: dataList.reduce((a, b) => a + b.discount, 0),
-        final_cost:
-          dataList.reduce((a, b) => a + b.total_cost, 0) -
-          dataList.reduce((a, b) => a + b.discount, 0) +
-          (dataList.reduce((a, b) => a + b.final_cost, 0) * taxValue) / 100,
-        latitude: '50.50',
-        longtitude: '50.50',
-        note: note,
-      }
-
-      const res = voucher
-        ? await apiOrderVoucher({ ...data, voucher })
-        : await apiOrderVoucher({ ...data, promotion })
-      console.log(res)
-      if (res.data.success) {
-        notification.success({ message: 'Tạo hóa đơn thành công' })
-        history.push('/order-list')
-      }
-    } catch (err) {
-      console.log(err)
-    }
-  }
+  //     return voucher
+  //       ? { ...data, voucher: productDiscount ? voucher : ' ' }
+  //       : { ...data, promotion: productDiscount ? promotion : ' ' }
+  //   })
+  //   const data = {
+  //     branch: branch,
+  //     // customer: customerInfo.customer_id,
+  //     order_details: dataList,
+  //     payment: '1',
+  //     tax_list: tax,
+  //     // voucher: voucher,
+  //     transport: '1',
+  //     total_cost: dataList.reduce((a, b) => a + b.final_cost, 0),
+  //     discount: dataList.reduce((a, b) => a + b.discount, 0),
+  //     final_cost:
+  //       dataList.reduce((a, b) => a + b.total_cost, 0) -
+  //       dataList.reduce((a, b) => a + b.discount, 0) +
+  //       (dataList.reduce((a, b) => a + b.final_cost, 0) * taxValue) / 100,
+  //     latitude: '50.50',
+  //     longtitude: '50.50',
+  //     note: note,
+  //   }
+  //   const res = voucher
+  //     ? await apiOrderVoucher({ ...data, voucher })
+  //     : await apiOrderVoucher({ ...data, promotion })
+  //   if (res.data.success) {
+  //     notification.success({ message: 'Tạo hóa đơn thành công' })
+  //     history.push('/order-list')
+  //   }
+  // }
 
   const getData = async (api, callback) => {
     try {
@@ -635,7 +628,7 @@ export default function OrderCreateShipping() {
           </Row>
         }
       >
-        <Button onClick={createOrder} size="large" type="primary">
+        <Button size="large" type="primary">
           Tạo đơn và duyệt (F1)
         </Button>
       </TitlePage>

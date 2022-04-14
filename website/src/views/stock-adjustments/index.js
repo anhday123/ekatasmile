@@ -13,7 +13,7 @@ import TitlePage from 'components/title-page'
 import FilterDate from 'components/filter-date'
 
 //antd
-import { Row, Col, Input, Button, Space, Table, Select, Affix } from 'antd'
+import { Row, Col, Input, Button, Space, Table, Select } from 'antd'
 
 //icons
 import { SearchOutlined, VerticalAlignTopOutlined } from '@ant-design/icons'
@@ -125,7 +125,6 @@ export default function Reports() {
 
   return (
     <div className="card">
-      <Affix offsetTop={60}>
       <TitlePage title="Phiếu kiểm hàng">
         <Space>
           <Button
@@ -165,7 +164,6 @@ export default function Reports() {
           </Link>
         </Space>
       </TitlePage>
-      </Affix>
       <Row
         gutter={[0, 16]}
         style={{

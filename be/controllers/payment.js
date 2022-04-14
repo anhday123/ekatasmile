@@ -150,16 +150,18 @@ module.exports._update = async (req, res, next) => {
 
 module.exports._delete = async (req, res, next) => {
     try {
-        let _delete = [];
-        for (let i in req.body.payment_method_id) {
-            if (req.body.payment_method_id > 0) {
-                _delete.push(req.body.payment_method_id);
-            }
+        let counts = await client
+            .db(req.user.database)
+            .collection('PaymentMethods')
+            .find({ business_id: req.user.user_id })
+            .count();
+        if (counts <= req.body.payment_method_id.length) {
+            throw new Error('400: Không thể xóa hết phương thức thanh toán!');
         }
         await client
             .db(req.user.database)
             .collection('PaymentMethods')
-            .deleteMany({ payment_method_id: { $in: _delete } });
+            .deleteMany({ payment_method_id: { $in: req.body.payment_method_id } });
         res.send({ success: true, data: 'Xóa phương thức thanh toán thành công!' });
     } catch (err) {
         next(err);
