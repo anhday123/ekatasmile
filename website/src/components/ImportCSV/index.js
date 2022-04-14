@@ -12,6 +12,8 @@ import moment from 'moment'
 export default function ImportFile({
   title,
   fileTemplated,
+  exportId,
+  importId,
   upload,
   txt = 'Nhập excel',
   reload,
@@ -48,6 +50,12 @@ export default function ImportFile({
           formData.append('type', 'order')
           formData.append('shipping_company_id', shippingId)
           formData.append('status', 'DRAFT')
+        }
+
+        //Trường hợp upload file chuyển hàng
+        if (exportId !== '' && importId !== '') {
+          formData.append('export_location_id', exportId)
+          formData.append('import_location_id', importId)
         }
         if (keyForm && keyForm.branch_id !== undefined && !keyForm.branch_id) {
           notification.warning({ message: 'Vui lòng chọn chi nhánh' })

@@ -4,7 +4,6 @@ const createError = require(`http-errors`);
 const moment = require(`moment-timezone`);
 const TIMEZONE = process.env.TIMEZONE;
 const app = express();
-const endPoint = process.env.END_POINT;
 
 const router = require(`./routers/index`);
 const client = require('./config/mongodb');
@@ -22,8 +21,6 @@ const options = {
     customSiteTitle: 'Quản trị bán hàng APIs',
 };
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, options));
-
 app.use(cors()).use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
@@ -31,8 +28,9 @@ app.use(cors()).use((req, res, next) => {
 });
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
-app.use("/app", express.static(__dirname + "/assets"));
-app.use(`/` + endPoint, router)
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, options));
+app.use('/app', express.static(__dirname + '/assets'));
+app.use(`/api`, router)
     .use((req, res, next) => {
         next(new Error(`404: Endpoint is not exists!`));
     })
@@ -84,6 +82,6 @@ let clearAccount = async () => {
 
 setInterval(() => {
     clearAccount();
-}, process.env.OTP_TIMELIFE * 60 * 1000);
+}, 5 * 60 * 1000);
 
 module.exports = app;

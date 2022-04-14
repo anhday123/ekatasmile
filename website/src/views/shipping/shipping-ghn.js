@@ -28,7 +28,7 @@ import { ROUTES } from 'consts'
 import { useHistory } from 'react-router-dom'
 
 const { Option } = Select
-export default function ShippingForm({ children, reloadData, record }) {
+export default function ShippingFormGHN({ children, reloadData, record }) {
   const [form] = Form.useForm()
   const [employees, setEmployees] = useState([])
   const [image, setImage] = useState('')
@@ -171,35 +171,18 @@ export default function ShippingForm({ children, reloadData, record }) {
       >
         <Space>
           {/* <Permission permissions={[PERMISSIONS.them_doi_tac_van_chuyen]}></Permission> */}
-          <Button 
-          // onClick={_addOrEditShipping} 
-          type="primary" size="default">
+          <Button
+            // onClick={_addOrEditShipping}
+            type="primary"
+            size="default"
+          >
             Thêm đối tác
           </Button>
         </Space>
       </TitlePage>
       <Form form={form} layout="vertical">
-        <div style={{ marginBottom: 10, marginTop: 15 }}>
-          <Upload
-            data={_uploadImage}
-            name="avatar"
-            listType="picture-card"
-            className="upload-shipping"
-            showUploadList={false}
-            action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-          >
-            {image ? (
-              <img src={image} alt="avatar" style={{ width: '100%' }} />
-            ) : (
-              <div>
-                {loading ? <LoadingOutlined /> : <PlusOutlined />}
-                <div style={{ marginTop: 8 }}>Tải lên</div>
-              </div>
-            )}
-          </Upload>
-        </div>
-
-        <Row gutter={[15, 15]} align="middle">
+        <h3>Thông tin cửa hàng để Giao hàng nhanh liên hệ với bạn</h3>
+        <Row style={{ marginTop: 15 }} gutter={[15, 15]} align="middle">
           <Col xs={24} sm={24} md={8}>
             <Form.Item
               label={<div style={{ color: 'black', fontWeight: '600' }}>Tên đối tác</div>}
@@ -229,29 +212,15 @@ export default function ShippingForm({ children, reloadData, record }) {
           </Col>
           <Col xs={24} sm={24} md={8}>
             <Form.Item
-              label={<div style={{ color: 'black', fontWeight: '600' }}>Loại đối tác</div>}
-              name="email"
-              rules={[{ required: true, message: 'Vui lòng chọn loại đối tác' }]}
+              label={
+                <div style={{ color: 'black', fontWeight: '600' }}>
+                  Shop ID trên giao hàng nhanh
+                </div>
+              }
+              name="shop_id"
+              rules={[{ required: true, message: 'Vui lòng nhập shop ID' }]}
             >
-              <Select allowClear placeholder="Chọn loại đối tác">
-                <Select.Option value="GHTK">GHTK</Select.Option>
-                <Select.Option value="GHN">GHN</Select.Option>
-              </Select>
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={24} md={8}>
-            <Form.Item
-              label={<div style={{ color: 'black', fontWeight: '600' }}>Nhân viên phụ trách</div>}
-              name="email"
-              rules={[{ required: true, message: 'Vui lòng chọn nhân viên phụ trách' }]}
-            >
-              <Select allowClear placeholder="Chọn nhân viên phụ trách">
-                {employees.map((employee, index) => (
-                  <Select.Option value={employee.first_name + ' ' + employee.last_name} key={index}>
-                    {employee.first_name} {employee.last_name}
-                  </Select.Option>
-                ))}
-              </Select>
+              <Input placeholder="Nhập shop ID" size="large" />
             </Form.Item>
           </Col>
           <Col xs={24} sm={24} md={8}>

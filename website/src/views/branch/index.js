@@ -22,6 +22,7 @@ import {
   Popover,
   Space,
   Popconfirm,
+  Affix,
 } from 'antd'
 
 //components
@@ -184,6 +185,7 @@ export default function Branch() {
   return (
     <>
       <div className="card">
+        <Affix offsetTop={60}>
         <TitlePage title="Danh sách chi nhánh">
           <Space>
             <SettingColumns
@@ -201,7 +203,7 @@ export default function Branch() {
             </Permission>
           </Space>
         </TitlePage>
-
+        </Affix>
         <div style={{ marginTop: 15 }}>
           <Row style={{ border: '1px solid #d9d9d9', borderRadius: 5, marginBottom: 10 }}>
             <Col xs={24} sm={24} md={12} lg={12} xl={6} style={{ height: FILTER_COL_HEIGHT }}>
