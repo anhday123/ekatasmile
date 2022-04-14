@@ -1003,10 +1003,8 @@ module.exports._createTransportOrder = async (req, res, next) => {
             }
             return 'Stores';
         })();
-        let [exportLocation, importLocation] = await Promise.all([
-            client.db(req.user.database).collection(exportAt).findOne(req.body.export_location),
-            client.db(req.user.database).collection(importAt).findOne(req.body.import_location),
-        ]);
+        let exportLocation = await client.db(req.user.database).collection(exportAt).findOne(req.body.export_location);
+        let importLocation = await client.db(req.user.database).collection(importAt).findOne(req.body.import_location);
         if (!exportLocation) {
             throw new Error('400: Địa điểm xuất hàng không chính xác!');
         }
@@ -1028,16 +1026,16 @@ module.exports._createTransportOrder = async (req, res, next) => {
             .toArray();
         let _products = {};
         products.map((product) => {
-            _products[String(product.product_id)] = product;
+            _products[product.product_id] = product;
         });
         let variants = await client
             .db(req.user.database)
             .collection('Variants')
-            .find({ product_id: { $in: productIds } })
+            .find({ variant_id: { $in: variantIds } })
             .toArray();
         let _variants = {};
         variants.map((variant) => {
-            _variants[String(variant.variant_id)] = variant;
+            _variants[variant.variant_id] = variant;
         });
         let total_cost = 0;
         let total_discount = 0;
@@ -1089,7 +1087,7 @@ module.exports._createTransportOrder = async (req, res, next) => {
             last_update: moment().tz(TIMEZONE).format(),
             active: true,
         };
-        if (order.status != 'COMPLETE') {
+        if (order.status == 'COMPLETE') {
             order['verifier_id'] = Number(req.user.user_id);
             order['verify_date'] = moment().tz(TIMEZONE).format();
             order['completer_id'] = Number(req.user.user_id);
