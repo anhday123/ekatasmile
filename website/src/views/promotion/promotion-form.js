@@ -44,7 +44,7 @@ export default function PromotionAdd(props) {
   const [selectAppCustomer, setSelectAppCustomer] = useState()
   const openNotification = () => {
     notification.success({
-      message: t('promotion.add_promotion_successful'),
+      message: 'Thêm khuyến mãi thành công',
     })
   }
   const onFinish = async (values) => {
@@ -80,7 +80,7 @@ export default function PromotionAdd(props) {
     } catch (e) {
       console.log(e)
       notification.warning({
-        message: t('promotion.add_promotion_failed'),
+        message: 'Thêm khuyến mãi thất bại',
       })
     }
   }
@@ -153,7 +153,7 @@ export default function PromotionAdd(props) {
           }}
         >
           <div style={{ fontWeight: 'bold', font: '16px', marginBottom: '10px' }}>
-            {t('warehouse.image')}
+            Hình ảnh
           </div>
           <Dragger
             style={{ margin: '0 2px' }}
@@ -191,11 +191,11 @@ export default function PromotionAdd(props) {
           <Col span={12}>
             <div className={styles['promotion-add__box']}>
               <div className={styles['promotion-add__title']}>
-                {t('promotion.promotion_program')} <span style={{ color: 'red' }}>*</span>
+                Tên chương trình khuyến mãi <span style={{ color: 'red' }}>*</span>
               </div>
               <Form.Item name="name">
                 <Input
-                  placeholder={t('promotion.enter_promotion_program')}
+                  placeholder='Nhập tên khuyến mãi'
                   size="large"
                   onChange={(e) => {
                     form.setFieldsValue({
@@ -205,18 +205,18 @@ export default function PromotionAdd(props) {
                 />
               </Form.Item>
               <div className={styles['promotion-add__title']}>
-                {t('promotion.promotion_program_code')} <span style={{ color: 'red' }}>*</span>
+                Mã khuyến mãi <span style={{ color: 'red' }}>*</span>
               </div>
               <Form.Item name="promotion_code">
-                <Input placeholder={t('promotion.enter_promotion_program_code')} size="large" />
+                <Input placeholder='Nhập mã khuyến mãi' size="large" />
               </Form.Item>
               <div className={styles['promotion-add__title']}>
-                {t('promotion.applies_customers')}
+                Áp dụng cho khách hàng
               </div>
               <Select
                 style={{ width: '100%', marginBottom: '30px' }}
                 size="large"
-                placeholder={t('order_delivery.all')}
+                placeholder='Tất cả'
                 showSearch
                 onChange={(value) => setSelectAppCustomer(value)}
                 value={selectAppCustomer || 'customer-0'}
@@ -225,11 +225,11 @@ export default function PromotionAdd(props) {
                   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                 }
               >
-                <Option value="customer-0">{t('order_delivery.all')}</Option>
-                <Option value="customer-1">{t('promotion.haunt')}</Option>
-                <Option value="customer-2">{t('promotion.new_guest')}</Option>
-                <Option value="customer-3">{t('promotion.potential')}</Option>
-                <Option value="customer-4">{t('promotion.loyal')}</Option>
+                <Option value="customer-0">Tẩt cả</Option>
+                <Option value="customer-1">Vãng lai</Option>
+                <Option value="customer-2">Khách mới</Option>
+                <Option value="customer-3">Tiềm năng</Option>
+                <Option value="customer-4">Trung thành</Option>
               </Select>
               <Checkbox
                 onChange={() => setCheckedCustom(!checkedCustom)}
@@ -240,7 +240,7 @@ export default function PromotionAdd(props) {
                   color: checkedCustom ? '#2463EA' : '#000',
                 }}
               >
-                {t('promotion.add_automatic_customers')}
+                Thêm voucher tự động cho khách hàng
               </Checkbox>
               <Checkbox
                 onChange={() => setCheckedVoucher(!checkedVoucher)}
@@ -251,28 +251,28 @@ export default function PromotionAdd(props) {
                   color: checkedVoucher ? '#2463EA' : '#000',
                 }}
               >
-                {t('promotion.download_excel_file')}
+                Tải xuống voucher thủ công (file excel)
               </Checkbox>
             </div>
           </Col>
           <Col span={12}>
             <div className={styles['promotion-add__box']}>
               <div className={styles['promotion-add__title']}>
-                {t('promotion.promotion_options')}
+                Tùy chọn khuyến mãi
               </div>
               <Row gutter={20}>
                 <Col span={12}>
-                  <Form.Item name="type" initialValue="VALUE" label={t('promotion.promotion_type')}>
-                    <Select placeholder={t('promotion.promotion_type')} size="large">
-                      <Option value="VALUE">{t('promotion.value')}</Option>
-                      <Option value="PERCENT">{t('promotion.percent')}</Option>
+                  <Form.Item name="type" initialValue="VALUE" label='Loại khuyến mãi'>
+                    <Select placeholder='Chọn loại khuyến mãi' size="large">
+                      <Option value="VALUE">Gía trị</Option>
+                      <Option value="PERCENT">Phần trăm</Option>
                     </Select>
                   </Form.Item>
                 </Col>
                 <Col span={12}>
-                  <Form.Item name="value" label={t('promotion.promotion_value')}>
+                  <Form.Item name="value" label='Gía trị khuyến mãi'>
                     <InputNumber
-                      placeholder={t('promotion.promotion_value')}
+                      placeholder='Nhập giá trị khuyến mãi'
                       size="large"
                       min={0}
                       style={{ width: '100%', borderRadius: '15px' }}
@@ -284,7 +284,7 @@ export default function PromotionAdd(props) {
               </Row>
               <Row  gutter={20}>
                 <Col span={12}>
-                  <Form.Item name="discount_condition" label={t('promotion.applied_limit')}>
+                  <Form.Item name="discount_condition" label='Hạn mức áp dụng'>
                     <InputNumber
                       style={{ width: '100%', borderRadius: 15 }}
                       size="large"
@@ -295,7 +295,7 @@ export default function PromotionAdd(props) {
                   </Form.Item>
                 </Col>
                 <Col span={12}>
-                  <Form.Item name="max_discount" label={t('promotion.limited_promotion')}>
+                  <Form.Item name="max_discount" label='Khuyến mãi tối đa'>
                     <InputNumber
                       style={{ width: '100%', borderRadius: 15 }}
                       size="large"
@@ -308,7 +308,7 @@ export default function PromotionAdd(props) {
               </Row>
             </div>
             <div className={styles['promotion-add__box']}>
-              <div className={styles['promotion-add__title']}>{t('promotion.description')}</div>
+              <div className={styles['promotion-add__title']}>Mô tả</div>
               <Form.Item name="description" style={{ marginBottom: 0 }}>
                 <Input.TextArea style={{ height: 100, margin: '15px 0' }} />
               </Form.Item>
@@ -324,18 +324,18 @@ export default function PromotionAdd(props) {
           }}
         >
           <div style={{ fontSize: '18px', color: '#394150', paddingBottom: '10px' }}>
-            {t('promotion.applied_time')}
+            Thời gian áp dụng
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <div style={{ width: '50%', fontSize: '16px', marginLeft: '5px' }}>
-              <div> {t('promotion.start_date')}</div>
+              <div> Thời gian bắt đầu</div>
               <Form.Item name="start_date">
                 <DatePicker size="large" style={{ width: '100%', marginTop: '10px' }} />
               </Form.Item>
             </div>
             <div style={{ width: '50%', fontSize: '16px', marginLeft: '10px' }}>
               {' '}
-              <div> {t('promotion.end_date')}</div>
+              <div> Thời gian kết thúc</div>
               <Form.Item name="end_date">
                 <DatePicker size="large" style={{ width: '100%', marginTop: '10px' }} />
               </Form.Item>
@@ -344,8 +344,8 @@ export default function PromotionAdd(props) {
         </Row>
         <div className={styles['promotion_add_button']}>
           <Form.Item>
-            <Button size="large" type="primary" htmlType="submit" style={{ width: 120 }}>
-              {props.state.length === 0 ? t('promotion.add') : t('promotion.save')}
+            <Button size="large" type="primary" htmlType="submit" style={{ width: '100%' }}>
+              {props.state.length === 0 ? 'Thêm khuyến mãi' : 'Lưu'}
             </Button>
           </Form.Item>
         </div>
