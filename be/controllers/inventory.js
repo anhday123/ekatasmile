@@ -715,7 +715,7 @@ module.exports._updateImportOrder = async (req, res, next) => {
             _order['verifier_id'] = Number(req.user.user_id);
             _order['verify_date'] = moment().tz(TIMEZONE).format();
         }
-        if (_order.status == 'COMPLETE') {
+        if (_order.status == 'COMPLETE' && order.status != 'COMPLETE') {
             _order['verifier_id'] = Number(req.user.user_id);
             _order['verify_date'] = moment().tz(TIMEZONE).format();
             _order['completer_id'] = Number(req.user.user_id);
