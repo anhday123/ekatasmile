@@ -319,7 +319,7 @@ module.exports._create = async (req, res, next) => {
                     total_profit += parseFloat(eDetail.total_cost) - parseFloat(eDetail.total_base_price);
                     eDetail.base_prices.push(_basePrice);
                     updateLocations.push({
-                        ...location,
+                        ..._location,
                         last_update: moment().tz(TIMEZONE).format(),
                         updater_id: req.user.user_id,
                     });
