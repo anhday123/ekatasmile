@@ -1243,6 +1243,7 @@ module.exports._createTransportOrder = async (req, res, next) => {
                 );
             await client.db(req.user.database).collection('Locations').insertMany(insertLocations);
             for (let i in updateLocations) {
+                delete updateLocations[i]._id;
                 await client
                     .db(req.user.database)
                     .collection('Locations')
