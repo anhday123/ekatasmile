@@ -347,6 +347,53 @@ module.exports._create = async (req, res, next) => {
                 }
                 return eDetail;
             });
+            if (pointSetting) {
+                let decreasePoint = 0;
+                for (let i in _order.payments) {
+                    if (payments[i].method == 'POINT') {
+                        decreasePoint = payments[i].value / pointSetting.exchange_money_rate;
+                    }
+                }
+                if (decreasePoint > customer.point) {
+                    throw new Error(`400: Khách hàng không đủ điểm tích lũy!`);
+                }
+                await client
+                    .db(req.user.database)
+                    .collection('Users')
+                    .updateOne(
+                        { user_id: customer.user_id },
+                        {
+                            $inc: {
+                                point: -decreasePoint,
+                                used_point: decreasePoint,
+                                order_quantity: 1,
+                                order_total_cost: _order.final_cost,
+                            },
+                        }
+                    );
+                await client
+                    .db(req.user.database)
+                    .collection('Customers')
+                    .updateOne(
+                        { customer_id: customer.customer_id },
+                        {
+                            $inc: {
+                                point: -decreasePoint,
+                                used_point: decreasePoint,
+                                order_quantity: 1,
+                                order_total_cost: _order.final_cost,
+                            },
+                        }
+                    );
+                await client
+                    .db(req.user.database)
+                    .collection('Users')
+                    .updateOne({ user_id: customer.user_id }, { $inc: { point: increasePoint } });
+                await client
+                    .db(req.user.database)
+                    .collection('Customers')
+                    .updateOne({ customer_id: customer.customer_id }, { $inc: { point: increasePoint } });
+            }
             if (updateLocations.length > 0) {
                 for (let i in updateLocations) {
                     await client
@@ -388,31 +435,6 @@ module.exports._create = async (req, res, next) => {
                 .collection('AppSetting')
                 .updateOne({ name: 'Finances' }, { $set: { name: 'Finances', value: receiptId } }, { upsert: true });
             let insertFinance = await client.db(req.user.database).collection('Finances').insertOne(_finance);
-            await client
-                .db(req.user.database)
-                .collection('Users')
-                .updateOne({ user_id: customer.user_id }, { $inc: { point: increasePoint } });
-            await client
-                .db(req.user.database)
-                .collection('Customers')
-                .updateOne({ customer_id: customer.customer_id }, { $inc: { point: increasePoint } });
-
-            if (pointSetting) {
-                let decreasePoint = 0;
-                for (let i in _order.payments) {
-                    if (payments[i].method == 'POINT') {
-                        decreasePoint = payments[i].value / pointSetting.exchange_money_rate;
-                    }
-                }
-                await client
-                    .db(req.user.database)
-                    .collection('Users')
-                    .updateOne({ user_id: customer.user_id }, { $inc: { point: -decreasePoint } });
-                await client
-                    .db(req.user.database)
-                    .collection('Customers')
-                    .updateOne({ customer_id: customer.customer_id }, { $inc: { point: -decreasePoint } });
-            }
         }
         _order.total_base_price = total_base_price;
         _order.total_profit = total_profit;
