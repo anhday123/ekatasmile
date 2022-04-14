@@ -15,6 +15,7 @@ import {
   Space,
   Popconfirm,
   notification,
+  Affix,
 } from 'antd'
 
 //icons
@@ -157,24 +158,25 @@ export default function Supplier() {
 
   return (
     <div className="card">
-      <TitlePage title="Quản lý nhà cung cấp">
-        <Space>
-          <SettingColumns
-            nameColumn="columnsSupplier"
-            columns={columns}
-            setColumns={setColumns}
-            columnsDefault={columnsSupplier}
-          />
-          <SupplierForm reloadData={_getSuppliers}>
-            <Permission permissions={[PERMISSIONS.them_nha_cung_cap]}>
-              <Button size="large" type="primary" icon={<PlusCircleOutlined />}>
-                Thêm nhà cung cấp
-              </Button>
-            </Permission>
-          </SupplierForm>
-        </Space>
-      </TitlePage>
-
+      <Affix offsetTop={60}>
+        <TitlePage title="Quản lý nhà cung cấp">
+          <Space>
+            <SettingColumns
+              nameColumn="columnsSupplier"
+              columns={columns}
+              setColumns={setColumns}
+              columnsDefault={columnsSupplier}
+            />
+            <SupplierForm reloadData={_getSuppliers}>
+              <Permission permissions={[PERMISSIONS.them_nha_cung_cap]}>
+                <Button size="large" type="primary" icon={<PlusCircleOutlined />}>
+                  Thêm nhà cung cấp
+                </Button>
+              </Permission>
+            </SupplierForm>
+          </Space>
+        </TitlePage>
+      </Affix>
       <Row style={{ marginTop: '1rem', border: '1px solid #d9d9d9', borderRadius: 5 }}>
         <Col xs={24} sm={24} md={6} lg={6} xl={6} style={{ height: FILTER_COL_HEIGHT }}>
           <Input

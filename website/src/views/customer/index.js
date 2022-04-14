@@ -17,6 +17,7 @@ import {
   Space,
   Popconfirm,
   Modal,
+  Affix,
 } from 'antd'
 
 //icons
@@ -193,6 +194,7 @@ export default function Customer() {
 
   return (
     <div className="card">
+      <Affix offsetTop={60}>
       <TitlePage title="Quản lý khách hàng">
         <Space>
           <Button
@@ -231,7 +233,7 @@ export default function Customer() {
           </Permission>
         </Space>
       </TitlePage>
-
+      </Affix>
       <Row gutter={[16, 16]} style={{ marginTop: 15 }}>
         <Col xs={24} sm={24} md={24} lg={10} xl={10}>
           <Row wrap={false} style={{ width: '100%', border: '1px solid #d9d9d9', borderRadius: 5 }}>

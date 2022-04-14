@@ -573,10 +573,11 @@ module.exports._importCompareCard = async (req, res, next) => {
     for (var j = 0; j < rows.length; j++) {
       rows[j].card_id = card_confirm_shipping.card_id
       var is_find = false
-      rows[j].tracking_number = rows[j].ma_van_don
-      rows[j].date_receive_order = rows[j].ngay_nhan_don
-      rows[j].date_complete_order = rows[j].ngay_hoan_thanh
-      rows[j].cod = rows[j].tien_cod
+      rows[j].tracking_number = rows[j]['ma_van_don_(*)']
+      rows[j].date_receive_order = rows[j]['ngay_nhan_don_(*)']
+      rows[j].date_complete_order = rows[j]['ngay_hoan_thanh_(*)']
+      rows[j].cod = rows[j]['tien_cod_(*)']
+      rows[j].fee_shipping = rows[j]['phi_giao_hang_(*)']
       rows[j].weight = rows[j].khoi_luong
       rows[j].fee_insurance = rows[j].phi_bao_hiem
       rows[j].fee_warehouse = rows[j].phi_luu_kho
