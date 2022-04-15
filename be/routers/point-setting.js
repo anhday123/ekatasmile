@@ -1,7 +1,7 @@
 const express = require(`express`)
 
 const router = express.Router()
-const setting = require(`../controllers/pointSetting`)
+const setting = require(`../controllers/point-setting`)
 const { auth } = require(`../middleware/jwt`)
 
 router.route(`/`).get(auth, setting._get)

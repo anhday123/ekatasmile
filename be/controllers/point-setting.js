@@ -3,7 +3,7 @@ const TIMEZONE = process.env.TIMEZONE;
 const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
 
-const pointService = require(`../services/pointSetting`);
+const pointService = require(`../services/point-setting`);
 
 let removeUnicode = (text, removeSpace) => {
     /*

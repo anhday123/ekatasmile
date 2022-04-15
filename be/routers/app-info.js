@@ -1,7 +1,7 @@
 const express = require(`express`);
 
 const router = express.Router();
-const appInfo = require(`../controllers/appinfo`);
+const appInfo = require(`../controllers/app-info`);
 const { auth } = require(`../middleware/jwt`);
 
 router.route(`/`).get(auth, appInfo._getAppInfo);
