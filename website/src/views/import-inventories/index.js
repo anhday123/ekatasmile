@@ -460,7 +460,7 @@ export default function ImportInventories() {
               style={{ top: 20 }}
               footer={null}
               title="Xuất file excel sản phẩm từ nhà cung cấp"
-              width={920}
+              width='60%'
               visible={visibleProductsToSupplier}
               onCancel={toggleProductsToSupplier}
             >
@@ -491,7 +491,7 @@ export default function ImportInventories() {
                       'Mã phiên bản': record.sku || '',
                       'Nhà cung cấp': record.supplier || '',
                       'Đơn vị': record.unit || '',
-                      'Đơn giá nhập': record.import_price || '',
+                      'Đơn giá nhập': record.import_price ? record.import_price : 0,
                       'Số lượng nhập': record.quantity || '',
                     }))
                     exportToCSV(dataExport, 'Danh sách sản phẩm')
@@ -682,6 +682,7 @@ export default function ImportInventories() {
         <Table
           loading={loading}
           size="small"
+          scroll={{ y: 350 }}
           dataSource={ordersInventory}
           columns={columns.map((column) => {
             if (column.key === 'stt')

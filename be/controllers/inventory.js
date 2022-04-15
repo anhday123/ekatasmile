@@ -1268,6 +1268,7 @@ module.exports._createTransportOrder = async (req, res, next) => {
 
 module.exports._createTransportOrderFile = async (req, res, next) => {
     try {
+        console.log(req.body);
         if (req.file == undefined) {
             throw new Error('400: Vui lòng truyền file!');
         }
@@ -1331,6 +1332,7 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
             .db(req.user.database)
             .collection('Branchs')
             .findOne({ branch_id: Number(req.body.import_location_id) });
+            console.log({ branch_id: Number(req.body.import_location_id) });
         if (!importLocation) {
             throw new Error(`400: Địa điểm nhập hàng không chính xác!`);
         }

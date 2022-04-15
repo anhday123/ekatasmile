@@ -102,11 +102,11 @@ export default function Reports() {
         dataExport = res.data.data.map((item, index) => ({
           STT: index + 1,
           'Mã phiếu': item.code || '',
-          'Kho kiểm hàng ': item.branch || '',
+          'Kho kiểm hàng ': item?.branch?.name || '',
           'Trạng thái': item.status || '',
           'Ngày tạo': item.create_date || '',
           'Ngày kiểm': item.inventory_date || '',
-          'Nhân viên tạo': item.creator || '',
+          'Nhân viên tạo': item.creator_info.name || '',
           'Ghi chú': item.note || '',
         }))
       }
@@ -126,45 +126,45 @@ export default function Reports() {
   return (
     <div className="card">
       <Affix offsetTop={60}>
-      <TitlePage title="Phiếu kiểm hàng">
-        <Space>
-          <Button
-            size="large"
-            onClick={_onClearFilters}
-            type="primary"
-            danger
-            style={{ display: Object.keys(paramsFilter).length <= 2 && 'none' }}
-          >
-            Xóa bộ lọc
-          </Button>
-          <Button
-            size="large"
-            onClick={_getStockAdjustmentToExport}
-            icon={<VerticalAlignTopOutlined />}
-            style={{ backgroundColor: 'green', borderColor: 'green', color: 'white' }}
-          >
-            Xuất excel
-          </Button>
-          <ImportCSV
-            size="large"
-            upload={importCheckInventoryNote}
-            reload={_getCheckInventoryNote}
-            title="Nhập phiếu kiểm hàng bằng file excel"
-            fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2021/12/22/0da13f2d-cb35-4b73-beca-a8ba3dedb47a/NhapKhoAO.xlsx"
-          />
-          <SettingColumns
-            columns={columns}
-            setColumns={setColumns}
-            columnsDefault={columnsStock}
-            nameColumn="columnsStockAdjustments"
-          />
-          <Link to={ROUTES.STOCK_ADJUSTMENTS_CREATE}>
-            <Button type="primary" size="large">
-              Tạo phiếu kiểm
+        <TitlePage title="Phiếu kiểm hàng">
+          <Space>
+            <Button
+              size="large"
+              onClick={_onClearFilters}
+              type="primary"
+              danger
+              style={{ display: Object.keys(paramsFilter).length <= 2 && 'none' }}
+            >
+              Xóa bộ lọc
             </Button>
-          </Link>
-        </Space>
-      </TitlePage>
+            <Button
+              size="large"
+              onClick={_getStockAdjustmentToExport}
+              icon={<VerticalAlignTopOutlined />}
+              style={{ backgroundColor: 'green', borderColor: 'green', color: 'white' }}
+            >
+              Xuất excel
+            </Button>
+            <ImportCSV
+              size="large"
+              upload={importCheckInventoryNote}
+              reload={_getCheckInventoryNote}
+              title="Nhập phiếu kiểm hàng bằng file excel"
+              fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2021/12/22/0da13f2d-cb35-4b73-beca-a8ba3dedb47a/NhapKhoAO.xlsx"
+            />
+            <SettingColumns
+              columns={columns}
+              setColumns={setColumns}
+              columnsDefault={columnsStock}
+              nameColumn="columnsStockAdjustments"
+            />
+            <Link to={ROUTES.STOCK_ADJUSTMENTS_CREATE}>
+              <Button type="primary" size="large">
+                Tạo phiếu kiểm
+              </Button>
+            </Link>
+          </Space>
+        </TitlePage>
       </Affix>
       <Row
         gutter={[0, 16]}
@@ -238,6 +238,7 @@ export default function Reports() {
 
       <Table
         size="small"
+        scroll={{ y: 400 }}
         dataSource={inventoryNote}
         columns={columns.map((column) => {
           if (column.key === 'stt')

@@ -360,6 +360,7 @@ export default function ShippingControl() {
         <Table
           dataSource={shippingControlList}
           loading={loading}
+          scroll={{ y: 400 }}
           style={{ width: '100%', marginTop: 20 }}
           size="small"
           columns={columns.map((column) => {

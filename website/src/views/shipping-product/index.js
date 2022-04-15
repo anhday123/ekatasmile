@@ -249,7 +249,7 @@ export default function ShippingProduct() {
                       style={{ width: 250 }}
                     >
                       {branches.map((e, index) => (
-                        <Select.Option value={e.name} key={index}>
+                        <Select.Option value={e.branch_id} key={index}>
                           {e.name}
                         </Select.Option>
                       ))}
@@ -268,7 +268,7 @@ export default function ShippingProduct() {
                       style={{ width: 250 }}
                     >
                       {branches.map((e, index) => (
-                        <Select.Option value={e.name} key={index}>
+                        <Select.Option value={e.branch_id} key={index}>
                           {e.name}
                         </Select.Option>
                       ))}
@@ -276,7 +276,7 @@ export default function ShippingProduct() {
                   </div>
                 </Row>
               }
-              fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/01/18/959734bd-5279-48e0-a22d-396ec9ac0960/InventoryTransport.xlsx"
+              fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/04/15/126ad172-797f-4bf1-bd8c-23e0ea98b70d/InventoryTransport.xlsx"
               reload={_getTransportOrders}
             />
             <SettingColumns
@@ -513,6 +513,7 @@ export default function ShippingProduct() {
 
       <Table
         size="small"
+        scroll={{ y: 400 }}
         loading={loading}
         columns={columns.map((column) => {
           if (column.key === 'stt') return { ...column, render: (data, record, index) => index + 1 }
