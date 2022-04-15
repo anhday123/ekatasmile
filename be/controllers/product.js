@@ -587,6 +587,7 @@ module.exports.importFileC = async (req, res, next) => {
             let optionRequire = [
                 'ma-san-pham',
                 'ten-san-pham',
+                'nha-cung-cap',
                 'thuoc-tinh-1',
                 'gia-tri-1',
                 'ma-phien-ban',
