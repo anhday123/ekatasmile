@@ -574,7 +574,7 @@ module.exports.importFileC = async (req, res, next) => {
             cellDates: true,
         });
         let rows = XLSX.utils.sheet_to_json(excelData.Sheets[excelData.SheetNames[0]]);
-        let productSlug = [];
+        let productSkus = [];
         let categorySlugs = [];
         let supplierSlugs = [];
         let taxSlugs = [];
@@ -594,7 +594,7 @@ module.exports.importFileC = async (req, res, next) => {
                 'gia-ban',
             ];
             for (let i in eRow) {
-                let field = stringHandle(i, { createSlug: true });
+                let field = stringHandle(i, { removeStringInBrackets: 'round', createSlug: true });
                 if (optionRequire.includes(field)) {
                     count++;
                 }
@@ -605,7 +605,7 @@ module.exports.importFileC = async (req, res, next) => {
             }
             if (_row['ten-san-pham']) {
                 _row['_ten-san-pham'] = stringHandle(_row['ten-san-pham'], { createSlug: true });
-                productSlug.push(_row['_ten-san-pham']);
+                productSkus.push(_row['ma-san-pham']);
             }
             if (_row['ten-danh-muc']) {
                 _row['_ten-danh-muc'] = stringHandle(_row['ten-danh-muc'], { createSlug: true });
@@ -639,7 +639,7 @@ module.exports.importFileC = async (req, res, next) => {
             }
             return _row;
         });
-        productSlug = [...new Set(productSlug)];
+        productSkus = [...new Set(productSkus)];
         categorySlugs = [...new Set(categorySlugs)];
         supplierSlugs = [...new Set(supplierSlugs)];
         taxSlugs = [...new Set(taxSlugs)];
@@ -651,7 +651,7 @@ module.exports.importFileC = async (req, res, next) => {
                 .db(req.user.database)
                 .collection('Products')
                 .find({
-                    slug_name: { $in: productSlug },
+                    sku: { $in: productSkus },
                 })
                 .toArray(),
             client
@@ -699,7 +699,7 @@ module.exports.importFileC = async (req, res, next) => {
         ]);
         let _products = {};
         products.map((eProduct) => {
-            _products[eProduct.product_id] = eProduct;
+            _products[eProduct.sku] = eProduct;
         });
         let _categories = {};
         categories.map((eCategory) => {
@@ -831,8 +831,9 @@ module.exports.importFileC = async (req, res, next) => {
                     insertBrands.push(_brand);
                     _brands[eRow['_ten-thuong-hieu']] = _brand;
                 }
+                console.log(_products[eRow['ma-san-pham']]);
+
                 if (!_products[eRow['ma-san-pham']]) {
-                    console.log(!isNaN(Number(eRow['chieu-dai'])) && Number(eRow['chieu-dai']));
                     if (!_insertProducts[eRow['ma-san-pham']]) {
                         _insertProducts[eRow['ma-san-pham']] = {
                             product_id: ++productId,
@@ -929,7 +930,7 @@ module.exports.importFileC = async (req, res, next) => {
                     for (let i = 1; ; i++) {
                         if (eRow[`thuoc-tinh-${i}`] && eRow[`gia-tri-${i}`]) {
                             let key =
-                                String(_products[eRow['ma-san-pham']].product_id) +
+                                String(_insertProducts[eRow['ma-san-pham']].product_id) +
                                 '-' +
                                 stringHandle(eRow[`thuoc-tinh-${i}`], { createSlug: true });
                             if (!_insertAttributes[key]) {
@@ -1151,31 +1152,35 @@ module.exports.importFileC = async (req, res, next) => {
             client
                 .db(req.user.database)
                 .collection('AppSetting')
-                .updateOne({ name: 'Products' }, { $set: { name: 'Products', value: product_id } }, { upsert: true }),
-            client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .updateOne({ name: 'Variants' }, { $set: { name: 'Variants', value: variant_id } }, { upsert: true }),
+                .updateOne({ name: 'Products' }, { $set: { name: 'Products', value: productId } }, { upsert: true }),
             client
                 .db(req.user.database)
                 .collection('AppSetting')
                 .updateOne(
-                    { name: 'Suppliers' },
-                    { $set: { name: 'Suppliers', value: supplier_id } },
+                    { name: 'Attributes' },
+                    { $set: { name: 'Attributes', value: attributeId } },
                     { upsert: true }
                 ),
+            client
+                .db(req.user.database)
+                .collection('AppSetting')
+                .updateOne({ name: 'Variants' }, { $set: { name: 'Variants', value: variantId } }, { upsert: true }),
+            client
+                .db(req.user.database)
+                .collection('AppSetting')
+                .updateOne({ name: 'Suppliers' }, { $set: { name: 'Suppliers', value: supplierId } }, { upsert: true }),
             client
                 .db(req.user.database)
                 .collection('AppSetting')
                 .updateOne(
                     { name: 'Categories' },
-                    { $set: { name: 'Categories', value: category_id } },
+                    { $set: { name: 'Categories', value: categoryId } },
                     { upsert: true }
                 ),
             client
                 .db(req.user.database)
                 .collection('AppSetting')
-                .updateOne({ name: 'Brands' }, { $set: { name: 'Brands', value: brand_id } }, { upsert: true }),
+                .updateOne({ name: 'Brands' }, { $set: { name: 'Brands', value: brandId } }, { upsert: true }),
         ]);
         res.send({ success: true, message: 'Tạo sản phẩm thành công!' });
     } catch (err) {
