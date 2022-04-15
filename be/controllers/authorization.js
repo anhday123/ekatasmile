@@ -319,10 +319,9 @@ module.exports._register = async (req, res, next) => {
             slug_district: '',
             slug_province: '',
         };
-        let customerType = {
+        let _customerType = {
             type_id: -1,
             name: 'Mặc định',
-            slug_name: 'thuong',
             description: 'Mặc định',
             require_point: 0,
             require_order: 0,
@@ -331,6 +330,7 @@ module.exports._register = async (req, res, next) => {
             creator_id: -1,
             last_update: moment().tz(TIMEZONE).format(),
             updater_id: -1,
+            slug_name: 'thuong',
         };
         let _paymentMethods = [
             {
@@ -373,8 +373,8 @@ module.exports._register = async (req, res, next) => {
             last_update: moment().tz(TIMEZONE).format(),
             updater_id: -1,
             active: true,
-            sub_name: 'bao-hanh-12-thang',
-            sub_type: 'thang',
+            slug_name: 'bao-hanh-12-thang',
+            slug_type: 'thang',
         };
         let _shippingCompany = {
             shipping_company_id: -1,
@@ -392,10 +392,10 @@ module.exports._register = async (req, res, next) => {
             last_update: moment().tz(TIMEZONE).format(),
             updater_id: -1,
             active: true,
-            sub_name: 'tu-giao-hang',
-            sub_address: '',
-            sub_district: '',
-            sub_province: '',
+            slug_name: 'tu-giao-hang',
+            slug_address: '',
+            slug_district: '',
+            slug_province: '',
         };
 
         await client
@@ -449,6 +449,7 @@ module.exports._register = async (req, res, next) => {
             client.db(DB).collection('Users').insertMany([_admin]),
             client.db(DB).collection('Suppliers').insertOne(_supplier),
             client.db(DB).collection('Customers').insertOne(_customer),
+            client.db(DB).collection('CustomerTypes').insertOne(_customerType),
             client.db(DB).collection('Roles').insertMany(_roles),
             client.db(DB).collection('Branchs').insertOne(_branch),
             client.db(DB).collection('PaymentMethods').insertMany(_paymentMethods),
