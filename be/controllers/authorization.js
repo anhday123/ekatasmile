@@ -444,7 +444,7 @@ module.exports._register = async (req, res, next) => {
         // Những model mặc định
         await Promise.all([
             client.db(SDB).collection('Business').insertOne(_business),
-            client.db(DB).collection('Users').insertMany([_admin, _employee]),
+            client.db(DB).collection('Users').insertMany([_admin]),
             client.db(DB).collection('Suppliers').insertOne(_supplier),
             client.db(DB).collection('Customers').insertOne(_customer),
             client.db(DB).collection('Roles').insertMany(_roles),
@@ -452,9 +452,6 @@ module.exports._register = async (req, res, next) => {
             client.db(DB).collection('PaymentMethods').insertMany(_paymentMethods),
             client.db(DB).collection('Warranties').insertOne(_warranty),
             client.db(DB).collection('ShippingCompanies').insertOne(_shippingCompany),
-            client.db(DB).collection('EnumStatusOrder').insertMany(enumStatusOrder),
-            client.db(DB).collection('CustomerTypes').insertMany(enumCustomerType),
-            client.db(DB).collection('EnumStatusShipping').insertMany(enumStatusShipping),
             _createUniqueKey(client, DB),
         ]).catch(async (err) => {
             await Promise.all([
