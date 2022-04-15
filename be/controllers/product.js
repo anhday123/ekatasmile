@@ -832,6 +832,7 @@ module.exports.importFileC = async (req, res, next) => {
                     _brands[eRow['_ten-thuong-hieu']] = _brand;
                 }
                 if (!_products[eRow['ma-san-pham']]) {
+                    console.log(!isNaN(Number(eRow['chieu-dai'])) && Number(eRow['chieu-dai']));
                     if (!_insertProducts[eRow['ma-san-pham']]) {
                         _insertProducts[eRow['ma-san-pham']] = {
                             product_id: ++productId,

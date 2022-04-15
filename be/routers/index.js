@@ -11,7 +11,7 @@ router.get('/check-working', (req, res, next) => {
 });
 
 router.use(`/authorization`, require(`./authorization`));
-router.use(`/app-info`, require(`./app-info`));
+router.use(`/appinfo`, require(`./app-info`));
 router.use(`/business`, require(`./business`));
 router.use(`/address`, require(`./address`));
 router.use('/enum', require('./enum'));
