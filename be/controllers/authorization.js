@@ -455,6 +455,7 @@ module.exports._register = async (req, res, next) => {
             client.db(DB).collection('EnumStatusOrder').insertMany(enumStatusOrder),
             client.db(DB).collection('CustomerTypes').insertMany(enumCustomerType),
             client.db(DB).collection('EnumStatusShipping').insertMany(enumStatusShipping),
+            _createUniqueKey(client, DB),
         ]).catch(async (err) => {
             await Promise.all([
                 client.db(SDB).collection('Business').deleteMany({ system_user_id: system_user_id }),
@@ -682,22 +683,6 @@ module.exports._verifyOTP = async (req, res, next) => {
         }
         if (user.active == false) {
             delete user.password;
-            if (rootUser) {
-                delete rootUser.password;
-                await client
-                    .db(SDB)
-                    .collection('Business')
-                    .updateOne(
-                        { username: req.body.username },
-                        {
-                            $set: {
-                                otp_code: false,
-                                otp_timelife: false,
-                                active: true,
-                            },
-                        }
-                    );
-            }
             await client
                 .db(DB)
                 .collection('Users')
@@ -755,12 +740,7 @@ module.exports._verifyOTP = async (req, res, next) => {
                 data: { accessToken: accessToken },
             });
         } else {
-            if (rootUser) {
-                await client
-                    .db(SDB)
-                    .collection('Business')
-                    .updateOne({ username: req.body.username }, { $set: { otp_code: true, otp_timelife: true } });
-            }
+            delete user.password;
             await client
                 .db(DB)
                 .collection('Users')
