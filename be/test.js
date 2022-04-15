@@ -1,22 +1,27 @@
-exports = async function (changeEvent) {
-    var docId = changeEvent.fullDocument._id;
+const client = require('./config/mongodb');
 
-    const countercollection = context.services.get('<ATLAS-CLUSTER>').db(changeEvent.ns.db).collection('counters');
-    const studentcollection = context.services
-        .get('<ATLAS-CLUSTER>')
-        .db(changeEvent.ns.db)
-        .collection(changeEvent.ns.coll);
+async function increasePoint(customer, point) {
+    const session = client.startSession();
+    session.startTransaction();
+    try {
+        let _customer = await client
+            .db('dangluuDB')
+            .collection('Customers')
+            .findOneAndUpdate(
+                { customer_id: customer.customer_id },
+                { $inc: { point: point } },
+                { session, returnOriginal: false }
+            );
+        // await session.commitTransaction();
+        session.endSession();
+    } catch (err) {
+        // await session.abortTransaction();
+        session.endSession();
+        throw err;
+    }
+}
 
-    var counter = await countercollection.findOneAndUpdate(
-        { _id: changeEvent.ns },
-        { $inc: { seq_value: 1 } },
-        { returnNewDocument: true, upsert: true }
-    );
-    var updateRes = await studentcollection.updateOne({ _id: docId }, { $set: { studentId: counter.seq_value } });
-
-    console.log(
-        `Updated ${JSON.stringify(changeEvent.ns)} with counter ${counter.seq_value} result : ${JSON.stringify(
-            updateRes
-        )}`
-    );
-};
+(async () => {
+    let customer = await client.db('dangluuDB').collection('Customers').findOne({ customer_id: 3 });
+    await increasePoint(customer, 10);
+})();

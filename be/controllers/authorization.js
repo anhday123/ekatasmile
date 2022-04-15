@@ -13,6 +13,7 @@ const { sendSMS } = require('../libs/sendSMS');
 const crypto = require('crypto');
 const { _permissions } = require('../templates/permissions');
 const { _menus } = require('../templates/menus');
+const { _createUniqueKey } = require('../templates/unique-key');
 const { stringHandle } = require('../utils/string-handle');
 
 let removeUnicode = (text, removeSpace) => {
@@ -75,21 +76,21 @@ module.exports._register = async (req, res, next) => {
                 mess: 'Tên doanh nghiệp đã tồn tại, vui lòng chọn tên khác',
             });
         }
-        req.body.username = String(req.body.username).trim().toLowerCase();
-        req.body.email = String(req.body.email).trim().toLowerCase();
-        req.body.password = bcrypt.hash(String(req.body.password));
-        if (/^((viesoftware)|(admin)|(root)|(app)|(login)|(register))$/gi.test(req.body.prefix)) {
+        req.body.username = req.body.username.trim().toLowerCase();
+        req.body.email = req.body.email.trim().toLowerCase();
+        req.body.password = bcrypt.hash(req.body.password);
+        if (/^((admin)|(root)|(app)|(login)|(register))$/gi.test(req.body.prefix)) {
             throw new Error(`400: Bạn không thể sử dụng tên doanh nghiệp này!`);
         }
-        let [business, user] = await Promise.all([
-            client.db(SDB).collection('Business').findOne({ prefix: req.body.prefix }),
-            client
-                .db(SDB)
-                .collection('Business')
-                .findOne({
-                    $or: [{ username: req.body.username }, { email: { $ne: '', $eq: req.body.email } }],
-                }),
-        ]);
+
+        let business = await client.db(SDB).collection('Business').findOne({ prefix: req.body.prefix });
+        let user = await client
+            .db(SDB)
+            .collection('Business')
+            .findOne({
+                $or: [{ username: req.body.username }, { email: { $ne: '', $eq: req.body.email } }],
+            });
+
         if (business) {
             throw new Error(`400: Tên doanh nghiệp đã được đăng ký!`);
         }
@@ -97,9 +98,8 @@ module.exports._register = async (req, res, next) => {
             throw new Error(`400: Số điện thoại hoặc email đã được sử dụng!`);
         }
         const DB = `${req.body.prefix}DB`;
-        let businessApp = await client.db(SDB).collection('AppSetting').findOne({ name: 'Business' });
-        let business_id = parseInt(businessApp.value) + 1;
-        var system_user_id = business_id;
+        let businessMaxId = await client.db(SDB).collection('AppSetting').findOne({ name: 'Business' });
+        let businessId = (businessMaxId && businessMaxId.value) || 0;
         let otpCode = String(Math.random()).substr(2, 6);
         let verifyId = crypto.randomBytes(10).toString(`hex`);
         let verifyLink = `https://${req.body.prefix}.${process.env.DOMAIN}/verify-account?uid=${verifyId}`;
@@ -109,17 +109,13 @@ module.exports._register = async (req, res, next) => {
             verify_link: verifyLink,
             verify_timelife: moment().tz(TIMEZONE).add(5, `minutes`).format(),
         };
-        await Promise.all([
-            mail.sendMail(req.body.email, `Yêu cầu xác thực`, verifyMail(otpCode, verifyLink)),
-            client.db(SDB).collection('VerifyLinks').insertOne(_verifyLink),
-        ]);
+        await mail.sendMail(req.body.email, `Yêu cầu xác thực`, verifyMail(otpCode, verifyLink));
+        await client.db(SDB).collection('VerifyLinks').insertOne(_verifyLink);
         let verifyMessage = `[VIESOFTWARE] Mã OTP của quý khách là ${otpCode}`;
         sendSMS([req.body.username], verifyMessage, 2, 'VIESOFTWARE');
-        business_id++;
-        system_user_id++;
         let _business = {
-            business_id: business_id,
-            system_user_id: system_user_id,
+            business_id: ++businessId,
+            username: req.body.username,
             prefix: req.body.prefix,
             business_name: req.body.business_name,
             database_name: DB,
@@ -146,49 +142,16 @@ module.exports._register = async (req, res, next) => {
                 }
                 return 'PHONE';
             })(),
-
-            system_user_id: system_user_id,
-            system_code: String(system_user_id).padStart(6, '0'),
-            user_id: 1,
-            code: String(1).padStart(6, '0'),
-            business_id: business_id,
-            username: req.body.username,
-            password: req.body.password,
-            system_role_id: 2,
-            role_id: 1,
-            email: req.body.email || '',
-            avatar: req.body.avatar || '',
-            first_name: req.body.first_name || '',
-            last_name: req.body.last_name || '',
-            name: req.body.first_name || '' + req.body.last_name || '',
-            birth_day: req.body.birth_day || moment().tz(TIMEZONE).format(),
-            address: req.body.address || '',
-            district: req.body.district || '',
-            province: req.body.province || '',
-            branch_id: 1,
-            store_id: 1,
-            otp_code: otpCode,
-            otp_timelife: moment().tz(TIMEZONE).add(5, 'minutes').format(),
-            last_login: moment().tz(TIMEZONE).format(),
-            create_date: moment().tz(TIMEZONE).format(),
-            creator_id: system_user_id,
-            last_update: moment().tz(TIMEZONE).format(),
-            updater_id: system_user_id,
             active: false,
-            slug_business_name: stringHandle(req.body.business_name, {
-                createSlug: true,
-            }),
-            slug_name: removeUnicode(`${req.body.first_name || ''}${req.body.last_name || ''}`, true).toLowerCase(),
-            slug_address: removeUnicode(`${req.body.address || ''}`, true).toLowerCase(),
-            slug_district: removeUnicode(`${req.body.district || ''}`, true).toLowerCase(),
-            slug_province: removeUnicode(`${req.body.province || ''}`, true).toLowerCase(),
         };
         let _admin = {
-            user_id: 1,
+            user_id: -1,
+            user_code: String(1).padStart(6, '0'),
+            employee_id: -1,
             code: String(1).padStart(6, '0'),
             username: req.body.username,
             password: req.body.password,
-            role_id: 1,
+            role_id: -1,
             email: req.body.email || '',
             avatar: req.body.avatar || 'https://' + process.env.DOMAIN + '/app/logo.png',
             first_name: req.body.first_name || '',
@@ -198,55 +161,25 @@ module.exports._register = async (req, res, next) => {
             address: req.body.address || '',
             district: req.body.district || '',
             province: req.body.province || '',
-            branch_id: 1,
-            store_id: 1,
+            branch_id: -1,
+            store_id: -1,
             otp_code: otpCode,
             otp_timelife: moment().tz(TIMEZONE).add(5, 'minutes').format(),
             last_login: moment().tz(TIMEZONE).format(),
             create_date: moment().tz(TIMEZONE).format(),
-            creator_id: 1,
+            creator_id: -1,
             last_update: moment().tz(TIMEZONE).format(),
-            updater_id: 1,
-            active: false,
-            slug_name: removeUnicode(`${req.body.first_name || ''}${req.body.last_name || ''}`, true).toLowerCase(),
-            slug_address: removeUnicode(`${req.body.address || ''}`, true).toLowerCase(),
-            slug_district: removeUnicode(`${req.body.district || ''}`, true).toLowerCase(),
-            slug_province: removeUnicode(`${req.body.province || ''}`, true).toLowerCase(),
-        };
-        let _employee = {
-            user_id: 2,
-            code: String(2).padStart(6, '0'),
-            username: 'nhanvienmacdinh',
-            password: 'nhanvienmacdinh',
-            role_id: 2,
-            email: '',
-            avatar: 'https://' + process.env.DOMAIN + '/app/logo.png',
-            first_name: 'Nhân viên mặc định',
-            last_name: '',
-            name: 'Nhân viên mặc định',
-            birth_day: moment().tz(TIMEZONE).format(),
-            address: '',
-            district: '',
-            province: '',
-            branch_id: 1,
-            store_id: 1,
-            otp_code: false,
-            otp_timelife: false,
-            last_login: moment().tz(TIMEZONE).format(),
-            create_date: moment().tz(TIMEZONE).format(),
-            creator_id: 1,
-            last_update: moment().tz(TIMEZONE).format(),
-            updater_id: 1,
+            updater_id: -1,
             active: true,
-            slug_name: removeUnicode('Nhân viên mặc định', true).toLowerCase(),
-            slug_address: removeUnicode('', true).toLowerCase(),
-            slug_district: removeUnicode('', true).toLowerCase(),
-            slug_province: removeUnicode('', true).toLowerCase(),
+            slug_name: stringHandle(req.body.first_name || '' + ' ' + req.body.last_name || '', { createSlug: true }),
+            slug_address: stringHandle(req.body.address || '', { createSlug: true }),
+            slug_district: stringHandle(req.body.district || '', { createSlug: true }),
+            slug_province: stringHandle(req.body.province || '', { createSlug: true }),
         };
         let _supplier = {
-            supplier_id: 1,
+            supplier_id: -1,
             code: String(1).padStart(6, '0'),
-            name: 'Mặc định',
+            name: 'Nhà cung cấp mặc định',
             logo: 'https://' + process.env.DOMAIN + '/app/logo.png',
             phone: '',
             email: '',
@@ -254,17 +187,17 @@ module.exports._register = async (req, res, next) => {
             district: '',
             province: '',
             create_date: moment().tz(TIMEZONE).format(),
-            creator_id: 1,
+            creator_id: -1,
             last_update: moment().tz(TIMEZONE).format(),
-            updater_id: 1,
+            updater_id: -1,
             active: true,
-            slug_name: removeUnicode(String('Mặc định'), true).toLowerCase(),
-            slug_address: removeUnicode(String(''), true).toLowerCase(),
-            slug_district: removeUnicode(String(''), true).toLowerCase(),
-            slug_province: removeUnicode(String(''), true).toLowerCase(),
+            slug_name: 'nha-cung-cap-mac-dinh',
+            slug_address: '',
+            slug_district: '',
+            slug_province: '',
         };
         let _customer = {
-            customer_id: 1,
+            customer_id: -1,
             code: String(1).padStart(6, '0'),
             phone: '0000000000',
             type_id: 1,
@@ -285,16 +218,16 @@ module.exports._register = async (req, res, next) => {
             order_quantity: 0,
             order_total_cost: 0,
             create_date: moment().tz(TIMEZONE).format(),
-            creator_id: 1,
+            creator_id: -1,
             last_update: moment().tz(TIMEZONE).format(),
-            updater_id: 1,
+            updater_id: -1,
             active: true,
-            slug_name: removeUnicode(String('Khách lẻ'), true).toLowerCase(),
-            slug_type: removeUnicode(String(''), true).toLowerCase(),
-            slug_gender: removeUnicode(String(''), true).toLowerCase(),
-            slug_address: removeUnicode(String(''), true).toLowerCase(),
-            slug_district: removeUnicode(String(''), true).toLowerCase(),
-            slug_province: removeUnicode(String(''), true).toLowerCase(),
+            slug_name: 'khach-le',
+            slug_type: '',
+            slug_gender: '',
+            slug_address: '',
+            slug_district: '',
+            slug_province: '',
         };
         let _roles = [
             {
@@ -305,57 +238,57 @@ module.exports._register = async (req, res, next) => {
                 menu_list: _menus,
                 default: true,
                 create_date: moment().tz(TIMEZONE).format(),
-                creator_id: 0,
+                creator_id: -1,
                 last_update: moment().tz(TIMEZONE).format(),
-                updater_id: 0,
+                updater_id: -1,
                 active: true,
                 slug_name: 'admin',
             },
             {
-                role_id: 2,
+                role_id: -2,
                 code: String(2).padStart(6, '0'),
                 name: 'EMPLOYEE',
                 permission_list: [],
                 menu_list: [],
                 default: true,
                 create_date: moment().tz(TIMEZONE).format(),
-                creator_id: 0,
+                creator_id: -1,
                 last_update: moment().tz(TIMEZONE).format(),
-                updater_id: 0,
+                updater_id: -1,
                 active: true,
                 slug_name: 'employee',
             },
             {
-                role_id: 3,
+                role_id: -3,
                 code: String(3).padStart(6, '0'),
                 name: 'SUPPLIER',
                 permission_list: [],
                 menu_list: [],
                 default: true,
                 create_date: moment().tz(TIMEZONE).format(),
-                creator_id: 0,
+                creator_id: -1,
                 last_update: moment().tz(TIMEZONE).format(),
-                updater_id: 0,
+                updater_id: -1,
                 active: true,
                 slug_name: 'admin',
             },
             {
-                role_id: 4,
+                role_id: -4,
                 code: String(4).padStart(6, '0'),
                 name: 'CUSTOMER',
                 permission_list: [],
                 menu_list: [],
                 default: true,
                 create_date: moment().tz(TIMEZONE).format(),
-                creator_id: 0,
+                creator_id: -1,
                 last_update: moment().tz(TIMEZONE).format(),
-                updater_id: 0,
+                updater_id: -1,
                 active: true,
                 slug_name: 'customer',
             },
         ];
         let _branch = {
-            branch_id: 1,
+            branch_id: -1,
             code: String(1).padStart(6, '0'),
             name: 'Chi nhánh mặc định',
             logo: 'https://' + process.env.DOMAIN + '/app/logo.png',
@@ -365,7 +298,7 @@ module.exports._register = async (req, res, next) => {
             website: '',
             latitude: '',
             longitude: '',
-            warehouse_type: 'Sở hữu',
+            warehouse_type: 'Store',
             address: '',
             ward: '',
             district: '',
@@ -373,47 +306,60 @@ module.exports._register = async (req, res, next) => {
             accumulate_point: false,
             use_point: false,
             create_date: moment().tz(TIMEZONE).format(),
-            creator_id: 1,
+            creator_id: -1,
             last_update: moment().tz(TIMEZONE).format(),
-            updater_id: 1,
+            updater_id: -1,
             active: true,
-            slug_name: 'chinhanhmacdinh',
-            slug_warehouse_type: 'sohuu',
+            slug_name: 'chi-nhanh-mac-dinh',
+            slug_warehouse_type: 'store',
             slug_address: '',
             slug_ward: '',
             slug_district: '',
             slug_province: '',
         };
+        let customerType = {
+            type_id: -1,
+            name: 'Mặc định',
+            slug_name: 'thuong',
+            description: 'Mặc định',
+            require_point: 0,
+            require_order: 0,
+            require_cost: 0,
+            create_date: moment().tz(TIMEZONE).format(),
+            creator_id: -1,
+            last_update: moment().tz(TIMEZONE).format(),
+            updater_id: -1,
+        };
         let _paymentMethods = [
             {
-                payment_method_id: Number(-1),
+                payment_method_id: -1,
                 code: String(1).padStart(6, '0'),
                 name: 'Tiền mặt',
                 images: [],
                 default: true,
                 create_date: moment().tz(TIMEZONE).format(),
-                creator_id: 1,
+                creator_id: -1,
                 last_update: moment().tz(TIMEZONE).format(),
-                updater_id: 1,
+                updater_id: -1,
                 active: true,
-                slug_name: removeUnicode(String('Tiền mặt'), true),
+                slug_name: 'tien-mat',
             },
             {
-                payment_method_id: Number(-2),
+                payment_method_id: -2,
                 code: String(2).padStart(6, '0'),
                 name: 'Điểm tích lũy',
                 images: [],
-                default: true,
+                default: false,
                 create_date: moment().tz(TIMEZONE).format(),
-                creator_id: 1,
+                creator_id: -1,
                 last_update: moment().tz(TIMEZONE).format(),
-                updater_id: 1,
+                updater_id: -1,
                 active: true,
-                slug_name: removeUnicode(String('Điểm tích lũy'), true),
+                slug_name: 'diem-tich-luy',
             },
         ];
         let _warranty = {
-            warranty_id: 1,
+            warranty_id: -1,
             code: String(1).padStart(6, '0'),
             name: 'Bảo hành 12 tháng',
             type: 'Tháng',
@@ -421,17 +367,17 @@ module.exports._register = async (req, res, next) => {
             description: '',
             default: true,
             create_date: moment().tz(TIMEZONE).format(),
-            creator_id: 1,
+            creator_id: -1,
             last_update: moment().tz(TIMEZONE).format(),
-            updater_id: 1,
+            updater_id: -1,
             active: true,
-            sub_name: removeUnicode('Bảo hành 12 tháng', true).toLowerCase(),
-            sub_type: removeUnicode('Tháng', true).toLowerCase(),
+            sub_name: 'bao-hanh-12-thang',
+            sub_type: 'thang',
         };
         let _shippingCompany = {
-            shipping_company_id: 1,
+            shipping_company_id: -1,
             code: String(1).padStart(6, '0'),
-            name: 'Đơn vị vận chuyển mặc định',
+            name: 'Tự giao hàng',
             image: 'https://' + process.env.DOMAIN + '/app/logo.png',
             phone: '',
             zipcode: '',
@@ -440,142 +386,61 @@ module.exports._register = async (req, res, next) => {
             province: '',
             default: true,
             create_date: moment().tz(TIMEZONE).format(),
-            creator_id: 1,
+            creator_id: -1,
             last_update: moment().tz(TIMEZONE).format(),
-            updater_id: 1,
+            updater_id: -1,
             active: true,
-            sub_name: removeUnicode('', true).toLowerCase(),
-            sub_address: removeUnicode('', true).toLowerCase(),
-            sub_district: removeUnicode('', true).toLowerCase(),
-            sub_province: removeUnicode('', true).toLowerCase(),
+            sub_name: 'tu-giao-hang',
+            sub_address: '',
+            sub_district: '',
+            sub_province: '',
         };
 
-        // // DRAFT  - PROCESSING - COMPLETE - CANCEL // - REFUND
-        var enumStatusOrder = [
-            {
-                name: 'DRAFT',
-                label: 'Lưu Nháp',
-                default: true,
-            },
-            {
-                name: 'PROCESSING',
-                label: 'Đang Xử Lí',
-            },
-            { name: 'COMPLETE', label: 'Hoàn Thành' },
-            { name: 'CANCEL', label: 'Huỷ Bỏ' },
-            { name: 'REFUND', label: 'Hoàn Trả' },
-        ];
+        await client
+            .db(SDB)
+            .collection('AppSetting')
+            .updateOne({ name: 'Business' }, { $set: { name: 'Business', value: businessId } }, { upsert: true });
+        await client
+            .db(DB)
+            .collection('AppSetting')
+            .updateOne({ name: 'Users' }, { $set: { name: 'Users', value: 1 } }, { upsert: true });
+        await client
+            .db(DB)
+            .collection('AppSetting')
+            .updateOne({ name: 'Suppliers' }, { $set: { name: 'Suppliers', value: 1 } }, { upsert: true });
+        await client
+            .db(DB)
+            .collection('AppSetting')
+            .updateOne({ name: 'Customers' }, { $set: { name: 'Customers', value: 1 } }, { upsert: true });
+        await client
+            .db(DB)
+            .collection('AppSetting')
+            .updateOne({ name: 'Roles' }, { $set: { name: 'Roles', value: 4 } }, { upsert: true });
+        await client
+            .db(DB)
+            .collection('AppSetting')
+            .updateOne({ name: 'Branchs' }, { $set: { name: 'Branchs', value: 1 } }, { upsert: true });
+        await client
+            .db(DB)
+            .collection('AppSetting')
+            .updateOne({ name: 'CustomerTypes' }, { $set: { name: 'CustomerTypes', value: 1 } }, { upsert: true });
+        await client
+            .db(DB)
+            .collection('AppSetting')
+            .updateOne({ name: 'PaymentMethods' }, { $set: { name: 'PaymentMethods', value: 2 } }, { upsert: true });
+        await client
+            .db(DB)
+            .collection('AppSetting')
+            .updateOne({ name: 'Warranties' }, { $set: { name: 'Warranties', value: 1 } }, { upsert: true });
+        await client
+            .db(DB)
+            .collection('AppSetting')
+            .updateOne(
+                { name: 'ShippingCompanies' },
+                { $set: { name: 'ShippingCompanies', value: 1 } },
+                { upsert: true }
+            );
 
-        // DRAFT - WATTING_FOR_SHIPPING - SHIPPING - COMPLETE - CANCEL
-        var enumStatusShipping = [
-            {
-                name: 'DRAFT',
-                label: 'Đợi Đóng Gói',
-                default: true,
-            },
-            {
-                name: 'PROCESSING',
-                label: 'Đợi Vận Chuyển',
-            },
-            { name: 'SHIPPING', label: 'Đang Vận Chuyển' },
-            { name: 'COMPLETE', label: 'Hoàn Thành' },
-            { name: 'CANCEL', label: 'Huỷ Bỏ' },
-        ];
-
-        // CUSTOMER TYPE
-        var enumCustomerType = [
-            {
-                type_id: 1,
-                name: 'Thường',
-                slug_name: 'thuong',
-                description: 'Mặc định',
-                condition_point: 10000,
-                creator_id: 1,
-                last_update: moment().tz(TIMEZONE).format(),
-                create_date: moment().tz(TIMEZONE).format(),
-            },
-            {
-                type_id: 2,
-                name: 'Đặc Biệt',
-                slug_name: 'dacbiet',
-                description: 'Mặc định',
-                condition_point: 10000,
-                creator_id: 1,
-                last_update: moment().tz(TIMEZONE).format(),
-                create_date: moment().tz(TIMEZONE).format(),
-            },
-            {
-                type_id: 3,
-                name: 'Trung Thành',
-                slug_name: 'trungthanh',
-                description: 'Mặc định',
-                condition_point: 10000,
-                creator_id: 1,
-                last_update: moment().tz(TIMEZONE).format(),
-                create_date: moment().tz(TIMEZONE).format(),
-            },
-            {
-                type_id: 4,
-                name: 'Vip',
-                slug_name: 'vip',
-                description: 'Mặc định',
-                condition_point: 10000,
-                creator_id: 1,
-                last_update: moment().tz(TIMEZONE).format(),
-                create_date: moment().tz(TIMEZONE).format(),
-            },
-        ];
-
-        await Promise.all([
-            client
-                .db(SDB)
-                .collection('AppSetting')
-                .updateOne({ name: 'Business' }, { $set: { name: 'Business', value: business_id } }, { upsert: true }),
-            client
-                .db(DB)
-                .collection('AppSetting')
-                .updateOne({ name: 'Users' }, { $set: { name: 'Users', value: 2 } }, { upsert: true }),
-            client
-                .db(DB)
-                .collection('AppSetting')
-                .updateOne({ name: 'Suppliers' }, { $set: { name: 'Suppliers', value: 1 } }, { upsert: true }),
-            client
-                .db(DB)
-                .collection('AppSetting')
-                .updateOne({ name: 'Customers' }, { $set: { name: 'Customers', value: 1 } }, { upsert: true }),
-            client
-                .db(DB)
-                .collection('AppSetting')
-                .updateOne({ name: 'Roles' }, { $set: { name: 'Roles', value: 4 } }, { upsert: true }),
-            client
-                .db(DB)
-                .collection('AppSetting')
-                .updateOne({ name: 'Branchs' }, { $set: { name: 'Branchs', value: 1 } }, { upsert: true }),
-            client
-                .db(DB)
-                .collection('AppSetting')
-                .updateOne({ name: 'CustomerTypes' }, { $set: { name: 'CustomerTypes', value: 4 } }, { upsert: true }),
-            client
-                .db(DB)
-                .collection('AppSetting')
-                .updateOne(
-                    { name: 'PaymentMethods' },
-                    { $set: { name: 'PaymentMethods', value: 2 } },
-                    { upsert: true }
-                ),
-            client
-                .db(DB)
-                .collection('AppSetting')
-                .updateOne({ name: 'Warranties' }, { $set: { name: 'Warranties', value: 1 } }, { upsert: true }),
-            client
-                .db(DB)
-                .collection('AppSetting')
-                .updateOne(
-                    { name: 'ShippingCompanies' },
-                    { $set: { name: 'ShippingCompanies', value: 1 } },
-                    { upsert: true }
-                ),
-        ]);
         // Những model mặc định
         await Promise.all([
             client.db(SDB).collection('Business').insertOne(_business),
