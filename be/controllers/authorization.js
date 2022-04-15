@@ -455,7 +455,7 @@ module.exports._register = async (req, res, next) => {
             _createUniqueKey(client, DB),
         ]).catch(async (err) => {
             await Promise.all([
-                client.db(SDB).collection('Business').deleteMany({ system_user_id: system_user_id }),
+                client.db(SDB).collection('Business').deleteMany({ business_id: businessId }),
                 client.db(DB).dropDatabase(),
             ]);
             console.log(err.message);
