@@ -831,8 +831,6 @@ module.exports.importFileC = async (req, res, next) => {
                     insertBrands.push(_brand);
                     _brands[eRow['_ten-thuong-hieu']] = _brand;
                 }
-                console.log(_products[eRow['ma-san-pham']]);
-
                 if (!_products[eRow['ma-san-pham']]) {
                     if (!_insertProducts[eRow['ma-san-pham']]) {
                         _insertProducts[eRow['ma-san-pham']] = {
