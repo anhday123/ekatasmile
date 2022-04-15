@@ -1121,6 +1121,7 @@ export default function Product() {
           style={{ width: '100%' }}
           rowSelection={{ selectedRowKeys, onChange: onSelectChange }}
           rowKey="product_id"
+          scroll={{ y: 400 }}
           expandable={{
             expandedRowRender: (record) => {
               return (

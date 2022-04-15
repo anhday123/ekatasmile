@@ -271,6 +271,7 @@ export default function ReportImportExportInventoryProduct() {
           dataSource={reports}
           size="small"
           bordered
+          scroll={{ y: 400 }}
           pagination={{
             position: ['bottomLeft'],
             current: paramsFilter.page,

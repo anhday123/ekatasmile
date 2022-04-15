@@ -268,6 +268,7 @@ export default function ReportImportExportInventoryProduct() {
           style={{ width: '100%' }}
           loading={loading}
           columns={columns}
+          scroll={{ y: 400 }}
           dataSource={reports}
           size="small"
           bordered

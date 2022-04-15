@@ -278,6 +278,7 @@ export default function Supplier() {
 
       <Table
         style={{ marginTop: 12, width: '100%' }}
+        scroll={{ y: 400 }}
         size="small"
         rowKey="_id"
         // rowSelection={rowSelection}

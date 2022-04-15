@@ -636,4 +636,4 @@ const BaseLayout = (props) => {
   )
 }
 
-export default BaseLayout
+export default React.memo(BaseLayout)

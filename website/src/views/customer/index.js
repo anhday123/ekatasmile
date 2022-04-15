@@ -404,6 +404,7 @@ export default function Customer() {
       <Table
         style={{ width: '100%', marginTop: 10 }}
         rowKey="customer_id"
+        scroll={{ y: 400 }}
         loading={tableLoading}
         columns={columns.map((column) => {
           if (column.key === 'stt')

@@ -7,4 +7,4 @@ export const deleteTransportOrder = (id) =>
 export const updateTransportOrder = (body, id) => patch('/inventory/transport/update/' + id, body)
 export const getStatusTransportOrder = () => get('/enum/transportorder')
 export const addTransportOrderWithFile = (formData) =>
-  post('/inventory/import/create/file', formData)
+  post('/inventory/transport/create/file', formData)

@@ -538,7 +538,7 @@ export default function DeliveryControl() {
         size="small"
         rowKey="order_id"
         loading={loading}
-        scroll={{ x: 1500 }}
+        scroll={{ x: 1500,y:400 }}
         expandable={{
           expandedRowRender: (record) => {
             return (

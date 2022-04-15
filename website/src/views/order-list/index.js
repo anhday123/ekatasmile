@@ -417,6 +417,7 @@ export default function OrderList() {
         size="small"
         rowKey="order_id"
         loading={loading}
+        scroll={{ y: 400 }}
         expandable={{
           expandedRowRender: (record) => {
             return (

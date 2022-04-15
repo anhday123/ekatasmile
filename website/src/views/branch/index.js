@@ -335,6 +335,7 @@ export default function Branch() {
           style={{ width: '100%', marginTop: 5 }}
           rowKey="branch_id"
           size="small"
+          scroll={{ y: 400 }}
           loading={loading}
           columns={columns.map((column) => {
             if (column.key === 'stt')
