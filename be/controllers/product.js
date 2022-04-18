@@ -269,8 +269,8 @@ module.exports._update = async (req, res, next) => {
         product.attributes.map((eAttribute) => {
             _attributes[eAttribute.attribute_id] = eAttribute;
         });
-        let updateAttributes = [];
         let insertAttributes = [];
+        let updateAttributes = [];
         if (req.body.attributes) {
             for (let i in req.body.attributes) {
                 let _attribute = { ...req.body.attributes[i] };
@@ -316,17 +316,18 @@ module.exports._update = async (req, res, next) => {
                 let _variant = { ...req.body.variants[i] };
                 if (!_variant.variant_id) {
                     insertVariants.push({
-                        variant_id: Number(variant_id),
-                        product_id: Number(_product.product_id),
-                        title: String(eVariant.title).toUpperCase(),
-                        sku: String(eVariant.sku).toUpperCase(),
-                        image: eVariant.image || [],
-                        options: eVariant.options || [],
+                        variant_id: ++variantId,
+                        code: String(variantId).padStart(6, '0'),
+                        product_id: product.product_id,
+                        title: String(_variant.title).toUpperCase(),
+                        sku: String(_variant.sku).toUpperCase(),
+                        image: _variant.image || [],
+                        options: _variant.options || [],
                         ...(() => {
-                            if (eVariant.options && eVariant.options > 0) {
+                            if (_variant.options && _variant.options > 0) {
                                 let options = {};
-                                for (let i = 0; i <= eVariant.options; i++) {
-                                    options[`option${i + 1}`] = eVariant.options[i];
+                                for (let i = 0; i <= _variant.options; i++) {
+                                    options[`option${i + 1}`] = _variant.options[i];
                                 }
                                 return options;
                             }
@@ -338,15 +339,52 @@ module.exports._update = async (req, res, next) => {
                             }
                             return '';
                         })(supplier),
-                        import_price_default: eVariant.import_price || 0,
-                        price: eVariant.price,
-                        enable_bulk_price: eVariant.enable_bulk_price || false,
-                        bulk_prices: eVariant.bulk_prices,
+                        import_price_default: _variant.import_price || 0,
+                        price: _variant.price,
+                        enable_bulk_price: _variant.enable_bulk_price || false,
+                        bulk_prices: _variant.bulk_prices,
                         create_date: moment().tz(TIMEZONE).format(),
+                        creator_id: req.user.user_id,
                         last_update: moment().tz(TIMEZONE).format(),
-                        creator_id: Number(req.user.user_id),
+                        updater_id: req.user.user_id,
                         active: true,
                         slug_title: removeUnicode(String(eVariant.title), true).toLowerCase(),
+                    });
+                } else {
+                    updateVariants.push({
+                        variant_id: _variant.variant_id,
+                        code: _variant.code,
+                        product_id: _variant.product_id,
+                        title: _variant.title,
+                        sku: _variant.sku,
+                        image: _variant.image || [],
+                        options: _variant.options || [],
+                        ...(() => {
+                            if (_variant.options && _variant.options > 0) {
+                                let options = {};
+                                for (let i = 0; i <= _variant.options; i++) {
+                                    options[`option${i + 1}`] = _variant.options[i];
+                                }
+                                return options;
+                            }
+                            return {};
+                        })(),
+                        supplier: ((supplier) => {
+                            if (supplier && supplier.name) {
+                                return supplier.name;
+                            }
+                            return '';
+                        })(supplier),
+                        import_price_default: _variant.import_price || 0,
+                        price: _variant.price,
+                        enable_bulk_price: _variant.enable_bulk_price || false,
+                        bulk_prices: _variant.bulk_prices,
+                        create_date: _variant.create_date,
+                        creator_id: _variant.creator_id,
+                        last_update: moment().tz(TIMEZONE).format(),
+                        updater_id: req.user.user_id,
+                        active: true,
+                        slug_title: stringHandle(_variant.title, { createSlug: true }),
                     });
                 }
             }
@@ -360,7 +398,35 @@ module.exports._update = async (req, res, next) => {
             .collection('AppSetting')
             .updateOne({ name: 'Variants' }, { $set: { name: 'Variants', value: variant_id } }, { upsert: true });
 
-        await productService._update(req, res, next);
+        await client
+            .db(req.user.database)
+            .collection('Products')
+            .updateOne({ product_id: _product.product_id }, { $set: _product });
+        if (insertAttributes.length > 0) {
+            await client.db(req.user.database).collection('Attributes').insertMany(insertAttributes);
+        }
+        if (updateAttributes.length > 0) {
+            for (let i in updateAttributes) {
+                delete updateAttributes[i]._id;
+                await client
+                    .db(req.user.database)
+                    .collection('Attributes')
+                    .updateOne({ attribute_id: updateAttributes[i].attribute_id }, { $set: updateAttributes[i] });
+            }
+        }
+        if (insertVariants.length > 0) {
+            await client.db(req.user.database).collection('Variants').insertMany(insertVariants);
+        }
+        if (updateVariants.length > 0) {
+            for (let i in updateVariants) {
+                delete updateVariants[i]._id;
+                await client
+                    .db(req.user.database)
+                    .collection('Variants')
+                    .updateOne({ variant_id: updateVariants[i].variant_id }, { $set: updateVariants[i] });
+            }
+        }
+        res.send({ success: true, data: 'Update success!' });
     } catch (err) {
         next(err);
     }
