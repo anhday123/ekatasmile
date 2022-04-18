@@ -259,12 +259,12 @@ export default function Product() {
             'Chiều cao': e.height,
             'Cân nặng': e.weight,
             'Đơn vị': e.unit,
-            Thuế: 'Có',
-            'Bảo hành': e.waranties && e.waranties.length ? 'Có' : 'Không',
+            'Thuế': 'Có',
+            'Bảo hành': e.warranties && e.warranties.length ? 'Có' : 'Không',
             'Thương hiệu': '',
             'Xuất xứ': '',
             'Tình trạng': 'Mới',
-            'Mô tả': e.description,
+            'Mô tả': e.description !== '' ? e.description : 'Chưa có mô tả',
             'Trạng thái': e.active ? 'Mở bán' : 'Ngừng bán',
           }
           e.attributes.map(
@@ -655,10 +655,10 @@ export default function Product() {
         setImagesView(
           record.image
             ? record.image.map((image, index) => {
-                const fileNames = image.split('/')
-                const fileName = fileNames[fileNames.length - 1]
-                return { uid: index, name: fileName, status: 'done', url: image, thumbUrl: image }
-              })
+              const fileNames = image.split('/')
+              const fileName = fileNames[fileNames.length - 1]
+              return { uid: index, name: fileName, status: 'done', url: image, thumbUrl: image }
+            })
             : []
         )
       }

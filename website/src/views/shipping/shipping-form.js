@@ -172,7 +172,7 @@ export default function ShippingForm({ children, reloadData, record }) {
         <Space>
           {/* <Permission permissions={[PERMISSIONS.them_doi_tac_van_chuyen]}></Permission> */}
           <Button 
-          // onClick={_addOrEditShipping} 
+          onClick={_addOrEditShipping} 
           type="primary" size="default">
             Thêm đối tác
           </Button>

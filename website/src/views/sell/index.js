@@ -1504,13 +1504,14 @@ export default function Sell() {
                   wrap={false}
                   className={styles['sell-product-header']}
                 >
-                  <Row>
+                  {/* <Row> */}
                     <div className={styles['header-stt']}>STT</div>
                     <div className={styles['header-remove']}></div>
                     <div className={styles['header-name']}>Tên sản phẩm</div>
+                    <div className={styles['header-remove']}></div>
                     <div className={styles['header-sku']}>Tên thuộc tính</div>
                     <div className={styles['header-unit']}>Đơn vị</div>
-                  </Row>
+                  {/* </Row> */}
                   <div className={styles['header-quantity']}>Số lượng</div>
                   <div className={styles['header-price']}>Đơn giá</div>
                   <div className={styles['header-sum-price']}>Tổng tiền</div>
