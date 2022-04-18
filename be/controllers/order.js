@@ -40,6 +40,7 @@ module.exports._create = async (req, res, next) => {
             let bytes = CryptoJS.AES.decrypt(hmac, 'vierthanhcong');
             let decryptedData = bytes.toString(CryptoJS.enc.Utf8);
             req.body = JSON.parse(decryptedData);
+            console.log(req.body);
         } catch (err) {
             console.log(err);
             throw new Error('400: Đơn hàng không chính xác!');
