@@ -34,8 +34,14 @@ export default function Role() {
   const history = useHistory()
   const dataUser = useSelector((state) => state.login.dataUser)
 
+  const [key, setKey] = useState('')
   const [visible, setVisible] = useState(false)
   const [treeAddData, setTreeAddData] = useState([])
+
+  const showDrawer = () => setVisible(true)
+
+  const onClose = () => setVisible(false)
+
   const PERMISSIONS_APP = [
     {
       pParent: 'tong_quan',
@@ -139,6 +145,7 @@ export default function Role() {
           pChildren: ['them_nhan_su', 'cap_nhat_nhan_su'],
         },
         { pParent: 'quan_li_thue', pChildren: ['them_thue'] },
+        { pParent: 'quan_li_phan_quyen', pChildren: ['tao_quyen'] },
         {
           pParent: 'quan_li_thanh_toan',
           pChildren: ['them_hinh_thuc_thanh_toan'],
@@ -153,32 +160,8 @@ export default function Role() {
         },
       ],
     },
-    {
-      pParent: 'quan_li_phan_quyen',
-      pChildren: ['tao_quyen'],
-    },
   ]
 
-  const showDrawer = () => {
-    setVisible(true)
-  }
-
-  const onClose = () => {
-    setVisible(false)
-  }
-
-  const [key, setKey] = useState('')
-  function callback(key) {
-    console.log('key', key)
-    setKey(key)
-  }
-
-  const openNotificationUpdateRole = () => {
-    notification.success({
-      message: 'Thành công',
-      description: 'Cập nhật quyền thành công',
-    })
-  }
   const _updatePermission = async (body) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
@@ -187,7 +170,7 @@ export default function Role() {
       console.log(res)
       if (res.status === 200) {
         await _getRoles()
-        openNotificationUpdateRole()
+        notification.success({ message: 'Cập nhật thành công', duration: 1 })
       }
       dispatch({ type: ACTION.LOADING, data: false })
     } catch (error) {
@@ -439,7 +422,7 @@ export default function Role() {
         </TitlePage>
 
         <div style={{ width: '100%' }}>
-          <Collapse accordion onChange={callback} expandIconPosition="left">
+          <Collapse accordion onChange={setKey} expandIconPosition="left">
             {rolePermission.map((values, index) => {
               if (
                 values.name === 'ADMIN' ||

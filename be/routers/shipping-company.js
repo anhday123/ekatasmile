@@ -4,7 +4,7 @@ const multer = require('multer');
 const _storage = multer.memoryStorage();
 const upload = multer({ storage: _storage });
 const router = express.Router();
-const shippingCompany = require(`../controllers/shippingCompany`);
+const shippingCompany = require(`../controllers/shipping-company`);
 const { auth } = require(`../middleware/jwt`);
 
 

@@ -502,7 +502,7 @@ module.exports._createImportOrderFile = async (req, res, next) => {
         let orderMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'ImportOrders' });
         let orderId = (orderMaxId && orderMaxId.value) || 0;
         let _orders = {};
-        rows.map((eRow) => {
+        rows.map((eRow, index) => {
             if (!_orders[eRow['ma-phieu-nhap']]) {
                 _orders[eRow['ma-phieu-nhap']] = {
                     order_id: ++orderId,
@@ -581,8 +581,8 @@ module.exports._createImportOrderFile = async (req, res, next) => {
                             }
                             throw new Error(`400: Sản phẩm ${eRow['ma-san-pham']} chưa có số lượng nhập!`);
                         })(),
-                        product_info: _products[eRow['masanpham']],
-                        variant_info: _variants[eRow['maphienban']],
+                        product_info: _products[eRow['ma-san-pham']],
+                        variant_info: _variants[eRow['ma-phien-ban']],
                     });
                     _orders[eRow['ma-phieu-nhap']].total_quantity += eRow['so-luong-nhap'];
                     _orders[eRow['ma-phieu-nhap']].total_cost += eRow['gia-nhap'] * eRow['so-luong-nhap'];
@@ -715,7 +715,7 @@ module.exports._updateImportOrder = async (req, res, next) => {
             _order['verifier_id'] = Number(req.user.user_id);
             _order['verify_date'] = moment().tz(TIMEZONE).format();
         }
-        if (_order.status == 'COMPLETE') {
+        if (_order.status == 'COMPLETE' && order.status != 'COMPLETE') {
             _order['verifier_id'] = Number(req.user.user_id);
             _order['verify_date'] = moment().tz(TIMEZONE).format();
             _order['completer_id'] = Number(req.user.user_id);
@@ -1003,10 +1003,8 @@ module.exports._createTransportOrder = async (req, res, next) => {
             }
             return 'Stores';
         })();
-        let [exportLocation, importLocation] = await Promise.all([
-            client.db(req.user.database).collection(exportAt).findOne(req.body.export_location),
-            client.db(req.user.database).collection(importAt).findOne(req.body.import_location),
-        ]);
+        let exportLocation = await client.db(req.user.database).collection(exportAt).findOne(req.body.export_location);
+        let importLocation = await client.db(req.user.database).collection(importAt).findOne(req.body.import_location);
         if (!exportLocation) {
             throw new Error('400: Địa điểm xuất hàng không chính xác!');
         }
@@ -1028,16 +1026,16 @@ module.exports._createTransportOrder = async (req, res, next) => {
             .toArray();
         let _products = {};
         products.map((product) => {
-            _products[String(product.product_id)] = product;
+            _products[product.product_id] = product;
         });
         let variants = await client
             .db(req.user.database)
             .collection('Variants')
-            .find({ product_id: { $in: productIds } })
+            .find({ variant_id: { $in: variantIds } })
             .toArray();
         let _variants = {};
         variants.map((variant) => {
-            _variants[String(variant.variant_id)] = variant;
+            _variants[variant.variant_id] = variant;
         });
         let total_cost = 0;
         let total_discount = 0;
@@ -1089,7 +1087,7 @@ module.exports._createTransportOrder = async (req, res, next) => {
             last_update: moment().tz(TIMEZONE).format(),
             active: true,
         };
-        if (order.status != 'COMPLETE') {
+        if (order.status == 'COMPLETE') {
             order['verifier_id'] = Number(req.user.user_id);
             order['verify_date'] = moment().tz(TIMEZONE).format();
             order['completer_id'] = Number(req.user.user_id);
@@ -1245,6 +1243,7 @@ module.exports._createTransportOrder = async (req, res, next) => {
                 );
             await client.db(req.user.database).collection('Locations').insertMany(insertLocations);
             for (let i in updateLocations) {
+                delete updateLocations[i]._id;
                 await client
                     .db(req.user.database)
                     .collection('Locations')
@@ -1269,6 +1268,7 @@ module.exports._createTransportOrder = async (req, res, next) => {
 
 module.exports._createTransportOrderFile = async (req, res, next) => {
     try {
+        console.log(req.body);
         if (req.file == undefined) {
             throw new Error('400: Vui lòng truyền file!');
         }
@@ -1279,7 +1279,6 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
         let rows = XLSX.utils.sheet_to_json(excelData.Sheets[excelData.SheetNames[0]]);
         let productSkus = [];
         let variantSkus = [];
-        let branchSlugs = [];
         rows = (() => {
             let result = [];
             for (let i = 0, len = rows.length; i < len; i++) {
@@ -1287,9 +1286,9 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
                 let _optionRequires = {
                     'ma-san-pham': 'string',
                     'ma-phien-ban': 'string',
-                    'gia-nhap': 'number',
-                    'so-luong-nhap': 'number',
+                    'so-luong': 'number',
                 };
+                let eRow = { ...rows[i] };
                 let errorColumns = [];
                 for (let j in eRow) {
                     let field = stringHandle(j, { removeStringInBrackets: 'round', createSlug: true });
@@ -1319,24 +1318,31 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
         })();
         productSkus = [...new Set(productSkus)];
         variantSkus = [...new Set(variantSkus)];
-        branchSlugs = [...new Set(branchSlugs)];
-        let [products, variants, branchs] = await Promise.all([
-            client
-                .db(req.user.database)
-                .collection('Products')
-                .find({ sku: { $in: productSkus } })
-                .toArray(),
-            client
-                .db(req.user.database)
-                .collection('Variants')
-                .find({ sku: { $in: variantSkus } })
-                .toArray(),
-            client
-                .db(req.user.database)
-                .collection('Branchs')
-                .find({ slug_name: { $in: branchSlugs } })
-                .toArray(),
-        ]);
+        let products = await client
+            .db(req.user.database)
+            .collection('Products')
+            .find({ sku: { $in: productSkus } })
+            .toArray();
+        let variants = await client
+            .db(req.user.database)
+            .collection('Variants')
+            .find({ sku: { $in: variantSkus } })
+            .toArray();
+        let importLocation = await client
+            .db(req.user.database)
+            .collection('Branchs')
+            .findOne({ branch_id: Number(req.body.import_location_id) });
+            console.log({ branch_id: Number(req.body.import_location_id) });
+        if (!importLocation) {
+            throw new Error(`400: Địa điểm nhập hàng không chính xác!`);
+        }
+        let exportLocation = await client
+            .db(req.user.database)
+            .collection('Branchs')
+            .findOne({ branch_id: Number(req.body.export_location_id) });
+        if (!exportLocation) {
+            throw new Error(`400: Địa điểm xuất hàng không chính xác!`);
+        }
         let _products = {};
         let _productIds = [];
         products.map((eProduct) => {
@@ -1349,12 +1355,6 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
             _variants[eVariant.sku] = eVariant;
             _variantIds.push(eVariant.variant_id);
         });
-        let _branchs = {};
-        let _branchIds = [];
-        branchs.map((eBranch) => {
-            _branchs[eBranch.slug_name] = eBranch;
-            _branchIds.push(eBranch.branch_id);
-        });
         let orderMaxId = await client.db(DB).collection('AppSetting').findOne({ name: 'TransportOrders' });
         let orderId = (orderMaxId && orderMaxId.value) || 0;
         let _orders = {};
@@ -1363,18 +1363,8 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
                 _orders[eRow['ma-phieu-chuyen']] = {
                     order_id: ++orderId,
                     code: String(orderId).padStart(6, '0'),
-                    export_location: (() => {
-                        if (_branchs[eRow['_tennoixuathang']]) {
-                            return { branch_id: _branchs[eRow['_tennoixuathang']].branch_id };
-                        }
-                        throw new Error(`400: Địa điểm xuất hàng không chính xác!`);
-                    })(),
-                    import_location: (() => {
-                        if (_branchs[eRow['_tennoinhaphang']]) {
-                            return { branch_id: _branchs[eRow['_tennoinhaphang']].branch_id };
-                        }
-                        throw new Error(`400: Địa điểm xuất hàng không chính xác!`);
-                    })(),
+                    export_location: { branch_id: exportLocation.branch_id },
+                    import_location: { branch_id: importLocation.branch_id },
                     products: [],
                     total_quantity: 0,
                     total_cost: 0,
@@ -1391,7 +1381,7 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
                     payment_info: [],
                     // UNPAID - PAYING - PAID
                     payment_status: 'PAID',
-                    delivery_time: moment(eRow['ngayxuathang']).tz(TIMEZONE).format(),
+                    delivery_time: moment(eRow['ngay-xuat-hang']).tz(TIMEZONE).format(),
                     create_date: moment().tz(TIMEZONE).format(),
                     creator_id: req.user.user_id,
                     verify_date: '',
@@ -1406,43 +1396,39 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
                     active: true,
                 };
             }
-            if (_orders[eRow['maphieuchuyen']]) {
-                if (eRow['masanpham'] && eRow['maphienban']) {
-                    _orders[eRow['maphieuchuyen']].products.push({
+            if (_orders[eRow['ma-phieu-chuyen']]) {
+                if (eRow['ma-san-pham'] && eRow['ma-phien-ban']) {
+                    _orders[eRow['ma-phieu-chuyen']].products.push({
                         product_id: (() => {
-                            if (_products[eRow['masanpham']]) {
-                                return _products[eRow['masanpham']].product_id;
+                            if (_products[eRow['ma-san-pham']]) {
+                                return _products[eRow['ma-san-pham']].product_id;
                             }
-                            throw new Error(`400: Sản phẩm ${eRow['masanpham']} không tồn tại!`);
+                            throw new Error(`400: Sản phẩm ${eRow['ma-san-pham']} không tồn tại!`);
                         })(),
                         variant_id: (() => {
-                            if (_variants[eRow['maphienban']]) {
-                                return _variants[eRow['maphienban']].variant_id;
+                            if (_variants[eRow['ma-phien-ban']]) {
+                                return _variants[eRow['ma-phien-ban']].variant_id;
                             }
-                            throw new Error(`400: Phiên bản ${eRow['maphienban']} không tồn tại!`);
+                            throw new Error(`400: Phiên bản ${eRow['ma-phien-ban']} không tồn tại!`);
                         })(),
                         quantity: (() => {
-                            if (eRow['soluong']) {
-                                return eRow['soluong'];
+                            if (eRow['so-luong']) {
+                                return eRow['so-luong'];
                             }
-                            throw new Error(`400: Sản phẩm ${eRow['masanpham']} chưa có số lượng nhập!`);
+                            throw new Error(`400: Sản phẩm ${eRow['ma-san-pham']} chưa có số lượng nhập!`);
                         })(),
-                        product_info: _products[eRow['masanpham']],
-                        variant_info: _variants[eRow['maphienban']],
+                        product_info: _products[eRow['ma-san-pham']],
+                        variant_info: _variants[eRow['ma-phien-ban']],
                     });
-                    _orders[eRow['maphieuchuyen']].total_quantity += eRow['soluong'];
-                    _orders[eRow['maphieuchuyen']].service_fee = eRow['chiphidichvu'] || 0;
-                    _orders[eRow['maphieuchuyen']].fee_shipping = eRow['phivanchuyen'] || 0;
-                    _orders[eRow['maphieuchuyen']].final_cost = eRow['tongcong(vnd)'] || 0;
-                    _orders[eRow['maphieuchuyen']].note = eRow['ghichu'] || '';
+                    _orders[eRow['ma-phieu-chuyen']].total_quantity += eRow['so-luong'];
+                    _orders[eRow['ma-phieu-chuyen']].service_fee = eRow['chi-phi-dich-vu'] || 0;
+                    _orders[eRow['ma-phieu-chuyen']].fee_shipping = eRow['phi-van-chuyen'] || 0;
+                    _orders[eRow['ma-phieu-chuyen']].final_cost = eRow['tong-cong'] || 0;
+                    _orders[eRow['ma-phieu-chuyen']].note = eRow['ghi-chu'] || '';
                 }
             }
         });
         let orders = Object.values(_orders);
-        let insert = await client.db(req.user.database).collection('TransportOrders').insertMany(orders);
-        if (!insert.insertedIds) {
-            throw new Error(`500: Tạo phiếu chuyển thất bại!`);
-        }
         await client
             .db(req.user.database)
             .collection('AppSetting')
@@ -1451,10 +1437,11 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
                 { $set: { name: 'TransportOrders', value: orderId } },
                 { upsert: true }
             );
-        res.send({
-            success: true,
-            data: orders,
-        });
+        let insert = await client.db(req.user.database).collection('TransportOrders').insertMany(orders);
+        if (!insert.insertedIds) {
+            throw new Error(`500: Tạo phiếu chuyển thất bại!`);
+        }
+        res.send({ success: true, data: orders });
     } catch (err) {
         next(err);
     }
@@ -1477,43 +1464,41 @@ module.exports._updateTransportOrder = async (req, res, next) => {
         });
         productIds = [...new Set(productIds)];
         variantIds = [...new Set(variantIds)];
-        let [products, variants] = await Promise.all([
-            client
-                .db(req.user.database)
-                .collection('Products')
-                .find({ product_id: { $in: productIds } })
-                .toArray(),
-            client
-                .db(req.user.database)
-                .collection('Variants')
-                .find({ product_id: { $in: productIds } })
-                .toArray(),
-        ]);
+        let products = await client
+            .db(req.user.database)
+            .collection('Products')
+            .find({ product_id: { $in: productIds } })
+            .toArray();
+        let variants = await client
+            .db(req.user.database)
+            .collection('Variants')
+            .find({ product_id: { $in: productIds } })
+            .toArray();
+
         let _products = {};
         products.map((product) => {
-            _products[String(product.product_id)] = product;
+            _products[product.product_id] = product;
         });
         let _variants = {};
         variants.map((variant) => {
-            _variants[String(variant.variant_id)] = variant;
+            _variants[variant.variant_id] = variant;
         });
         let total_cost = 0;
         let total_discount = 0;
         let final_cost = 0;
         let total_quantity = 0;
-        _order.products = _order.products.map((product) => {
-            total_cost += product.quantity * product.import_price;
-            total_discount += product.discount || 0;
-            final_cost += product.quantity * product.import_price - product.discount || 0;
-            total_quantity += product.quantity;
+        _order.products = _order.products.map((eProduct) => {
+            total_cost += eProduct.quantity * eProduct.import_price;
+            total_discount += eProduct.discount || 0;
+            final_cost += eProduct.quantity * eProduct.import_price - eProduct.discount || 0;
+            total_quantity += eProduct.quantity;
             return {
-                ...product,
-                product_info: _products[product.product_id],
-                variant_info: _variants[product.variant_id],
+                ...eProduct,
+                product_info: _products[eProduct.product_id],
+                variant_info: _variants[eProduct.variant_id],
             };
         });
         _order = {
-            business_id: Number(_order.business_id),
             order_id: _order.order_id,
             code: _order.code,
             export_location: _order.export_location,
@@ -1670,7 +1655,7 @@ module.exports._updateTransportOrder = async (req, res, next) => {
                 await client.db(req.user.database).collection('Inventories').insertMany(insertInventories);
             }
         }
-        if (_order.status == 'COMPLETE' && order.status != 'COMPLETE') {
+        if (_order.status == 'COMPLETE' && order.status == 'VERIFY') {
             _order['completer_id'] = Number(req.user.user_id);
             _order['complete_date'] = moment().tz(TIMEZONE).format();
             let locationMaxId = await client
@@ -1739,6 +1724,8 @@ module.exports._updateTransportOrder = async (req, res, next) => {
             if (insertInventories.length > 0) {
                 await client.db(req.user.database).collection('Inventories').insertMany(insertInventories);
             }
+        } else {
+            throw new Error(`400: Phiếu chuyển hàng chưa được xác nhận!`);
         }
         if (_order.status == 'CANCEL' && order.status != 'CANCEL') {
             _order['canceler_id'] = Number(req.user.user_id);
@@ -1947,6 +1934,7 @@ module.exports._getInventoryNote = async (req, res, next) => {
         next(err);
     }
 };
+
 module.exports._createInventoryNote = async (req, res, next) => {
     try {
         let inventoryNoteMaxId = await client
@@ -2017,12 +2005,14 @@ module.exports._createInventoryNote = async (req, res, next) => {
         next(err);
     }
 };
+
 module.exports._createInventoryNoteFile = async (req, res, next) => {
     try {
     } catch (err) {
         next(err);
     }
 };
+
 module.exports._updateInventoryNote = async (req, res, next) => {
     try {
         req.params.inventory_note_id = Number(req.params.inventory_note_id);
@@ -2148,6 +2138,7 @@ module.exports._updateInventoryNote = async (req, res, next) => {
         next(err);
     }
 };
+
 module.exports._deleteInventoryNote = async (req, res, next) => {
     try {
     } catch (err) {

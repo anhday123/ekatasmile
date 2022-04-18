@@ -8,7 +8,7 @@ import { validatePhone } from 'utils'
 import { Select, Button, Input, Form, Row, Col, DatePicker, notification, Radio } from 'antd'
 
 //apis
-import { getDistricts, getProvinces } from 'apis/address'
+import { getDistricts, getProvinces, getWards } from 'apis/address'
 import { addCustomer, updateCustomer, getCustomerTypes, addCustomerType } from 'apis/customer'
 
 const { Option } = Select
@@ -18,7 +18,10 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
 
   const [districts, setDistricts] = useState([])
   const [provinces, setProvinces] = useState([])
+  const [ward, setWard] = useState([])
   const [provinceName, setProvinceName] = useState('')
+  const [districtName, setDistrictsName] = useState('')
+  const [wardValue, setWardValue] = useState({})
   const [customerTypes, setCustomerTypes] = useState([])
   const [type, setType] = useState('')
   const [loadingBtn, setLoadingBtn] = useState(false)
@@ -69,8 +72,13 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
         address: values.address || '',
         province: values.province || '',
         district: values.district || '',
+        province_id: wardValue.province_id || '',
+        district_id: wardValue.district_id || '',
+        ward_code: wardValue.ward_code || '',
+        ward: wardValue,
         balance: [],
       }
+      console.log(body)
       let res
       if (record) res = await updateCustomer(record.customer_id, body)
       else res = await addCustomer(body)
@@ -107,6 +115,7 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
       birthday: moment(new Date('1991-01-01')),
       district: districts[0] && districts[0].district_name,
       province: provinces[0] && provinces[0].province_name,
+      ward: ward[0] && ward[0].ward_name,
     })
   }
 
@@ -136,7 +145,19 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
       console.log(error)
     }
   }
-
+  const _getWard = async () => {
+    try {
+      const res = await getWards()
+      console.log(res)
+      if (res.status === 200) setWard(res.data.data)
+      if (res.data.data && res.data.data.length && !record) {
+        // setWard(res.data.data[0].province_name)
+        // form.setFieldsValue({ province: res.data.data[0].province_name })
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
   const _getCustomerTypes = async () => {
     try {
       const res = await getCustomerTypes()
@@ -150,10 +171,11 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
     _getDistricts()
     _getProvinces()
     _getCustomerTypes()
-
+    _getWard()
     if (!record) initForm()
     else {
       setProvinceName(record.province || '')
+      setDistrictsName(record.district || '')
       form.setFieldsValue({
         ...record,
         birthday: moment(new Date(record.birthday)),
@@ -161,7 +183,6 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
       })
     }
   }, [])
-
   return (
     <Form layout="vertical" onFinish={onFinish} form={form}>
       <Row justify="space-between" align="middle">
@@ -251,29 +272,6 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
         </Col>
 
         <Col xs={24} sm={24} md={11} lg={11} xl={11}>
-          <Form.Item label="Quận/huyện" name="district">
-            <Select
-              allowClear
-              size="large"
-              placeholder="Chọn quận/huyện"
-              showSearch
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-            >
-              {districts
-                .filter((d) => !provinceName || d.province_name === provinceName)
-                .map((e, index) => (
-                  <Option value={e.district_name} key={index}>
-                    {e.district_name}
-                  </Option>
-                ))}
-            </Select>
-          </Form.Item>
-        </Col>
-
-        <Col xs={24} sm={24} md={11} lg={11} xl={11}>
           <Form.Item label="Tỉnh/thành phố" name="province">
             <Select
               allowClear
@@ -295,6 +293,59 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
                   {e.province_name}
                 </Option>
               ))}
+            </Select>
+          </Form.Item>
+        </Col>
+        <Col xs={24} sm={24} md={11} lg={11} xl={11}>
+          <Form.Item label="Quận/huyện" name="district">
+            <Select
+              allowClear
+              size="large"
+              placeholder="Chọn quận/huyện"
+              showSearch
+              optionFilterProp="children"
+              value={districtName}
+              onChange={(value) => {
+                setDistrictsName(value)
+              }}
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+            >
+              {districts
+                .filter((d) => !provinceName || d.province_name === provinceName)
+                .map((e, index) => (
+                  <Option value={e.district_name} key={index}>
+                    {e.district_name}
+                  </Option>
+                ))}
+            </Select>
+          </Form.Item>
+        </Col>
+        <Col xs={24} sm={24} md={11} lg={11} xl={11}>
+          <Form.Item label="Phường/xã" name="ward">
+            <Select
+              allowClear
+              size="large"
+              placeholder="Chọn phường/xã"
+              showSearch
+              onChange={(e) => {
+                const value = ward.filter((value) => value.ward_name === e)
+                // console.log(value)
+                value.map((item) => setWardValue(item))
+              }}
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+            >
+              {ward
+                .filter((d) => !districtName || d.district_name === districtName)
+                .map((e, index) => (
+                  <Option value={e.ward_name} key={index}>
+                    {e.ward_name}
+                  </Option>
+                ))}
             </Select>
           </Form.Item>
         </Col>

@@ -47,7 +47,7 @@ import {
   Tag,
   notification,
   Col,
-  Form,
+  Checkbox,
 } from 'antd'
 
 //icons antd
@@ -195,18 +195,46 @@ export default function Sell() {
   }
 
   const _addProductToCartInvoice = (product) => {
-    const buttonsBottom = (
+    const keyNoti = 'product'
+    const ButtonsBottom = () => (
       <Row>
         <Col span={8}>
           <ModalQuantityProductInStores btn="Xem sản phẩm ở chi nhánh khác" product={product} />
         </Col>
         <Col span={8} offset={7}>
-          <Button type="primary">Bán hàng pre-order</Button>
+          <Button
+            type="primary"
+            onClick={() => {
+              _addProductToCartInvoice({ ...product, total_quantity: 1000 })
+              notification.close(keyNoti)
+            }}
+          >
+            Bán hàng pre-order
+          </Button>
         </Col>
       </Row>
     )
 
+    const productInsufficientQuantity = () =>
+      notification.warning({
+        key: keyNoti,
+        message: (
+          <div>
+            <div>Sản phẩm không đủ số lượng để bán, bạn muốn tạo đơn hàng đặt trước ?</div>
+            <ButtonsBottom />
+          </div>
+        ),
+        style: { width: 550 },
+      })
+
     if (product) {
+      if (!product.active) {
+        notification.warning({
+          message: 'Sản phẩm này đã tắt bán, vui lòng mở bán lại để tiếp tục',
+        })
+        return
+      }
+
       //check product có đủ số lượng
       if (product.total_quantity !== 0) {
         const invoicesNew = [...invoices]
@@ -327,13 +355,7 @@ export default function Sell() {
         invoicesNew[indexInvoice].excessCash = excessCashNew >= 0 ? excessCashNew : 0
 
         setInvoices([...invoicesNew])
-      } else
-        notification.warning({
-          // message: 'Sản phẩm không đủ số lượng để bán, vui lòng chọn sản phẩm khác!',
-          message: 'Sản phẩm không đủ số lượng để bán, bạn muốn tạo đơn hàng đặt trước ?',
-          buttonsBottom,
-          style: { width: 500 },
-        })
+      } else productInsufficientQuantity()
     }
   }
 
@@ -541,7 +563,7 @@ export default function Sell() {
   const ModalQuantityProductInStores = ({ product, btn }) => {
     const [visible, setVisible] = useState(false)
     const toggle = () => setVisible(!visible)
-
+    // console.log(product)
     const [locations, setLocations] = useState([])
 
     const column = [
@@ -578,8 +600,9 @@ export default function Sell() {
     useEffect(() => {
       for (let i = 0; i < productsAllBranch.length; i++) {
         for (let j = 0; j < productsAllBranch[i].variants.length; j++) {
-          const findVariant = productsAllBranch[i].variants.find((e) => e._id === product._id)
+          const findVariant = productsAllBranch[i].variants.find((e) => e.variant_id === product.variant_id)
           if (findVariant) {
+            // console.log(findVariant)
             setLocations([...findVariant.locations])
             break
           }
@@ -1041,11 +1064,16 @@ export default function Sell() {
           ? invoices[indexInvoice].prepay || 0
           : invoices[indexInvoice].moneyGivenByCustomer || 0,
         customer_debt: 0,
-        bill_status: 'COMPLETE',
+        bill_status: invoices[indexInvoice].order_details.find(
+          (product) => product.total_quantity === 0
+        )
+          ? 'PRE-ORDER'
+          : 'COMPLETE', // nếu trong đơn hàng có sản phẩm bị hết sl -> đơn hàng bán trước
         ship_status: SHIP_STATUS_ORDER.DRAFT,
         note: invoices[indexInvoice].noteInvoice || '',
         tags: [],
         channel: invoices[indexInvoice].salesChannel,
+        is_delivery: invoices[indexInvoice].isDelivery,
       }
 
       //encrypt body create order
@@ -1174,6 +1202,7 @@ export default function Sell() {
   const _getProducts = async () => {
     try {
       const res = await getProducts({ merge: true, branch_id: branchIdApp || '' })
+      console.log(res)
       if (res.status === 200) setProductsAllBranch(res.data.data)
     } catch (error) {
       console.log(error)
@@ -1198,7 +1227,7 @@ export default function Sell() {
       setLoadingProductRelated(true)
 
       const res = await getProducts({ branch_id: branchIdApp || '', detach: true, ...params })
-
+      console.log(res)
       if (res.status === 200) {
         setProductsRelated(res.data.data.map((e) => ({ ...e.variants, active: e.active })))
         setCountProducts(res.data.count)
@@ -1361,7 +1390,11 @@ export default function Sell() {
                       </Row>
                       <Row wrap={false} justify="space-between">
                         <p style={{ marginBottom: 0, fontWeight: 500 }}>
-                          {data.active ? 'Đang mở bán' : 'Đã tắt bán'}
+                          {data.active ? (
+                            'Đang mở bán'
+                          ) : (
+                            <div style={{ color: '#ff6666' }}>Đã tắt bán</div>
+                          )}
                         </p>
                       </Row>
                       <Row wrap={false} justify="space-between">
@@ -1708,7 +1741,11 @@ export default function Sell() {
                             {formatCash(product.price)} VNĐ
                           </p>
                           <p style={{ fontSize: 12 }} className={styles['product-item__price']}>
-                            {product.active ? 'Mở bán' : 'Tắt bán'}
+                            {product.active ? (
+                              'Mở bán'
+                            ) : (
+                              <div style={{ color: '#FF6666' }}>Tắt bán</div>
+                            )}
                           </p>
                         </Row>
                       </div>
@@ -2118,6 +2155,9 @@ export default function Sell() {
           <div style={{ marginBottom: 60, marginTop: 10 }}>
             Ghi chú <EditOutlined />
             <NoteInvoice />
+            {/* <div>
+              <Checkbox ></Checkbox>
+            </div> */}
           </div>
 
           <Row justify="center" align="middle" className={styles['sell-right__footer-btn']}>

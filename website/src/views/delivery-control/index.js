@@ -8,6 +8,7 @@ import {
   PAGE_SIZE_OPTIONS,
   FILTER_SIZE,
   FILTER_COL_HEIGHT,
+  IMAGE_DEFAULT,
 } from 'consts'
 import { compare, formatCash, compareCustom, tableSum } from 'utils'
 import { useReactToPrint } from 'react-to-print'
@@ -47,7 +48,7 @@ import { getOrders, deleteOrders, getStatusOrder } from 'apis/order'
 import { getEmployees } from 'apis/employee'
 import { getAllBranch } from 'apis/branch'
 import { getShippings } from 'apis/shipping'
-import { getEnumPlatform } from 'apis/enum'
+import { getEnumPlatform, getShippingStatus } from 'apis/enum'
 
 const { RangePicker } = DatePicker
 const { Panel } = Collapse
@@ -61,6 +62,7 @@ export default function DeliveryControl() {
   const handlePrint = useReactToPrint({ content: () => printOrderRef.current })
   const [columns, setColumns] = useState([])
   const [dataPrint, setDataPrint] = useState(null)
+  const [statusOrder, setStatusOrder] = useState([])
   const [statusShipping, setStatusShipping] = useState([])
   const [loading, setLoading] = useState(false)
   const [orders, setOrders] = useState([])
@@ -141,7 +143,11 @@ export default function DeliveryControl() {
       title: 'Ảnh',
       dataIndex: 'image',
       render: (data) => (
-        <img src={data && data[0] ? data[0] : ''} style={{ maxWidth: 60, maxHeight: 60 }} alt="" />
+        <img
+          src={data && data[0] ? data[0] : IMAGE_DEFAULT}
+          style={{ maxWidth: 60, maxHeight: 60 }}
+          alt=""
+        />
       ),
     },
     {
@@ -228,15 +234,6 @@ export default function DeliveryControl() {
     }
   }
 
-  const _getStatusShipping = async () => {
-    try {
-      const res = await getStatusOrder()
-      if (res.status === 200) setStatusShipping(res.data.data)
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
   const _getBranch = async () => {
     try {
       const res = await getAllBranch()
@@ -251,13 +248,21 @@ export default function DeliveryControl() {
     setParamsFilter({ page: 1, page_size: 20 })
     setValueSearch('')
   }
-
+  const _getShippingStatus = async () => {
+    try {
+      const res = await getShippingStatus()
+      console.log(res)
+      if (res.status === 200) setStatusShipping(res.data.data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
   useEffect(() => {
-    _getStatusShipping()
     _getEmployees()
     _getBranch()
     _getShippingCompany()
     _getPlatform()
+    _getShippingStatus()
   }, [])
 
   useEffect(() => {
@@ -367,30 +372,31 @@ export default function DeliveryControl() {
         </Collapse>
       </Drawer>
       <Print />
-      <TitlePage title="Quản lý giao hàng">
-        <Space>
-          <SettingColumns
-            columnsDefault={columnsDelivery}
-            nameColumn="columnsDelivery"
-            columns={columns}
-            setColumns={setColumns}
-          />
-          <Button onClick={toggleDrawer} size="large" type="primary">
-            Bộ lọc khác
-          </Button>
-          <Permissions permissions={[PERMISSIONS.tao_don_hang]}>
-            <Button
-              onClick={() => history.push(ROUTES.ORDER_CREATE)}
-              size="large"
-              type="primary"
-              icon={<PlusCircleOutlined />}
-            >
-              Tạo đơn và giao hàng
+      <Affix offsetTop={60}>
+        <TitlePage title="Quản lý giao hàng">
+          <Space>
+            <SettingColumns
+              columnsDefault={columnsDelivery}
+              nameColumn="columnsDelivery"
+              columns={columns}
+              setColumns={setColumns}
+            />
+            <Button onClick={toggleDrawer} size="large" type="primary">
+              Bộ lọc khác
             </Button>
-          </Permissions>
-        </Space>
-      </TitlePage>
-
+            <Permissions permissions={[PERMISSIONS.tao_don_hang]}>
+              <Button
+                onClick={() => history.push(ROUTES.ORDER_CREATE)}
+                size="large"
+                type="primary"
+                icon={<PlusCircleOutlined />}
+              >
+                Tạo đơn và giao hàng
+              </Button>
+            </Permissions>
+          </Space>
+        </TitlePage>
+      </Affix>
       <div style={{ marginTop: 15 }}>
         <Row gutter={[16, 16]} justify="space-between" style={{ marginRight: 0, marginLeft: 0 }}>
           <Col
@@ -532,7 +538,7 @@ export default function DeliveryControl() {
         size="small"
         rowKey="order_id"
         loading={loading}
-        scroll={{ x: 1500 }}
+        scroll={{ x: 1500,y:400 }}
         expandable={{
           expandedRowRender: (record) => {
             return (
@@ -561,10 +567,11 @@ export default function DeliveryControl() {
                               <div>Chiết khấu</div>
                               <div>
                                 {record.promotion
-                                  ? `${formatCash(+(record.promotion.value || 0))} ${record.promotion.type && record.promotion.type !== 'VALUE'
-                                    ? '%'
-                                    : ''
-                                  }`
+                                  ? `${formatCash(+(record.promotion.value || 0))} ${
+                                      record.promotion.type && record.promotion.type !== 'VALUE'
+                                        ? '%'
+                                        : ''
+                                    }`
                                   : 0}
                               </div>
                             </Row>
@@ -595,11 +602,7 @@ export default function DeliveryControl() {
                         <div>
                           <div style={{ fontWeight: 600, fontSize: 18 }}>{e.label}</div>
                           <div style={{ color: '#95a5a6' }}>
-                            <div>
-                              {e.time_update
-                                ? moment(e.time_update).format('LLLL')
-                                : 'Đang cập nhật'}
-                            </div>
+                            <div>{e.time_update ? e.time_update : 'Đang cập nhật'}</div>
                           </div>
                         </div>
                       </Timeline.Item>
@@ -663,7 +666,7 @@ export default function DeliveryControl() {
                 ),
               render: (text, record) => (
                 // record.customer ? `${record.customer.first_name} ${record.customer.last_name}` : '',
-                <div style={{display:"flex",flexDirection:"column"}}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <span>
                     {record.customer
                       ? `${record.customer.first_name} ${record.customer.last_name}`
@@ -671,9 +674,9 @@ export default function DeliveryControl() {
                   </span>
                   <span>{record.customer ? record.customer.phone : ''}</span>
                   <span>
-                    {record.customer
+                    {record.customer.province || record.customer.district || record.customer.address
                       ? `${record.customer.province} ${record.customer.district} ${record.customer.address}`
-                      : ''}
+                      : 'Chưa có địa chỉ'}
                   </span>
                 </div>
               ),
@@ -702,12 +705,13 @@ export default function DeliveryControl() {
             return {
               ...column,
               // render: (text, record) => record.shipping_info && record.shipping_info?.cod,
-              render: (text, record) => record.total_cod && record.total_cod,
+              render: (text, record) => record.total_cod && formatCash(record.total_cod),
             }
           if (column.key === 'fee_shipping')
             return {
               ...column,
-              render: (text, record) => record.shipping_info && record.shipping_info?.fee_shipping,
+              render: (text, record) =>
+                record.shipping_info && formatCash(record.shipping_info?.fee_shipping),
             }
           return column
         })}

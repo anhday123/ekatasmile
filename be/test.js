@@ -1,7 +1,27 @@
-let changeNumberToTime = (hours) => {
-    let hour = Math.floor(hours);
-    let minute = Math.ceil((hours - Math.floor(hours)) * 60);
-    return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
-};
+const client = require('./config/mongodb');
 
-console.log(Math.floor(1.5));
+async function increasePoint(customer, point) {
+    const session = client.startSession();
+    session.startTransaction();
+    try {
+        let _customer = await client
+            .db('dangluuDB')
+            .collection('Customers')
+            .findOneAndUpdate(
+                { customer_id: customer.customer_id },
+                { $inc: { point: point } },
+                { session, returnOriginal: false }
+            );
+        // await session.commitTransaction();
+        session.endSession();
+    } catch (err) {
+        // await session.abortTransaction();
+        session.endSession();
+        throw err;
+    }
+}
+
+(async () => {
+    let customer = await client.db('dangluuDB').collection('Customers').findOne({ customer_id: 3 });
+    await increasePoint(customer, 10);
+})();

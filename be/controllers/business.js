@@ -408,19 +408,15 @@ module.exports._delete = async (req, res, next) => {
         let business = await client
             .db(SDB)
             .collection('Business')
-            .find({ system_user_id: { $in: req.body.system_user_id } })
+            .find({ business_id: { $in: req.body.business_id } })
             .toArray();
         const DBs = business.map((eBusiness) => {
             return eBusiness.database_name;
         });
         await client
             .db(SDB)
-            .collection(`Users`)
-            .deleteMany({ system_user_id: { $in: req.body.system_user_id } });
-        await client
-            .db(SDB)
             .collection(`Business`)
-            .deleteMany({ system_user_id: { $in: req.body.system_user_id } });
+            .deleteMany({ business_id: { $in: req.body.business_id } });
         await Promise.all(
             DBs.map((DB) => {
                 return client.db(DB).dropDatabase();

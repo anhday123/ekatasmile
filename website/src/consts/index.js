@@ -77,6 +77,9 @@ export const ROUTES = {
   TAX: '/tax',
   EMPLOYEE: '/employee',
   SHIPPING: '/shipping',
+  SHIPPING_CREATE: '/shipping/create',
+  SHIPPING_CREATE_GHTK: '/shipping/create/ghtk',
+  SHIPPING_CREATE_GHN: '/shipping/create/ghn',
   CUSTOMER: '/customer',
   SUPPLIER: '/supplier',
   PROMOTION: '/promotion',
@@ -178,7 +181,7 @@ export const PERMISSIONS = {
   tao_kenh_ban_hang: 'tao_kenh_ban_hang',
 }
 
-export const VERSION_APP = '1.4.1'
+export const VERSION_APP = '1.4.5'
 
 export const regexPhone = /\(?([0-9]{3})\)?([ .-]?)([0-9]{3})\2([0-9]{4})/
 

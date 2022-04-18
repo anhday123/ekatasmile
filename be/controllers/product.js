@@ -6,6 +6,7 @@ const DB = process.env.DATABASE;
 const productService = require(`../services/product`);
 
 const XLSX = require('xlsx');
+const { stringHandle } = require('../utils/string-handle');
 
 let removeUnicode = (text, removeSpace) => {
     /*
@@ -45,51 +46,33 @@ module.exports._create = async (req, res, next) => {
             }
         });
         [req.body] = req.body.products;
-        let [productMaxId, attributeMaxId, variantMaxId, supplier] = await Promise.all([
-            client.db(req.user.database).collection('AppSetting').findOne({ name: 'Products' }),
-            client.db(req.user.database).collection('AppSetting').findOne({ name: 'Attributes' }),
-            client.db(req.user.database).collection('AppSetting').findOne({ name: 'Variants' }),
-            client
-                .db(req.user.database)
-                .collection('Suppliers')
-                .findOne({ supplier_id: Number(req.body.supplier_id) }),
-        ]).catch((err) => {
-            throw new Error(err.message);
-        });
-        let productId = (() => {
-            if (productMaxId && productMaxId.value) {
-                return productMaxId.value;
-            }
-            return 0;
-        })();
-        let attributeId = (() => {
-            if (attributeMaxId && attributeMaxId.value) {
-                return attributeMaxId.value;
-            }
-            return 0;
-        })();
-        let variantId = (() => {
-            if (variantMaxId && variantMaxId.value) {
-                return variantMaxId.value;
-            }
-            return 0;
-        })();
-        if (req.body.sku == undefined) throw new Error('400: Vui lòng truyền mã định danh sản phẩm (SKU)');
 
+        let productMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Products' });
+        let productId = (productMaxId && productMaxId.value) || 0;
+        let attributeMaxId = await client
+            .db(req.user.database)
+            .collection('AppSetting')
+            .findOne({ name: 'Attributes' });
+        let attributeId = (attributeMaxId && attributeMaxId.value) || 0;
+        let variantMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Variants' });
+        let variantId = (variantMaxId && variantMaxId.value) || 0;
+        let supplier = await client
+            .db(req.user.database)
+            .collection('Suppliers')
+            .findOne({ supplier_id: Number(req.body.supplier_id) });
+
+        if (req.body.sku == undefined) throw new Error('400: Vui lòng truyền mã định danh sản phẩm (SKU)');
         var productAlready = await client.db(req.user.database).collection('Products').findOne({
             sku: req.body.sku,
         });
-
         if (productAlready != undefined) throw new Error(`400: Mã định danh sản phẩm (SKU) ${req.body.sku} đã tồn tại`);
-
-        productId++;
         req['_product'] = {
-            product_id: productId,
+            product_id: ++productId,
             code: String(productId).padStart(6, '0'),
             sku: req.body.sku,
             images: req.body.images || [],
-            name: String(req.body.name).toUpperCase(),
-            slug: removeUnicode(String(req.body.name), false).toLowerCase().replace(/\s/gi, '-'),
+            name: req.body.name,
+            slug: stringHandle(req.body.name, { createSlug: true }),
             supplier_id: req.body.supplier_id || [],
             category_id: req.body.category_id || [],
             tax_id: req.body.tax_id || [],
@@ -111,11 +94,11 @@ module.exports._create = async (req, res, next) => {
             last_update: moment().tz(TIMEZONE).format(),
             updater_id: req.user.user_id,
             active: true,
-            slug_name: removeUnicode(String(req.body.name), true).toLowerCase(),
+            slug_name: stringHandle(req.body.name, { createSlug: true }),
             slug_tags: (() => {
                 if (req.body.tags) {
                     req.body.tags.map((tag) => {
-                        return removeUnicode(String(tag), true).toLowerCase();
+                        return stringHandle(tag, { createSlug: true });
                     });
                 }
                 return [];
@@ -124,11 +107,10 @@ module.exports._create = async (req, res, next) => {
         req['_attributes'] = [];
         req.body.attributes.map((eAttribute) => {
             if (eAttribute) {
-                attributeId++;
                 req._attributes.push({
-                    product_id: Number(productId),
-                    attribute_id: Number(attributeId),
+                    attribute_id: ++attributeId,
                     code: String(attributeId).padStart(6, '0'),
+                    product_id: productId,
                     option: eAttribute.option,
                     values: eAttribute.values,
                     create_date: moment().tz(TIMEZONE).format(),
@@ -136,10 +118,10 @@ module.exports._create = async (req, res, next) => {
                     last_update: moment().tz(TIMEZONE).format(),
                     updater_id: req.user.user_id,
                     active: true,
-                    slug_option: removeUnicode(String(eAttribute.option), true).toLowerCase(),
+                    slug_option: stringHandle(eAttribute.option, { createSlug: true }),
                     slug_values: (() => {
                         return eAttribute.values.map((eValue) => {
-                            return removeUnicode(String(eValue), true).toLowerCase();
+                            return stringHandle(eValue, { createSlug: true });
                         });
                     })(),
                 });
@@ -148,13 +130,12 @@ module.exports._create = async (req, res, next) => {
         req['_variants'] = [];
         req.body.variants.map((eVariant) => {
             if (eVariant) {
-                variantId++;
                 req._variants.push({
-                    variant_id: Number(variantId),
+                    variant_id: ++variantId,
                     code: String(variantId).padStart(6, '0'),
-                    product_id: Number(productId),
-                    title: String(eVariant.title).toUpperCase(),
-                    sku: String(eVariant.sku).toUpperCase(),
+                    product_id: productId,
+                    title: eVariant.title,
+                    sku: eVariant.sku,
                     image: eVariant.image || [],
                     options: eVariant.options || [],
                     ...(() => {
@@ -167,42 +148,37 @@ module.exports._create = async (req, res, next) => {
                         }
                         return {};
                     })(),
-                    supplier: ((supplier) => {
+                    supplier: (() => {
                         if (supplier && supplier.name) {
                             return supplier.name;
                         }
                         return '';
-                    })(supplier),
+                    })(),
                     import_price_default: eVariant.import_price || 0,
                     price: eVariant.price,
                     enable_bulk_price: eVariant.enable_bulk_price || false,
                     bulk_prices: eVariant.bulk_prices,
                     create_date: moment().tz(TIMEZONE).format(),
+                    creator_id: req.user.user_id,
                     last_update: moment().tz(TIMEZONE).format(),
-                    creator_id: Number(req.user.user_id),
+                    updater_id: req.user.user_id,
                     active: true,
-                    slug_title: removeUnicode(String(eVariant.title), true).toLowerCase(),
+                    slug_title: stringHandle(eVariant.title, { createSlug: true }),
                 });
             }
         });
-        await Promise.all([
-            client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .updateOne({ name: 'Products' }, { $set: { name: 'Products', value: productId } }, { upsert: true }),
-            client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .updateOne(
-                    { name: 'Attributes' },
-                    { $set: { name: 'Attributes', value: attributeId } },
-                    { upsert: true }
-                ),
-            client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .updateOne({ name: 'Variants' }, { $set: { name: 'Variants', value: variantId } }, { upsert: true }),
-        ]);
+        await client
+            .db(req.user.database)
+            .collection('AppSetting')
+            .updateOne({ name: 'Products' }, { $set: { name: 'Products', value: productId } }, { upsert: true });
+        await client
+            .db(req.user.database)
+            .collection('AppSetting')
+            .updateOne({ name: 'Attributes' }, { $set: { name: 'Attributes', value: attributeId } }, { upsert: true });
+        await client
+            .db(req.user.database)
+            .collection('AppSetting')
+            .updateOne({ name: 'Variants' }, { $set: { name: 'Variants', value: variantId } }, { upsert: true });
         await productService._create(req, res, next);
     } catch (err) {
         next(err);
@@ -235,30 +211,16 @@ module.exports._update = async (req, res, next) => {
                 },
             ])
             .toArray();
-        let [attribute_id, variant_id] = await Promise.all([
-            client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .findOne({ name: 'Attributes' })
-                .then((doc) => {
-                    if (doc && doc.value) {
-                        return doc.value;
-                    }
-                    return 0;
-                }),
-            client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .findOne({ name: 'Variants' })
-                .then((doc) => {
-                    if (doc && doc.value) {
-                        return doc.value;
-                    }
-                    return 0;
-                }),
-        ]).catch((err) => {
-            throw new Error(err.message);
-        });
+        if (!product) {
+            throw new Error('400: Sản phẩm không tồn tại!');
+        }
+        let attributeMaxId = await client
+            .db(req.user.database)
+            .collection('AppSetting')
+            .findOne({ name: 'Attributes' });
+        let attributeId = (attributeMaxId && attributeMaxId.value) || 0;
+        let variantMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Variants' });
+        let variantId = (variantMaxId && variantMaxId.value) || 0;
         delete req.body._id;
         delete req.body.product_id;
         delete req.body.code;
@@ -268,11 +230,10 @@ module.exports._update = async (req, res, next) => {
         let _product = { ...product, ...req.body };
         _product = {
             product_id: _product.product_id,
-            code: _product.code || String(_product.product_id).padStart(6, '0'),
-            name: String(_product.name).toUpperCase(),
-            sku: String(_product.sku).toUpperCase(),
-            images: _product.images || [],
-            slug: removeUnicode(String(_product.name || ''), false).replace(/\s/g, '-'),
+            code: _product.code,
+            name: _product.name,
+            sku: _product.sku,
+            slug: stringHandle(_product.name, { createSlug: true }),
             supplier_id: _product.supplier_id || 0,
             category_id: _product.category_id || [],
             tax_id: _product.tax_id || [],
@@ -294,19 +255,55 @@ module.exports._update = async (req, res, next) => {
             last_update: moment().tz(TIMEZONE).format(),
             creator_id: _product.creator_id,
             active: _product.active,
-            slug_name: removeUnicode(String(_product.name || ''), true).toLowerCase(),
+            slug_name: stringHandle(_product.name, { createSlug: true }),
             slug_tags: (() => {
                 if (_product.tags) {
                     return _product.tags.map((tag) => {
-                        return removeUnicode(String(tag), true).toLowerCase();
+                        return stringHandle(tag, { createSlug: true });
                     });
                 }
             })(),
         };
         req['_product'] = _product;
-        let _attributes = [];
-        if (!req.body.attributes) {
-            req.body.attributes = [];
+        let _attributes = {};
+        product.attributes.map((eAttribute) => {
+            _attributes[eAttribute.attribute_id] = eAttribute;
+        });
+        let updateAttributes = [];
+        let insertAttributes = [];
+        if (req.body.attributes) {
+            req.body.attributes.map((eAttribute) => {
+                if (_attributes[eAttribute.attribute_id]) {
+                    delete eAttribute._id;
+                    delete eAttribute.attribute_id;
+                    delete eAttribute.product_id;
+                    delete eAttribute.create_date;
+                    delete eAttribute.creator_id;
+                    let _attribute = { ..._attributes[eAttribute.attribute_id], ...eAttribute };
+                    _attribute = {
+                        attribute_id: _attribute.attribute_id,
+                        product_id: _attribute.product_id,
+                        option: _attribute.option.toUpperCase(),
+                        values: (() => {
+                            return _attribute.values.map((eValue) => {
+                                return eValue.toUpperCase();
+                            });
+                        })(),
+                        create_date: _attribute.create_date,
+                        creator_id: _attribute.creator_id,
+                        last_update: moment().tz(TIMEZONE).format(),
+                        updater_id: req.user.user_id,
+                        active: _attribute.active,
+                        slug_option: stringHandle(_attribute.option, { createSlug: true }),
+                        slug_values: (() => {
+                            return _attribute.values.map((eValue) => {
+                                return stringHandle(eValue, { createSlug: true });
+                            });
+                        })(),
+                    };
+                } else {
+                }
+            });
         }
         req.body.attributes.map((eAttribute) => {
             let exists = false;
@@ -329,13 +326,14 @@ module.exports._update = async (req, res, next) => {
                             });
                         })(),
                         create_date: _attribute.create_date,
-                        last_update: moment().tz(TIMEZONE).format(),
                         creator_id: _attribute.creator_id,
+                        last_update: moment().tz(TIMEZONE).format(),
+                        updater_id: req.user.user_id,
                         active: _attribute.active,
-                        slug_option: removeUnicode(String(_attribute.option), true).toLowerCase(),
+                        slug_option: stringHandle(String(_attribute.option), { createSlug: true }),
                         slug_values: (() => {
                             return _attribute.values.map((eValue) => {
-                                return removeUnicode(String(eValue), true).toLowerCase();
+                                return stringHandle(String(eValue), { createSlug: true });
                             });
                         })(),
                     };
@@ -367,7 +365,7 @@ module.exports._update = async (req, res, next) => {
                 _attributes.push(_attribute);
             }
         });
-        req['_attributes'] = _attributes;
+        req['_attributes'] = attributes;
         let _variants = [];
         if (!req.body.variants) {
             req.body.variants = [];
@@ -494,11 +492,11 @@ module.exports.deleteProductC = async (req, res, next) => {
             .deleteMany({ product_id: { $in: req.body.product_id } });
         await client
             .db(req.user.database)
-            .collection('Prices')
+            .collection('Locations')
             .deleteMany({ product_id: { $in: req.body.product_id } });
         await client
             .db(req.user.database)
-            .collection('Locations')
+            .collection('Inventories')
             .deleteMany({ product_id: { $in: req.body.product_id } });
         await client
             .db(req.user.database)
@@ -576,6 +574,7 @@ module.exports.importFileC = async (req, res, next) => {
             cellDates: true,
         });
         let rows = XLSX.utils.sheet_to_json(excelData.Sheets[excelData.SheetNames[0]]);
+        let productSkus = [];
         let categorySlugs = [];
         let supplierSlugs = [];
         let taxSlugs = [];
@@ -586,67 +585,76 @@ module.exports.importFileC = async (req, res, next) => {
             let _row = {};
             let count = 0;
             let optionRequire = [
-                'masanpham(*)',
-                'tensanpham(*)',
-                'thuoctinh1(*)',
-                'giatri1(*)',
-                'maphienban(*)',
-                'tenphienban(*)',
-                'giaban(*)',
+                'ma-san-pham',
+                'ten-san-pham',
+                'nha-cung-cap',
+                'thuoc-tinh-1',
+                'gia-tri-1',
+                'ma-phien-ban',
+                'ten-phien-ban',
+                'gia-ban',
             ];
             for (let i in eRow) {
-                if (optionRequire.includes(removeUnicode(String(i), true).toLowerCase())) {
+                let field = stringHandle(i, { removeStringInBrackets: 'round', createSlug: true });
+                if (optionRequire.includes(field)) {
                     count++;
                 }
-                _row[
-                    removeUnicode(String(i), true)
-                        .toLowerCase()
-                        .replace(/\(\*\)/gi, '')
-                ] = eRow[i];
+                _row[field] = eRow[i];
             }
             if (count < optionRequire.length) {
                 throw new Error(`400: Các thuộc tính có dấu (*) là thuộc tính bắt buộc!`);
             }
-            count = 0;
-            if (_row['tendanhmuc']) {
-                _row['_tendanhmuc'] = removeUnicode(String(_row['tendanhmuc']), true).toLowerCase();
-                categorySlugs.push(_row['_tendanhmuc']);
+            if (_row['ten-san-pham']) {
+                _row['_ten-san-pham'] = stringHandle(_row['ten-san-pham'], { createSlug: true });
+                productSkus.push(_row['ma-san-pham']);
             }
-            if (_row['nhacungcap']) {
-                _row['_nhacungcap'] = removeUnicode(String(_row['nhacungcap']), true).toLowerCase();
-                supplierSlugs.push(_row['_nhacungcap']);
+            if (_row['ten-danh-muc']) {
+                _row['_ten-danh-muc'] = stringHandle(_row['ten-danh-muc'], { createSlug: true });
+                categorySlugs.push(_row['_ten-danh-muc']);
             }
-            if (_row['thueapdung']) {
-                _row['_thueapdung'] = _row['thueapdung'].split('-').map((tax) => {
-                    tax = removeUnicode(String(tax), true).toLowerCase();
+            if (_row['nha-cung-cap']) {
+                _row['_nha-cung-cap'] = stringHandle(String(_row['nha-cung-cap']), { createSlug: true });
+                supplierSlugs.push(_row['_nha-cung-cap']);
+            }
+            if (_row['thue-ap-dung']) {
+                _row['_thue-ap-dung'] = _row['thue-ap-dung'].split('-').map((eTax) => {
+                    let tax = stringHandle(eTax, { createSlug: true });
                     taxSlugs.push(tax);
                     return tax;
                 });
             }
-            if (_row['chuongtrinhbaohanh']) {
-                _row['_chuongtrinhbaohanh'] = _row['chuongtrinhbaohanh'].split('-').map((warranty) => {
-                    warranty = removeUnicode(String(warranty), true).toLowerCase();
+            if (_row['chuong-trinh-bao-hanh']) {
+                _row['_chuong-trinh-bao-hanh'] = _row['chuong-trinh-bao-hanh'].split('-').map((eWaranty) => {
+                    let warranty = stringHandle(eWaranty, { createSlug: true });
                     warrantySlugs.push(warranty);
                     return warranty;
                 });
             }
-            if (_row['tenthuonghieu']) {
-                _row['_tenthuonghieu'] = removeUnicode(String(_row['tenthuonghieu']), true).toLowerCase();
-                brandSlugs.push(_row['_tenthuonghieu']);
+            if (_row['ten-thuong-hieu']) {
+                _row['_ten-thuong-hieu'] = stringHandle(_row['ten-thuong-hieu'], { createSlug: true });
+                brandSlugs.push(_row['_ten-thuong-hieu']);
             }
-            if (_row['noixuatxu']) {
-                _row['_noixuatxu'] = removeUnicode(String(_row['noixuatxu']), true).toLowerCase();
-                originSlugs.push(_row['_noixuatxu']);
+            if (_row['noi-xuat-xu']) {
+                _row['_noi-xuat-xu'] = stringHandle(_row['noi-xuat-xu'], { createSlug: true });
+                originSlugs.push(_row['_noi-xuat-xu']);
             }
             return _row;
         });
+        productSkus = [...new Set(productSkus)];
         categorySlugs = [...new Set(categorySlugs)];
         supplierSlugs = [...new Set(supplierSlugs)];
         taxSlugs = [...new Set(taxSlugs)];
         warrantySlugs = [...new Set(warrantySlugs)];
         brandSlugs = [...new Set(brandSlugs)];
         originSlugs = [...new Set(originSlugs)];
-        let [categories, suppliers, taxes, warranties, brands, origins] = await Promise.all([
+        let [products, categories, suppliers, taxes, warranties, brands, origins] = await Promise.all([
+            client
+                .db(req.user.database)
+                .collection('Products')
+                .find({
+                    sku: { $in: productSkus },
+                })
+                .toArray(),
             client
                 .db(req.user.database)
                 .collection('Categories')
@@ -690,6 +698,10 @@ module.exports.importFileC = async (req, res, next) => {
                 })
                 .toArray(),
         ]);
+        let _products = {};
+        products.map((eProduct) => {
+            _products[eProduct.sku] = eProduct;
+        });
         let _categories = {};
         categories.map((eCategory) => {
             _categories[eCategory.slug_name] = eCategory;
@@ -714,139 +726,409 @@ module.exports.importFileC = async (req, res, next) => {
         origins.map((eOrigin) => {
             _origins[eOrigin.slug_name] = eOrigin;
         });
-        let [product_id, attribute_id, variant_id, supplier_id, category_id, brand_id] = await Promise.all([
+        let [productId, attributeId, variantId, supplierId, categoryId, brandId] = await Promise.all([
             client
                 .db(req.user.database)
                 .collection('AppSetting')
                 .findOne({ name: 'Products' })
-                .then((doc) => {
-                    if (doc && doc.value) {
-                        return doc.value;
-                    }
-                    return 0;
-                }),
+                .then((doc) => (doc && doc.value) || 0),
             client
                 .db(req.user.database)
                 .collection('AppSetting')
                 .findOne({ name: 'Attributes' })
-                .then((doc) => {
-                    if (doc && doc.value) {
-                        return doc.value;
-                    }
-                    return 0;
-                }),
+                .then((doc) => (doc && doc.value) || 0),
             client
                 .db(req.user.database)
                 .collection('AppSetting')
                 .findOne({ name: 'Variants' })
-                .then((doc) => {
-                    if (doc && doc.value) {
-                        return doc.value;
-                    }
-                    return 0;
-                }),
+                .then((doc) => (doc && doc.value) || 0),
             client
                 .db(req.user.database)
                 .collection('AppSetting')
                 .findOne({ name: 'Suppliers' })
-                .then((doc) => {
-                    if (doc && doc.value) {
-                        return doc.value;
-                    }
-                    return 0;
-                }),
+                .then((doc) => (doc && doc.value) || 0),
             client
                 .db(req.user.database)
                 .collection('AppSetting')
                 .findOne({ name: 'Categories' })
-                .then((doc) => {
-                    if (doc && doc.value) {
-                        return doc.value;
-                    }
-                    return 0;
-                }),
+                .then((doc) => (doc && doc.value) || 0),
             client
                 .db(req.user.database)
                 .collection('AppSetting')
                 .findOne({ name: 'Brands' })
-                .then((doc) => {
-                    if (doc && doc.value) {
-                        return doc.value;
-                    }
-                    return 0;
-                }),
+                .then((doc) => (doc && doc.value) || 0),
         ]);
         let insertSuppliers = [];
         let insertCategories = [];
         let insertBrands = [];
+        let _insertProducts = {};
+        let _insertAttributes = {};
+        let _insertVariants = {};
         rows.map((eRow) => {
-            if (!_suppliers[eRow['_nhacungcap']]) {
-                supplier_id++;
-                let _supplier = {
-                    supplier_id: supplier_id,
-                    code: String(supplier_id).padStart(6, '0'),
-                    name: String(eRow['nhacungcap']).trim().toUpperCase(),
-                    logo: '',
-                    phone: '',
-                    email: '',
-                    address: '',
-                    district: '',
-                    province: '',
-                    create_date: moment().tz(TIMEZONE).format(),
-                    last_update: moment().tz(TIMEZONE).format(),
-                    creator_id: req.user.user_id,
-                    active: true,
-                    slug_name: eRow['_nhacungcap'],
-                    slug_address: '',
-                    slug_district: '',
-                    slug_province: '',
-                };
-                insertSuppliers.push(_supplier);
-                _suppliers[eRow['_nhacungcap']] = _supplier;
-            }
-            if (!_categories[eRow['_tendanhmuc']]) {
-                category_id++;
-                let _category = {
-                    category_id: category_id,
-                    code: String(category_id).padStart(6, '0'),
-                    name: String(eRow['tendanhmuc']).trim().toUpperCase(),
-                    parent_id: -1,
-                    priority: '',
-                    image: '',
-                    description: '',
-                    default: '',
-                    create_date: moment().tz(TIMEZONE).format(),
-                    last_update: moment().tz(TIMEZONE).format(),
-                    creator_id: req.user.user_id,
-                    active: true,
-                    slug_name: eRow['_tendanhmuc'],
-                };
-                insertCategories.push(_category);
-                _categories[eRow['_tendanhmuc']] = _category;
-            }
-            if (!_brands[eRow['_tenthuonghieu']]) {
-                brand_id++;
-                let _brand = {
-                    brand_id: brand_id,
-                    code: String(brand_id).padStart(6, '0'),
-                    name: String(eRow['tenthuonghieu']).trim().toUpperCase(),
-                    priority: 1,
-                    images: [],
-                    country_code: '',
-                    founded_year: '',
-                    content: '',
-                    tags: [],
-                    create_date: moment().tz(TIMEZONE).format(),
-                    last_update: moment().tz(TIMEZONE).format(),
-                    creator_id: req.user.user_id,
-                    active: true,
-                    slug_name: eRow['_tenthuonghieu'],
-                    slug_tags: [],
-                };
-                insertBrands.push(_brand);
-                _brands[eRow['_tenthuonghieu']] = _brand;
+            if (eRow['ma-san-pham']) {
+                if (eRow['_nha-cung-cap'] && !_suppliers[eRow['_nha-cung-cap']]) {
+                    let _supplier = {
+                        supplier_id: ++supplierId,
+                        code: String(supplierId).padStart(6, '0'),
+                        name: eRow['nha-cung-cap'],
+                        logo: '',
+                        phone: '',
+                        email: '',
+                        address: '',
+                        district: '',
+                        province: '',
+                        create_date: moment().tz(TIMEZONE).format(),
+                        creator_id: req.user.user_id,
+                        last_update: moment().tz(TIMEZONE).format(),
+                        updater_id: req.user.user_id,
+                        active: true,
+                        slug_name: eRow['_nha-cung-cap'],
+                        slug_address: '',
+                        slug_district: '',
+                        slug_province: '',
+                    };
+                    insertSuppliers.push(_supplier);
+                    _suppliers[eRow['_nha-cung-cap']] = _supplier;
+                }
+                if (eRow['_ten-danh-muc'] && !_categories[eRow['_ten-danh-muc']]) {
+                    let _category = {
+                        category_id: ++categoryId,
+                        code: String(categoryId).padStart(6, '0'),
+                        name: eRow['ten-danh-muc'],
+                        parent_id: -1,
+                        priority: '',
+                        image: '',
+                        description: '',
+                        default: '',
+                        create_date: moment().tz(TIMEZONE).format(),
+                        creator_id: req.user.user_id,
+                        last_update: moment().tz(TIMEZONE).format(),
+                        updater_id: req.user.user_id,
+                        active: true,
+                        slug_name: eRow['_ten-danh-muc'],
+                    };
+                    insertCategories.push(_category);
+                    _categories[eRow['_ten-danh-muc']] = _category;
+                }
+                if (eRow['_ten-thuong-hieu'] && !_brands[eRow['_ten-thuong-hieu']]) {
+                    let _brand = {
+                        brand_id: ++brandId,
+                        code: String(brandId).padStart(6, '0'),
+                        name: String(eRow['ten-thuong-hieu']).trim().toUpperCase(),
+                        priority: 1,
+                        images: [],
+                        country_code: '',
+                        founded_year: '',
+                        content: '',
+                        tags: [],
+                        create_date: moment().tz(TIMEZONE).format(),
+                        creator_id: req.user.user_id,
+                        last_update: moment().tz(TIMEZONE).format(),
+                        updater_id: req.user.user_id,
+                        active: true,
+                        slug_name: eRow['_ten-thuong-hieu'],
+                        slug_tags: [],
+                    };
+                    insertBrands.push(_brand);
+                    _brands[eRow['_ten-thuong-hieu']] = _brand;
+                }
+                if (!_products[eRow['ma-san-pham']]) {
+                    if (!_insertProducts[eRow['ma-san-pham']]) {
+                        _insertProducts[eRow['ma-san-pham']] = {
+                            product_id: ++productId,
+                            code: String(productId).padStart(6, '0'),
+                            sku: eRow['ma-san-pham'],
+                            name: eRow['ten-san-pham'],
+                            images: (() => {
+                                if (eRow['hinh-anh']) {
+                                    return eRow['hinh-anh'].split(',');
+                                }
+                                return [];
+                            })(),
+                            slug: eRow['_ten-san-pham'] + `-${productId}`,
+                            supplier_id:
+                                (_suppliers[eRow['_nha-cung-cap']] && _suppliers[eRow['_nha-cung-cap']].supplier_id) ||
+                                0,
+                            category_id: [
+                                (_categories[eRow['_ten-danh-muc']] &&
+                                    _categories[eRow['_ten-danh-muc']].category_id) ||
+                                    0,
+                            ],
+                            tax_id: (() => {
+                                let result = [];
+                                if (eRow['_thue-ap-dung']) {
+                                    eRow['_thue-ap-dung'].map((taxSlug) => {
+                                        result.push((_taxes[taxSlug] && _taxes[taxSlug].tax_id) || 0);
+                                    });
+                                }
+                                result = [...new Set(result)];
+                                return result;
+                            })(),
+                            warranties: (() => {
+                                let result = [];
+                                if (eRow['_chuong-trinh-bao-hanh']) {
+                                    eRow['_chuong-trinh-bao-hanh'].map((warrantySlug) => {
+                                        result.push(
+                                            (_warranties[warrantySlug] && _warranties[warrantySlug].warranty_id) || 0
+                                        );
+                                    });
+                                }
+                                result = [...new Set(result)];
+                                return [];
+                            })(),
+                            length:
+                                (!isNaN(Number(eRow['chieu-dai'])) && Number(eRow['chieu-dai'])) ||
+                                (() => {
+                                    throw new Error('400: Chiều dài không hợp lệ');
+                                })(),
+                            width:
+                                (!isNaN(Number(eRow['chieu-rong'])) && Number(eRow['chieu-rong'])) ||
+                                (() => {
+                                    throw new Error('400: Chiều rộng không hợp lệ');
+                                })(),
+                            height:
+                                (!isNaN(Number(eRow['chieu-cao'])) && Number(eRow['chieu-cao'])) ||
+                                (() => {
+                                    throw new Error('400: Chiều cao không hợp lệ');
+                                })(),
+                            weight:
+                                (!isNaN(Number(eRow['khoi-luong'])) && Number(eRow['khoi-luong'])) ||
+                                (() => {
+                                    throw new Error('400: Khối lượng không hợp lệ');
+                                })(),
+                            unit: eRow['don-vi'] || '',
+                            brand_id:
+                                (_brands[eRow['_ten-thuong-hieu']] && _brands[eRow['_ten-thuong-hieu']].brand_id) || 0,
+                            origin_code:
+                                (_origins[eRow['_noi-xuat-xu']] && _origins[eRow['_noi-xuat-xu']].origin_code) || '',
+                            status: eRow['tinh-trang'] || '',
+                            description: eRow['mo-ta'] || '',
+                            tags: (() => {
+                                if (eRow['tags']) {
+                                    return eRow['tags'].split(',');
+                                }
+                                return [];
+                            })(),
+                            files: [],
+                            sale_quantity: 0,
+                            create_date: moment().tz(TIMEZONE).format(),
+                            creator_id: Number(req.user.user_id),
+                            last_update: moment().tz(TIMEZONE).format(),
+                            updater_id: req.user.user_id,
+                            active: true,
+                            slug_name: eRow['_ten-san-pham'],
+                            slug_tags: (() => {
+                                if (eRow['tags']) {
+                                    return eRow['tags'].split(',').map((tag) => {
+                                        return stringHandle(tag, { createSlug: true });
+                                    });
+                                }
+                            })(),
+                        };
+                    }
+                    for (let i = 1; ; i++) {
+                        if (eRow[`thuoc-tinh-${i}`] && eRow[`gia-tri-${i}`]) {
+                            let key =
+                                String(_insertProducts[eRow['ma-san-pham']].product_id) +
+                                '-' +
+                                stringHandle(eRow[`thuoc-tinh-${i}`], { createSlug: true });
+                            if (!_insertAttributes[key]) {
+                                _insertAttributes[key] = {
+                                    attribute_id: ++attributeId,
+                                    code: String(attributeId).padStart(6, '0'),
+                                    product_id: _insertProducts[eRow['ma-san-pham']].product_id,
+                                    option: eRow[`thuoc-tinh-${i}`],
+                                    values: [eRow[`gia-tri-${i}`]],
+                                    create_date: moment().tz(TIMEZONE).format(),
+                                    creator_id: req.user.user_id,
+                                    last_update: moment().tz(TIMEZONE).format(),
+                                    updater_id: req.user.user_id,
+                                    active: true,
+                                    slug_option: stringHandle(eRow[`thuoc-tinh-${i}`], { createSlug: true }),
+                                    slug_values: [stringHandle(eRow[`gia-tri-${i}`], { createSlug: true })],
+                                };
+                            } else {
+                                _insertAttributes[key] = {
+                                    attribute_id: _insertAttributes[key].attribute_id,
+                                    code: _insertAttributes[key].code,
+                                    product_id: _insertAttributes[key].product_id,
+                                    option: _insertAttributes[key].option,
+                                    values: [..._insertAttributes[key].values, eRow[`gia-tri-${i}`]],
+                                    create_date: _insertAttributes[key].create_date,
+                                    creator_id: _insertAttributes[key].creator_id,
+                                    last_update: moment().tz(TIMEZONE).format(),
+                                    updater_id: req.user.user_id,
+                                    active: true,
+                                    slug_option: _insertAttributes[key].slug_option,
+                                    slug_values: [
+                                        ...new Set([
+                                            ..._insertAttributes[key].slug_values,
+                                            stringHandle(eRow[`gia-tri-${i}`], { createSlug: true }),
+                                        ]),
+                                    ],
+                                };
+                            }
+                        } else {
+                            break;
+                        }
+                    }
+                    _insertVariants[eRow['ma-phien-ban']] = {
+                        variant_id: ++variantId,
+                        product_id: _insertProducts[eRow['ma-san-pham']].product_id,
+                        code: String(variantId).padStart(6, '0'),
+                        title: eRow['ten-phien-ban'] || '',
+                        slug_title: stringHandle(eRow['_ten-phien-ban'], { createSlug: true }),
+                        sku: String(eRow['ma-phien-ban']),
+                        image: (() => {
+                            if (eRow['hinh-anh']) {
+                                return eRow['hinh-anh'].split(',');
+                            }
+                            return [];
+                        })(),
+                        options: [
+                            ...(() => {
+                                let result = [];
+                                for (let i = 1; ; i++) {
+                                    if (eRow[`thuoc-tinh-${i}`] && eRow[`gia-tri-${i}`]) {
+                                        result = [
+                                            ...result,
+                                            ...[
+                                                {
+                                                    option: eRow[`thuoc-tinh-${i}`],
+                                                    value: eRow[`gia-tri-${i}`],
+                                                },
+                                            ],
+                                        ];
+                                    } else {
+                                        break;
+                                    }
+                                }
+                                return result;
+                            })(),
+                        ],
+                        ...(() => {
+                            let result = {};
+                            for (let i = 1; ; i++) {
+                                if (eRow[`thuoc-tinh-${i}`] && eRow[`gia-tri${i}`]) {
+                                    result[`option${i}`] = {
+                                        option: eRow[`thuoc-tinh-${i}`],
+                                        value: eRow[`gia-tri-${i}`],
+                                    };
+                                } else {
+                                    break;
+                                }
+                            }
+                            return result;
+                        })(),
+                        supplier: (_suppliers[eRow['_nha-cung-cap']] && _suppliers[eRow['_nha-cung-cap']].name) || '',
+                        import_price_default: eRow['gia-nhap'] || 0,
+                        price:
+                            (!isNaN(Number(eRow['gia-ban'])) && Number(eRow['gia-ban'])) ||
+                            (() => {
+                                throw new Error('400: Giá bán không hợp lệ');
+                            })(),
+                        enable_bulk_price: (() => {
+                            if (
+                                eRow['ap-dung-gia-ban-si'] &&
+                                /^(co)$/.test(stringHandle(eRow['ap-dung-gia-ban-si'], { createSlug: true }))
+                            ) {
+                                return true;
+                            }
+                            return false;
+                        })(),
+                        bulk_prices: (() => {
+                            let result = [];
+                            let i = 0;
+                            do {
+                                let bulkPrice = {};
+                                if (i == 0) {
+                                    if (eRow[`so-luong-si-ap-dung`]) {
+                                        let [minQuantity, maxQuantity] = eRow[`so-luong-si-ap-dung`].split('-');
+                                        bulkPrice['min_quantity_apply'] =
+                                            (!isNaN(Number(minQuantity)) && Number(minQuantity)) ||
+                                            (() => {
+                                                throw new Error('400: Số lượng sỉ áp dụng phải là số!');
+                                            })();
+
+                                        bulkPrice['max_quantity_apply'] =
+                                            (!isNaN(Number(maxQuantity)) && Number(maxQuantity)) ||
+                                            (() => {
+                                                throw new Error('400: Số lượng sỉ áp dụng phải là số!');
+                                            })();
+                                        bulkPrice['price'] =
+                                            (!isNaN(Number(eRow['gia-ban-si-ap-dung'])) &&
+                                                Number(eRow['gia-ban-si-ap-dung'])) ||
+                                            (() => {
+                                                throw new Error('400: Giá bán sỉ áp dụng phải là số');
+                                            })();
+                                    } else {
+                                        break;
+                                    }
+                                } else {
+                                    if (eRow[`so-luong-si-ap-dung-${i}`]) {
+                                        let [minQuantity, maxQuantity] = eRow[`so-luong-si-ap-dung-${i}`].split('-');
+                                        bulkPrice['min_quantity_apply'] =
+                                            (!isNaN(Number(minQuantity)) && Number(minQuantity)) ||
+                                            (() => {
+                                                throw new Error('400: Số lượng sỉ áp dụng phải là số!');
+                                            })();
+
+                                        bulkPrice['max_quantity_apply'] =
+                                            (!isNaN(Number(maxQuantity)) && Number(maxQuantity)) ||
+                                            (() => {
+                                                throw new Error('400: Số lượng sỉ áp dụng phải là số!');
+                                            })();
+                                        bulkPrice['price'] =
+                                            (!isNaN(Number(eRow[`gia-ban-si-ap-dung-${i}`])) &&
+                                                Number(eRow[`gia-ban-si-ap-dung-${i}`])) ||
+                                            (() => {
+                                                throw new Error('400: Giá bán sỉ áp dụng phải là số');
+                                            })();
+                                    } else {
+                                        break;
+                                    }
+                                }
+                                result.push(bulkPrice);
+                                i++;
+                            } while (true);
+                            return result;
+                        })(),
+                        create_date: moment().tz(TIMEZONE).format(),
+                        creator_id: req.user.user_id,
+                        last_update: moment().tz(TIMEZONE).format(),
+                        updater_id: req.user.user_id,
+                        active: true,
+                    };
+                }
             }
         });
+        if (Object.values(_insertProducts).length > 0) {
+            let insert = await client
+                .db(req.user.database)
+                .collection('Products')
+                .insertMany(Object.values(_insertProducts));
+            if (!insert.insertedIds) {
+                throw new Error(`500: Tạo sản phẩm thất bại!`);
+            }
+        }
+        if (Object.values(_insertAttributes).length > 0) {
+            let insert = await client
+                .db(req.user.database)
+                .collection('Attributes')
+                .insertMany(Object.values(_insertAttributes));
+            if (!insert.insertedIds) {
+                throw new Error(`500: Tạo thuộc tính sản phẩm thất bại!`);
+            }
+        }
+        if (Object.values(_insertVariants).length > 0) {
+            let insert = await client
+                .db(req.user.database)
+                .collection('Variants')
+                .insertMany(Object.values(_insertVariants));
+            if (!insert.insertedIds) {
+                throw new Error(`500: Tạo phiên bản sản phẩm thất bại!`);
+            }
+        }
         if (insertSuppliers.length > 0) {
             let insert = await client.db(req.user.database).collection('Suppliers').insertMany(insertSuppliers);
             if (!insert.insertedIds) {
@@ -865,304 +1147,39 @@ module.exports.importFileC = async (req, res, next) => {
                 throw new Error(`500: Tạo thương hiệu sản phẩm thất bại!`);
             }
         }
-        let _products = {};
-        let _attributes = {};
-        let _variants = {};
-        rows.map((eRow) => {
-            if (!_products[eRow['masanpham']]) {
-                if (isNaN(eRow['chieudai(cm)'])) throw new Error('400: Chiều dài không hợp lệ');
-
-                if (isNaN(eRow['chieurong(cm)'])) throw new Error('400: Chiều rộng không hợp lệ');
-
-                if (isNaN(eRow['chieucao(cm)'])) throw new Error('400: Chiều cao không hợp lệ');
-
-                if (isNaN(eRow['khoiluong(g)'])) throw new Error('400: Khối lượng không hợp lệ');
-
-                product_id++;
-                _products[eRow['masanpham']] = {
-                    product_id: product_id,
-                    code: String(product_id).padStart(6, '0'),
-                    sku: eRow['masanpham'],
-                    name: eRow['tensanpham'],
-                    images: (() => {
-                        if (eRow['hinhanh']) {
-                            return eRow['hinhanh'].split(',');
-                        }
-                        return [];
-                    })(),
-                    slug: removeUnicode(String(eRow['tensanpham']), false).replace(/\s/g, '-').toLowerCase(),
-                    supplier_id: _suppliers[eRow['_nhacungcap']]?.supplier_id,
-                    category_id: [_categories[eRow['_tendanhmuc']]?.category_id],
-                    tax_id: (() => {
-                        if (eRow['_thueapdung']) {
-                            eRow['_thueapdung'].map((taxSlug) => {
-                                if (taxSlug && _taxes[taxSlug]) {
-                                    return _taxes[taxSlug].tax_id;
-                                }
-                            });
-                        }
-                        return [];
-                    })(),
-                    warranties: (() => {
-                        if (eRow['_chuongtrinhbaohanh']) {
-                            eRow['_chuongtrinhbaohanh'].map((warrantySlug) => {
-                                if (warrantySlug && _taxes[warrantySlug]) {
-                                    return _warranties[warrantySlug].warranty_id;
-                                }
-                            });
-                        }
-                        return [];
-                    })(),
-                    length: eRow['chieudai(cm)'] || 0,
-                    width: eRow['chieurong(cm)'] || 0,
-                    height: eRow['chieucao(cm)'] || 0,
-                    weight: eRow['khoiluong(g)'] || 0,
-                    unit: eRow['donvi'] || '',
-                    brand_id: _brands[eRow['_tenthuonghieu']].brand_id,
-                    origin_code: _origins[eRow['_noixuatxu']]?.origin_code,
-                    status: eRow['tinhtrang'],
-                    description: eRow['mota'] || '',
-                    tags: (() => {
-                        if (eRow['tags']) {
-                            return eRow['tags'].split(',');
-                        }
-                    })(),
-                    files: [],
-                    sale_quantity: 0,
-                    create_date: moment().tz(TIMEZONE).format(),
-                    last_update: moment().tz(TIMEZONE).format(),
-                    creator_id: Number(req.user.user_id),
-                    active: true,
-                    slug_name: eRow['_tensanpham'],
-                    slug_tags: (() => {
-                        if (eRow['tags']) {
-                            return eRow['tags'].split(',').map((tag) => {
-                                return removeUnicode(String(tag), true).toLowerCase();
-                            });
-                        }
-                    })(),
-                };
-            }
-            if (eRow['thuoctinh1']) {
-                if (!_attributes[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh1']}`]) {
-                    attribute_id++;
-                    let _attribute = {
-                        attribute_id: attribute_id,
-                        product_id: _products[eRow['masanpham']].product_id,
-                        option: eRow['thuoctinh1'].toUpperCase(),
-                        values: [],
-                        create_date: moment().tz(TIMEZONE).format(),
-                        creator_id: req.user.user_id,
-                        last_update: moment().tz(TIMEZONE).format(),
-                        active: true,
-                        slug_option: removeUnicode(String(eRow['thuoctinh1']), true).toLowerCase(),
-                        slug_values: [],
-                    };
-                    _attributes[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh1']}`] = _attribute;
-                }
-                if (_attributes[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh1']}`]) {
-                    _attributes[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh1']}`].values.push(
-                        eRow['giatri1'].toUpperCase()
-                    );
-                    _attributes[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh1']}`].slug_values.push(
-                        removeUnicode(String(eRow['giatri1']), true).toLowerCase()
-                    );
-                }
-            }
-            if (eRow['thuoctinh2']) {
-                if (!_attributes[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh2']}`]) {
-                    attribute_id++;
-                    let _attribute = {
-                        attribute_id: attribute_id,
-                        product_id: _products[eRow['masanpham']].product_id,
-                        option: eRow['thuoctinh2'].toUpperCase(),
-                        values: [],
-                        create_date: moment().tz(TIMEZONE).format(),
-                        creator_id: req.user.user_id,
-                        last_update: moment().tz(TIMEZONE).format(),
-                        active: true,
-                        slug_option: removeUnicode(String(eRow['thuoctinh2']), true).toLowerCase(),
-                        slug_values: [],
-                    };
-                    _attributes[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh2']}`] = _attribute;
-                }
-                if (_attributes[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh2']}`]) {
-                    _attributes[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh2']}`].values.push(
-                        eRow['giatri2'].toUpperCase()
-                    );
-                    _attributes[`${_products[eRow['masanpham']].product_id}-${eRow['thuoctinh2']}`].slug_values.push(
-                        removeUnicode(String(eRow['giatri2']), true).toLowerCase()
-                    );
-                }
-            }
-            if (!_variants[eRow['maphienban']]) {
-                variant_id++;
-                if (isNaN(eRow['giaban'])) throw new Error('400: Giá bán không hợp lệ');
-
-                _variants[eRow['maphienban']] = {
-                    variant_id: variant_id,
-                    product_id: _products[eRow['masanpham']].product_id,
-                    code: String(product_id).padStart(6, '0'),
-                    title: eRow['tenphienban'] || '',
-                    slug_title: removeUnicode(String(eRow['tenphienban']), true).toLowerCase(),
-                    sku: String(eRow['maphienban']),
-                    image: (() => {
-                        if (eRow['hinhanh']) {
-                            return eRow['hinhanh'].split(',');
-                        }
-                        return [];
-                    })(),
-                    options: [
-                        ...(() => {
-                            let result = [];
-                            for (let i = 0; i < 3; i++) {
-                                if (eRow[`thuoctinh${i + 1}`] && eRow[`giatri${i + 1}`]) {
-                                    result = [
-                                        ...result,
-                                        ...[
-                                            {
-                                                option: eRow[`thuoctinh${i + 1}`],
-                                                value: eRow[`giatri${i + 1}`],
-                                            },
-                                        ],
-                                    ];
-                                }
-                            }
-                            return result;
-                        })(),
-                    ],
-                    ...(() => {
-                        let result = {};
-                        for (let i = 0; i < 3; i++) {
-                            if (eRow[`thuoctinh${i + 1}`] && eRow[`giatri${i + 1}`]) {
-                                result[`option${i + 1}`] = {
-                                    option: eRow[`thuoctinh${i + 1}`],
-                                    value: eRow[`giatri${i + 1}`],
-                                };
-                            }
-                        }
-                        return result;
-                    })(),
-                    supplier: _suppliers[eRow['_nhacungcap']]?.name,
-                    import_price_default: eRow['gianhap'],
-                    price: eRow['giaban'],
-                    enable_bulk_price: (() => {
-                        if (
-                            eRow['apdunggiabansi'] &&
-                            removeUnicode(String(eRow['apdunggiabansi']), true).toLowerCase() == 'co'
-                        ) {
-                            return true;
-                        }
-                        return false;
-                    })(),
-                    bulk_prices: (() => {
-                        let result = [];
-                        let i = 0;
-                        do {
-                            let bulkPrice = {};
-                            if (i == 0) {
-                                if (eRow[`soluongsiapdung`]) {
-                                    let [minQuantity, maxQuantity] = eRow[`soluongsiapdung`].split('-');
-                                    bulkPrice['min_quantity_apply'] = Number(minQuantity);
-                                    bulkPrice['max_quantity_apply'] = Number(maxQuantity);
-                                    bulkPrice['price'] = Number(eRow[`giabansiapdung`]);
-                                    if (
-                                        isNaN(bulkPrice['min_quantity_apply']) ||
-                                        isNaN(bulkPrice['min_quantity_apply'])
-                                    ) {
-                                        throw new Error(`400: Số lượng sỉ áp dụng phải là số!`);
-                                    }
-                                    if (isNaN(bulkPrice['price'])) {
-                                        throw new Error('400: Giá bán sỉ áp dụng phải là số');
-                                    }
-                                } else {
-                                    break;
-                                }
-                            } else {
-                                if (eRow[`soluongsiapdung_${i}`]) {
-                                    let [minQuantity, maxQuantity] = eRow[`soluongsiapdung_${i}`].split('-');
-                                    bulkPrice['min_quantity_apply'] = Number(minQuantity);
-                                    bulkPrice['max_quantity_apply'] = Number(maxQuantity);
-                                    bulkPrice['price'] = Number(eRow[`giabansiapdung_${i}`]);
-                                    if (
-                                        isNaN(bulkPrice['min_quantity_apply']) ||
-                                        isNaN(bulkPrice['min_quantity_apply'])
-                                    ) {
-                                        throw new Error(`400: Số lượng sỉ áp dụng phải là số!`);
-                                    }
-                                    if (isNaN(bulkPrice['price'])) {
-                                        throw new Error('400: Giá bán sỉ áp dụng phải là số');
-                                    }
-                                } else {
-                                    break;
-                                }
-                            }
-                            result.push(bulkPrice);
-                            i++;
-                        } while (true);
-                        return result;
-                    })(),
-                    create_date: moment().tz(TIMEZONE).format(),
-                    last_update: moment().tz(TIMEZONE).format(),
-                    creator_id: Number(req.user.user_id),
-                    active: true,
-                };
-            }
-        });
-        for (let i in _attributes) {
-            _attributes[i].values = [...new Set(_attributes[i].values)];
-            _attributes[i].slug_values = [...new Set(_attributes[i].slug_values)];
-        }
-        if (Object.values(_products).length > 0) {
-            let insert = await client.db(req.user.database).collection('Products').insertMany(Object.values(_products));
-            if (!insert.insertedIds) {
-                throw new Error(`500: Tạo sản phẩm thất bại!`);
-            }
-        }
-        if (Object.values(_attributes).length > 0) {
-            let insert = await client
-                .db(req.user.database)
-                .collection('Attributes')
-                .insertMany(Object.values(_attributes));
-            if (!insert.insertedIds) {
-                throw new Error(`500: Tạo thuộc tính sản phẩm thất bại!`);
-            }
-        }
-        if (Object.values(_variants).length > 0) {
-            let insert = await client.db(req.user.database).collection('Variants').insertMany(Object.values(_variants));
-            if (!insert.insertedIds) {
-                throw new Error(`500: Tạo phiên bản sản phẩm thất bại!`);
-            }
-        }
         await Promise.all([
             client
                 .db(req.user.database)
                 .collection('AppSetting')
-                .updateOne({ name: 'Products' }, { $set: { name: 'Products', value: product_id } }, { upsert: true }),
-            client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .updateOne({ name: 'Variants' }, { $set: { name: 'Variants', value: variant_id } }, { upsert: true }),
+                .updateOne({ name: 'Products' }, { $set: { name: 'Products', value: productId } }, { upsert: true }),
             client
                 .db(req.user.database)
                 .collection('AppSetting')
                 .updateOne(
-                    { name: 'Suppliers' },
-                    { $set: { name: 'Suppliers', value: supplier_id } },
+                    { name: 'Attributes' },
+                    { $set: { name: 'Attributes', value: attributeId } },
                     { upsert: true }
                 ),
+            client
+                .db(req.user.database)
+                .collection('AppSetting')
+                .updateOne({ name: 'Variants' }, { $set: { name: 'Variants', value: variantId } }, { upsert: true }),
+            client
+                .db(req.user.database)
+                .collection('AppSetting')
+                .updateOne({ name: 'Suppliers' }, { $set: { name: 'Suppliers', value: supplierId } }, { upsert: true }),
             client
                 .db(req.user.database)
                 .collection('AppSetting')
                 .updateOne(
                     { name: 'Categories' },
-                    { $set: { name: 'Categories', value: category_id } },
+                    { $set: { name: 'Categories', value: categoryId } },
                     { upsert: true }
                 ),
             client
                 .db(req.user.database)
                 .collection('AppSetting')
-                .updateOne({ name: 'Brands' }, { $set: { name: 'Brands', value: brand_id } }, { upsert: true }),
+                .updateOne({ name: 'Brands' }, { $set: { name: 'Brands', value: brandId } }, { upsert: true }),
         ]);
         res.send({ success: true, message: 'Tạo sản phẩm thành công!' });
     } catch (err) {

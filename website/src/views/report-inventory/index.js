@@ -431,6 +431,7 @@ export default function ReportInventory() {
         bordered
         loading={loading}
         size="small"
+        scroll={{ y: 400 }}
         style={{ width: '100%' }}
         columns={columns}
         dataSource={reportInventory}
