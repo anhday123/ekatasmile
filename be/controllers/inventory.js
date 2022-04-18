@@ -1438,6 +1438,7 @@ module.exports._updateTransportOrder = async (req, res, next) => {
             last_update: moment().tz(TIMEZONE).format(),
             active: _order.active,
         };
+        let importLocation = await client.db(req.user.database).collection('Branchs').findOne(_order.import_location);
         if (_order.status == 'VERIFY' && order.status != 'VERIFY') {
             _order['verifier_id'] = Number(req.user.user_id);
             _order['verify_date'] = moment().tz(TIMEZONE).format();
