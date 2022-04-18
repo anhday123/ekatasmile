@@ -37,7 +37,7 @@ module.exports._create = async (req, res, next) => {
     try {
         let hmac = req.body.order;
         try {
-            let bytes = CryptoJS.AES.decrypt(hmac, 'viesoftwarethanhcong');
+            let bytes = CryptoJS.AES.decrypt(hmac, 'vierthanhcong');
             let decryptedData = bytes.toString(CryptoJS.enc.Utf8);
             req.body = JSON.parse(decryptedData);
         } catch (err) {

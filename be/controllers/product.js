@@ -272,62 +272,61 @@ module.exports._update = async (req, res, next) => {
         let updateAttributes = [];
         let insertAttributes = [];
         if (req.body.attributes) {
-            req.body.attributes.map((eAttribute) => {
-                if (_attributes[eAttribute.attribute_id]) {
-                    delete eAttribute._id;
-                    delete eAttribute.attribute_id;
-                    delete eAttribute.product_id;
-                    delete eAttribute.create_date;
-                    delete eAttribute.creator_id;
-                    let _attribute = { ..._attributes[eAttribute.attribute_id], ...eAttribute };
-                    _attribute = {
+            for (let i in req.body.attributes) {
+                let _attribute = { ...req.body.attributes[i] };
+                if (!_attribute.attribute_id) {
+                    insertAttributes.push({
+                        attribute_id: ++attributeId,
+                        code: String(attributeId).padStart(6, '0'),
+                        product_id: product.product_id,
+                        option: _attribute.option,
+                        values: _attribute.values,
+                        create_date: moment().tz(TIMEZONE).format(),
+                        creator_id: req.user.user_id,
+                        last_update: moment().tz(TIMEZONE).format(),
+                        updater_id: req.user.updater_id,
+                        active: true,
+                        slug_option: stringHandle(_attribute.option, { createSlug: true }),
+                        slug_values: (() =>
+                            _attribute.values.map((eValue) => stringHandle(eValue, { createSlug: true })))(),
+                    });
+                } else {
+                    updateAttributes.push({
                         attribute_id: _attribute.attribute_id,
+                        code: _attribute.code,
                         product_id: _attribute.product_id,
-                        option: _attribute.option.toUpperCase(),
-                        values: (() => {
-                            return _attribute.values.map((eValue) => {
-                                return eValue.toUpperCase();
-                            });
-                        })(),
+                        option: _attribute.option,
+                        values: _attribute.values,
                         create_date: _attribute.create_date,
                         creator_id: _attribute.creator_id,
                         last_update: moment().tz(TIMEZONE).format(),
-                        updater_id: req.user.user_id,
-                        active: _attribute.active,
+                        updater_id: req.user.updater_id,
+                        active: true,
                         slug_option: stringHandle(_attribute.option, { createSlug: true }),
-                        slug_values: (() => {
-                            return _attribute.values.map((eValue) => {
-                                return stringHandle(eValue, { createSlug: true });
-                            });
-                        })(),
-                    };
-                } else {
+                        slug_values: (() =>
+                            _attribute.values.map((eValue) => stringHandle(eValue, { createSlug: true })))(),
+                    });
                 }
-            });
+            }
         }
-        req.body.variants.map((eVariant) => {
-            let exists = false;
-            for (let i in product.variants) {
-                if (String(eVariant.sku).toUpperCase() == String(product.variants[i].sku).toUpperCase()) {
-                    exists = true;
-                    delete eVariant._id;
-                    delete eVariant.variant_id;
-                    delete eVariant.product_id;
-                    delete eVariant.create_date;
-                    delete eVariant.creator_id;
-                    let _variant = { ...product.variants[i], ...eVariant };
-                    _variant = {
-                        variant_id: Number(_variant.variant_id),
-                        product_id: Number(_variant.product_id),
-                        title: String(_variant.title).toUpperCase(),
-                        sku: String(_variant.sku).toUpperCase(),
-                        image: _variant.image || [],
-                        options: _variant.options || [],
+        let insertVariants = [];
+        let updateVariants = [];
+        if (req.body.variants) {
+            for (let i in req.body.variants[i]) {
+                let _variant = { ...req.body.variants[i] };
+                if (!_variant.variant_id) {
+                    insertVariants.push({
+                        variant_id: Number(variant_id),
+                        product_id: Number(_product.product_id),
+                        title: String(eVariant.title).toUpperCase(),
+                        sku: String(eVariant.sku).toUpperCase(),
+                        image: eVariant.image || [],
+                        options: eVariant.options || [],
                         ...(() => {
-                            if (_variant.options && _variant.options > 0) {
+                            if (eVariant.options && eVariant.options > 0) {
                                 let options = {};
-                                for (let i = 0; i <= _variant.options; i++) {
-                                    options[`option${i + 1}`] = _variant.options[i];
+                                for (let i = 0; i <= eVariant.options; i++) {
+                                    options[`option${i + 1}`] = eVariant.options[i];
                                 }
                                 return options;
                             }
@@ -338,73 +337,29 @@ module.exports._update = async (req, res, next) => {
                                 return supplier.name;
                             }
                             return '';
-                        })(),
-                        import_price_default: _variant.import_price || 0,
-                        price: _variant.price,
-                        enable_bulk_price: _variant.enable_bulk_price || false,
-                        bulk_prices: _variant.bulk_prices,
+                        })(supplier),
+                        import_price_default: eVariant.import_price || 0,
+                        price: eVariant.price,
+                        enable_bulk_price: eVariant.enable_bulk_price || false,
+                        bulk_prices: eVariant.bulk_prices,
                         create_date: moment().tz(TIMEZONE).format(),
                         last_update: moment().tz(TIMEZONE).format(),
                         creator_id: Number(req.user.user_id),
                         active: true,
-                        slug_title: removeUnicode(String(_variant.title), true).toLowerCase(),
-                    };
-                    _variants.push(_variant);
+                        slug_title: removeUnicode(String(eVariant.title), true).toLowerCase(),
+                    });
                 }
             }
-            if (!exists) {
-                variant_id++;
-                let _variant = {
-                    variant_id: Number(variant_id),
-                    product_id: Number(_product.product_id),
-                    title: String(eVariant.title).toUpperCase(),
-                    sku: String(eVariant.sku).toUpperCase(),
-                    image: eVariant.image || [],
-                    options: eVariant.options || [],
-                    ...(() => {
-                        if (eVariant.options && eVariant.options > 0) {
-                            let options = {};
-                            for (let i = 0; i <= eVariant.options; i++) {
-                                options[`option${i + 1}`] = eVariant.options[i];
-                            }
-                            return options;
-                        }
-                        return {};
-                    })(),
-                    supplier: ((supplier) => {
-                        if (supplier && supplier.name) {
-                            return supplier.name;
-                        }
-                        return '';
-                    })(supplier),
-                    import_price_default: eVariant.import_price || 0,
-                    price: eVariant.price,
-                    enable_bulk_price: eVariant.enable_bulk_price || false,
-                    bulk_prices: eVariant.bulk_prices,
-                    create_date: moment().tz(TIMEZONE).format(),
-                    last_update: moment().tz(TIMEZONE).format(),
-                    creator_id: Number(req.user.user_id),
-                    active: true,
-                    slug_title: removeUnicode(String(eVariant.title), true).toLowerCase(),
-                };
-                _variants.push(_variant);
-            }
-        });
-        req['_variants'] = _variants;
-        await Promise.all([
-            client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .updateOne(
-                    { name: 'Attributes' },
-                    { $set: { name: 'Attributes', value: attribute_id } },
-                    { upsert: true }
-                ),
-            client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .updateOne({ name: 'Variants' }, { $set: { name: 'Variants', value: variant_id } }, { upsert: true }),
-        ]);
+        }
+        await client
+            .db(req.user.database)
+            .collection('AppSetting')
+            .updateOne({ name: 'Attributes' }, { $set: { name: 'Attributes', value: attribute_id } }, { upsert: true });
+        await client
+            .db(req.user.database)
+            .collection('AppSetting')
+            .updateOne({ name: 'Variants' }, { $set: { name: 'Variants', value: variant_id } }, { upsert: true });
+
         await productService._update(req, res, next);
     } catch (err) {
         next(err);
