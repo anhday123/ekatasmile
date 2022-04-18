@@ -312,7 +312,7 @@ module.exports._update = async (req, res, next) => {
         let insertVariants = [];
         let updateVariants = [];
         if (req.body.variants) {
-            for (let i in req.body.variants[i]) {
+            for (let i in req.body.variants) {
                 let _variant = { ...req.body.variants[i] };
                 if (!_variant.variant_id) {
                     insertVariants.push({
