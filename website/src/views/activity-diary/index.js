@@ -25,6 +25,7 @@ export default function ActivityDiary() {
   const [valueSearch, setValueSearch] = useState('')
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
   const [countAction, setCountAction] = useState(0)
+  const [valueFilter, setValueFilter] = useState()
 
   const onSearch = (e) => {
     setValueSearch(e.target.value)
@@ -113,6 +114,8 @@ export default function ActivityDiary() {
   const onClickClear = async () => {
     await _getActionsHistory()
     setValueSearch('')
+    setParamsFilter({ page: 1, page_size: 20 })
+    setValueFilter()
   }
 
   useEffect(() => {
@@ -181,6 +184,7 @@ export default function ActivityDiary() {
         </Col>
         <Col xs={24} sm={24} md={12} lg={8} xl={8}>
           <Select
+            value={valueFilter}
             showSearch
             style={{ width: '100%' }}
             placeholder="Lọc thao tác"
@@ -189,7 +193,15 @@ export default function ActivityDiary() {
               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }
             bordered={false}
-          ></Select>
+            allowClear
+            onChange={e => {
+              setParamsFilter({ ...paramsFilter, type: e })
+              setValueFilter(e)
+            }}
+          >
+            <Select.Option value='Tạo'>Tạo</Select.Option>
+            <Select.Option value='Cập nhật'>Cập nhật</Select.Option>
+          </Select>
         </Col>
       </Row>
 

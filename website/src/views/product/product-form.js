@@ -940,7 +940,7 @@ export default function ProductAdd() {
 
       //check bao hanh
       if (product.warranties.length) {
-        setIdsWarranty([...product.warranties.map((e) => e.warranty_id)])
+        setIdsWarranty([...product.warranties.map((e) => e !== null && e.warranty_id)])
       }
     } else {
       form.setFieldsValue({ unit: 'Cái' })
