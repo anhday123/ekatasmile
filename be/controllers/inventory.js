@@ -292,11 +292,11 @@ module.exports._createImportOrder = async (req, res, next) => {
             order['verify_date'] = moment().tz(TIMEZONE).format();
             order['completer_id'] = Number(req.user.user_id);
             order['complete_date'] = moment().tz(TIMEZONE).format();
+            console.log(req.user.database);
             let locationMaxId = await client
                 .db(req.user.database)
                 .collection('AppSetting')
                 .findOne({ name: 'Locations' });
-            console.log(locationMaxId);
             let locationId = (locationMaxId && locationMaxId.value) || 0;
             let inventoryMaxId = await client
                 .db(req.user.database)
