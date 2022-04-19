@@ -17,6 +17,17 @@ _connect.then(async (message) => {
     console.log(message);
     console.log('Database URI: ' + process.env.MONGO_DATABASE_URI);
     console.log('Database Name: ' + process.env.DATABASE);
+    // let business = await client.db('RootAO').collection('Business').find({}).toArray();
+    // for (let i in business) {
+    //     try {
+    //         const DB = business[i].database_name;
+    //         console.log(DB);
+    //         await client.db(DB).collection('ImportOrders').dropIndexes({ import_order_id: 1 });
+    //     } catch (err) {
+    //         console.log('err');
+    //     }
+    // }
+    // console.log(`done`);
 });
 
 _connect.catch((err) => {
