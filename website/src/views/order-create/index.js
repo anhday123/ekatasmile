@@ -490,12 +490,13 @@ export default function OrderCreateShipping() {
     // }
     try {
       let totalDiscount =
-        (discount.value / 100) * productData.reduce((a, b) => a + b.quantity * b.sale_price, 0)
+        (discount.value / 100) * productData.reduce((a, b) => a + b.total_quantity * b.price, 0)
       const dataList = productData.map((product) => {
+        console.log(product)
         let productDiscount = 0
-        if (totalDiscount >= product.sale_price * product.quantity) {
-          productDiscount = product.sale_price * product.quantity
-          totalDiscount -= product.sale_price * product.quantity
+        if (totalDiscount >= product.price * product.total_quantity) {
+          productDiscount = product.price * product.total_quantity
+          totalDiscount -= product.price * product.total_quantity
         } else {
           productDiscount = totalDiscount
           totalDiscount = 0
@@ -503,13 +504,13 @@ export default function OrderCreateShipping() {
         const data = {
           product_id: product.product_id,
           sku: product.sku,
-          supplier: product.suppliers.supplier_id,
+          // supplier: product.suppliers.supplier_id,
           options: product.options,
           // has_variable: product.has_variable,
-          quantity: product.quantity,
-          total_cost: product.sale_price * product.quantity,
+          quantity: product.total_quantity,
+          total_cost: product.price * product.total_quantity,
           discount: productDiscount,
-          final_cost: product.sale_price * product.quantity - productDiscount,
+          final_cost: product.price * product.total_quantity - productDiscount,
         }
 
         return voucher
@@ -517,10 +518,12 @@ export default function OrderCreateShipping() {
           : { ...data, promotion: productDiscount ? promotion : ' ' }
       })
 
-      console.log(dataList)
+      // console.log(customerInfo)
+      // console.log(dataList)
       const data = {
-        branch: branchIdApp,
-        // customer: customerInfo.customer_id,
+        sale_location: { branch_id: branchIdApp },
+        channel: 'website',
+        customer_id: customerInfo.customer_id,
         order_details: dataList,
         payment: '1',
         tax_list: tax,
@@ -536,6 +539,7 @@ export default function OrderCreateShipping() {
         longtitude: '50.50',
         note: note,
       }
+      // console.log(data)
 
       const bodyVoucher = {
         order: CryptoJS.AES.encrypt(JSON.stringify({ ...data, voucher }), 'vierthanhcong').toString(),
@@ -547,7 +551,7 @@ export default function OrderCreateShipping() {
       const res = voucher
         ? await apiOrderVoucher(bodyVoucher)
         : await apiOrderVoucher(bodyPromotion)
-      console.log(bodyVoucher, bodyPromotion)
+      // console.log(bodyVoucher, bodyPromotion)
       console.log(res)
       if (res.data.success) {
         notification.success({ message: 'Tạo hóa đơn thành công' })

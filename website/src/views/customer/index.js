@@ -122,9 +122,8 @@ export default function Customer() {
           'Tổng chi tiêu tại cửa hàng': item.order_total_cost || 0,
           'Ngày tạo': item.create_date ? moment(item.create_date).format('DD-MM-YYYY HH:mm') : '',
           'Ngày sinh': item.birthday ? moment(item.birthday).format('DD-MM-YYYY') : '',
-          'Địa chỉ': `${item.address && item.address + ', '}${
-            item.district && item.district + ', '
-          }${item.province && item.province}`,
+          'Địa chỉ': `${item.address && item.address + ', '}${item.district && item.district + ', '
+            }${item.province && item.province}`,
         }))
       }
       setTableLoading(false)
@@ -195,44 +194,44 @@ export default function Customer() {
   return (
     <div className="card">
       <Affix offsetTop={60}>
-      <TitlePage title="Quản lý khách hàng">
-        <Space>
-          <Button
-            onClick={_getCustomerToExport}
-            icon={<DownloadOutlined />}
-            style={{ backgroundColor: 'green', borderColor: 'green' }}
-            type="primary"
-            size="large"
-          >
-            Xuất excel
-          </Button>
-          <ImportCSV
-            size="large"
-            txt="Nhập khách hàng"
-            upload={importCustomers}
-            title="Nhập khách hàng bằng file excel"
-            fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/01/16/d5f3fe01-765d-40d0-9d8b-62ffaf61e057/CustomerImport.xlsx"
-            reload={_getCustomers}
-          />
-          <SettingColumns
-            columnsDefault={columnsCustomer}
-            setColumns={setColumns}
-            columns={columns}
-            nameColumn="columnsCustomer"
-          />
-          <Permission permissions={[PERMISSIONS.them_khach_hang]}>
-            <ModalCustomer>
-              <Button
-                size="large"
-                icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
-                type="primary"
-              >
-                Thêm khách hàng
-              </Button>
-            </ModalCustomer>
-          </Permission>
-        </Space>
-      </TitlePage>
+        <TitlePage title="Quản lý khách hàng">
+          <Space>
+            <Button
+              onClick={_getCustomerToExport}
+              icon={<DownloadOutlined />}
+              style={{ backgroundColor: 'green', borderColor: 'green' }}
+              type="primary"
+              size="large"
+            >
+              Xuất excel
+            </Button>
+            <ImportCSV
+              size="large"
+              txt="Nhập khách hàng"
+              upload={importCustomers}
+              title="Nhập khách hàng bằng file excel"
+              fileTemplated="https://s3.ap-northeast-1.wasabisys.com/admin-order/2022/01/16/d5f3fe01-765d-40d0-9d8b-62ffaf61e057/CustomerImport.xlsx"
+              reload={_getCustomers}
+            />
+            <SettingColumns
+              columnsDefault={columnsCustomer}
+              setColumns={setColumns}
+              columns={columns}
+              nameColumn="columnsCustomer"
+            />
+            <Permission permissions={[PERMISSIONS.them_khach_hang]}>
+              <ModalCustomer>
+                <Button
+                  size="large"
+                  icon={<PlusCircleOutlined style={{ fontSize: '1rem' }} />}
+                  type="primary"
+                >
+                  Thêm khách hàng
+                </Button>
+              </ModalCustomer>
+            </Permission>
+          </Space>
+        </TitlePage>
       </Affix>
       <Row gutter={[16, 16]} style={{ marginTop: 15 }}>
         <Col xs={24} sm={24} md={24} lg={10} xl={10}>
@@ -431,7 +430,7 @@ export default function Customer() {
           if (column.key === 'type')
             return {
               ...column,
-              render: (text, record) => record._type.name,
+              render: (text, record) => record._type ? record._type.name : '',
               sorter: (a, b) => compare(a, b, 'type'),
             }
           if (column.key === 'phone')
@@ -483,8 +482,7 @@ export default function Customer() {
             return {
               ...column,
               render: (text, record) =>
-                `${record.address && record.address + ', '}${
-                  record.district && record.district + ', '
+                `${record.address && record.address + ', '}${record.district && record.district + ', '
                 }${record.province && record.province}`,
               sorter: (a, b) => compare(a, b, 'address'),
             }

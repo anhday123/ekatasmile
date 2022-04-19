@@ -25,6 +25,14 @@ const Overview = () => {
   const [loadingSkeleton, setLoadingSkeleton] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
 
+  const dataFake = []
+  for (let i = 0; i < 23; i++) {
+    dataFake.push({
+      name: `hih ${i}`,
+      sale_quantity: i
+    });
+  }
+
   const SALES = ['Tổng đơn hàng', 'Tổng giá vốn', 'Tổng doanh thu', 'Tổng lợi nhuận']
 
   const _getStatistical = async () => {
@@ -92,10 +100,10 @@ const Overview = () => {
                   {e.name === 'Tổng đơn hàng'
                     ? formatCash(statisticalToday?.sum_order)
                     : e.name === 'Tổng giá vốn'
-                    ? formatCash(statisticalToday?.sum_origin_cost)
-                    : e.name === 'Tổng doanh thu'
-                    ? formatCash(statisticalToday?.sum_revenue)
-                    : formatCash(statisticalToday?.sum_profit)}
+                      ? formatCash(statisticalToday?.sum_origin_cost)
+                      : e.name === 'Tổng doanh thu'
+                        ? formatCash(statisticalToday?.sum_revenue)
+                        : formatCash(statisticalToday?.sum_profit)}
                 </span>
               </div>
             ))}
@@ -109,7 +117,7 @@ const Overview = () => {
         ) : (
           <Col xs={24} sm={24} md={24} lg={14} xl={14}>
             <div
-              style={{ marginRight: !isMobile && 7, marginTop: 0, height: '95%', marginBottom: 15 }}
+              style={{ marginRight: !isMobile && 7, marginTop: 0, height: 400, marginBottom: 15 }}
               className={styles['card-overview']}
             >
               <div className={styles['dashboard_manager_revenue_title']}>
@@ -130,7 +138,7 @@ const Overview = () => {
               style={{
                 marginLeft: !isMobile ? 7 : 0,
                 marginTop: 0,
-                height: '95%',
+                height: 400,
                 marginBottom: 15,
               }}
               className={styles['card-overview']}
@@ -138,9 +146,10 @@ const Overview = () => {
               <div className={styles['dashboard_manager_bottom_row_col_parent_top']}>
                 <div>Top 10 sản phẩm bán chạy</div>
               </div>
-              <div style={{ width: '100%', margin: 'auto' }}>
-                {statisticalProduct.length ? (
-                  statisticalProduct.map((e, index) => {
+              <div style={{ width: '100%', margin: 'auto', overflowY: 'scroll', paddingTop: 10 }}>
+                {
+                  statisticalProduct.length ? (
+                    statisticalProduct.map((e, index) => {
                     return (
                       <Row
                         align="middle"
@@ -164,12 +173,14 @@ const Overview = () => {
                       </Row>
                     )
                   })
-                ) : (
-                  <div style={{ textAlign: 'center' }}>
-                    <img src={noData} alt="" style={{ width: 90, height: 90 }} />
-                    <h4 style={{ fontSize: 15, color: '#555' }}>Chưa có sản phẩm bán chạy</h4>
-                  </div>
-                )}
+                  ) 
+                  : (
+                    <div style={{ textAlign: 'center' }}>
+                      <img src={noData} alt="" style={{ width: 90, height: 90 }} />
+                      <h4 style={{ fontSize: 15, color: '#555' }}>Chưa có sản phẩm bán chạy</h4>
+                    </div>
+                  )
+                }
               </div>
             </div>
           </Col>
