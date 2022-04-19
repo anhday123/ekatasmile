@@ -335,6 +335,8 @@ module.exports._createImportOrder = async (req, res, next) => {
                     updater_id: req.user.user_id,
                 });
             });
+            console.log(`location_id: ` + locationId);
+            console.log(`inventory_id: ` + inventoryId);
             await client
                 .db(req.user.database)
                 .collection('AppSetting')
