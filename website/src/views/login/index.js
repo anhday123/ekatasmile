@@ -25,7 +25,7 @@ export default function Login() {
       let subDomain = domain.split(`.${process.env.REACT_APP_HOST}`)
       subDomain = subDomain[0].split('//')
 
-      //Khi code comment lại, code xong để lại như cũ
+      // Khi code comment lại, code xong để lại như cũ
       // const res = await login({ ...body, username: body.username }, { shop: 'vanhoang' })
       const res = await login({ ...body, username: body.username }, { shop: subDomain[1] })
 

@@ -276,8 +276,8 @@ export default function ImportInventories() {
           categories: e._categories && e._categories.map((category) => category.name).join(', '),
           product_sku: e.sku || '',
           product_name: e.name || '',
-          import_price: e.import_price_default || 0,
-          quantity: 1,
+          import_price: e.variants.import_price_default || 0,
+          quantity: e.variants.total_quantity,
           inventory_quantity: e.location && e.location[0] ? e.location[0].quantity : 0,
           sumCost: e.import_price_default || 0,
         }))
@@ -491,8 +491,8 @@ export default function ImportInventories() {
                       'Mã phiên bản': record.sku || '',
                       'Nhà cung cấp': record.supplier || '',
                       'Đơn vị': record.unit || '',
-                      'Đơn giá nhập': record.import_price ? record.import_price : 0,
-                      'Số lượng nhập': record.quantity || '',
+                      'Đơn giá nhập': record.import_price_default ? record.import_price_default : 0,
+                      'Số lượng nhập': record.total_quantity || '',
                     }))
                     exportToCSV(dataExport, 'Danh sách sản phẩm')
                   }}
@@ -745,8 +745,7 @@ export default function ImportInventories() {
                 ...column,
                 render: (text, record) =>
                   record._order_creator &&
-                  `${record._order_creator.first_name || ''} ${
-                    record._order_creator.last_name || ''
+                  `${record._order_creator.first_name || ''} ${record._order_creator.last_name || ''
                   }`,
               }
             if (column.key === 'verifier')
@@ -817,15 +816,15 @@ export default function ImportInventories() {
                     products={
                       record.products
                         ? record.products.map(
-                            (e) =>
-                              e && {
-                                ...e.product_info,
-                                quantity: e.quantity,
-                                files: record.files,
-                                tags: record.tags,
-                                note: record.note,
-                              }
-                          )
+                          (e) =>
+                            e && {
+                              ...e.product_info,
+                              quantity: e.quantity,
+                              files: record.files,
+                              tags: record.tags,
+                              note: record.note,
+                            }
+                        )
                         : []
                     }
                   />

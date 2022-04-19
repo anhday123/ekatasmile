@@ -5,6 +5,7 @@ import { ROUTES, PERMISSIONS, IMAGE_DEFAULT } from 'consts'
 import { formatCash } from 'utils'
 import moment from 'moment'
 import jwt_decode from 'jwt-decode'
+import CryptoJS from 'crypto-js'
 import { useSelector } from 'react-redux'
 
 //antd
@@ -71,6 +72,7 @@ export default function OrderCreateShipping() {
   const [loadingProduct, setLoadingProduct] = useState(false)
   const [productsSearch, setProductsSearch] = useState([])
   const [productData, setProductData] = useState([])
+  console.log(productData)
   const [options, setOptions] = useState([])
   const [infoBranch, setInfoBranch] = useState(
     localStorage.getItem('branchSell') ? JSON.parse(localStorage.getItem('branchSell')) : null
@@ -171,15 +173,15 @@ export default function OrderCreateShipping() {
             //thuế VAT của mỗi sản phẩm
             orderCreateNew.order_details[indexProduct].VAT_Product =
               orderCreateNew.order_details[indexProduct]._taxes &&
-              orderCreateNew.order_details[indexProduct]._taxes.length
+                orderCreateNew.order_details[indexProduct]._taxes.length
                 ? (
-                    (orderCreateNew.order_details[indexProduct]._taxes.reduce(
-                      (total, current) => total + current.value,
-                      0
-                    ) /
-                      100) *
-                    orderCreateNew.order_details[indexProduct].sumCost
-                  ).toFixed(0)
+                  (orderCreateNew.order_details[indexProduct]._taxes.reduce(
+                    (total, current) => total + current.value,
+                    0
+                  ) /
+                    100) *
+                  orderCreateNew.order_details[indexProduct].sumCost
+                ).toFixed(0)
                 : 0
           } else
             notification.warning({
@@ -194,9 +196,9 @@ export default function OrderCreateShipping() {
             VAT_Product:
               product._taxes && product._taxes.length
                 ? (
-                    (product._taxes.reduce((total, current) => total + current.value, 0) / 100) *
-                    product.price
-                  ).toFixed(0)
+                  (product._taxes.reduce((total, current) => total + current.value, 0) / 100) *
+                  product.price
+                ).toFixed(0)
                 : 0,
           })
 
@@ -257,15 +259,15 @@ export default function OrderCreateShipping() {
       //thuế VAT của mỗi sản phẩm
       orderCreateNew.order_details[index].VAT_Product =
         orderCreateNew.order_details[index]._taxes &&
-        orderCreateNew.order_details[index]._taxes.length
+          orderCreateNew.order_details[index]._taxes.length
           ? (
-              (orderCreateNew.order_details[index]._taxes.reduce(
-                (total, current) => total + current.value,
-                0
-              ) /
-                100) *
-              orderCreateNew.order_details[index].sumCost
-            ).toFixed(0)
+            (orderCreateNew.order_details[index]._taxes.reduce(
+              (total, current) => total + current.value,
+              0
+            ) /
+              100) *
+            orderCreateNew.order_details[index].sumCost
+          ).toFixed(0)
           : 0
 
       //tổng thuế VAT của tất cả các sản phẩm
@@ -514,6 +516,8 @@ export default function OrderCreateShipping() {
           ? { ...data, voucher: productDiscount ? voucher : ' ' }
           : { ...data, promotion: productDiscount ? promotion : ' ' }
       })
+
+      console.log(dataList)
       const data = {
         branch: branchIdApp,
         // customer: customerInfo.customer_id,
@@ -533,9 +537,17 @@ export default function OrderCreateShipping() {
         note: note,
       }
 
+      const bodyVoucher = {
+        order: CryptoJS.AES.encrypt(JSON.stringify({ ...data, voucher }), 'vierthanhcong').toString(),
+      }
+      const bodyPromotion = {
+        order: CryptoJS.AES.encrypt(JSON.stringify({ ...data, promotion }), 'vierthanhcong').toString(),
+      }
+
       const res = voucher
-        ? await apiOrderVoucher({ ...data, voucher })
-        : await apiOrderVoucher({ ...data, promotion })
+        ? await apiOrderVoucher(bodyVoucher)
+        : await apiOrderVoucher(bodyPromotion)
+      console.log(bodyVoucher, bodyPromotion)
       console.log(res)
       if (res.data.success) {
         notification.success({ message: 'Tạo hóa đơn thành công' })
@@ -813,6 +825,7 @@ export default function OrderCreateShipping() {
                         onClick={(e) => {
                           _addProductToOrder(data)
                           e.stopPropagation()
+                          setProductData([data])
                         }}
                       >
                         <img

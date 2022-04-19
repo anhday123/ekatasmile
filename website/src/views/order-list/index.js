@@ -250,26 +250,26 @@ export default function OrderList() {
     <div className="card">
       <Print />
       <Affix offsetTop={60}>
-      <TitlePage title="Danh sách hóa đơn bán hàng">
-        <Space>
-          <SettingColumns
-            columnsDefault={columnsOrder}
-            nameColumn="columnsOrder"
-            columns={columns}
-            setColumns={setColumns}
-          />
-          <Permissions permissions={[PERMISSIONS.tao_don_hang]}>
-            <Button
-              onClick={() => history.push(ROUTES.ORDER_CREATE)}
-              size="large"
-              type="primary"
-              icon={<PlusCircleOutlined />}
-            >
-              Tạo đơn hàng
-            </Button>
-          </Permissions>
-        </Space>
-      </TitlePage>
+        <TitlePage title="Danh sách hóa đơn bán hàng">
+          <Space>
+            <SettingColumns
+              columnsDefault={columnsOrder}
+              nameColumn="columnsOrder"
+              columns={columns}
+              setColumns={setColumns}
+            />
+            <Permissions permissions={[PERMISSIONS.tao_don_hang]}>
+              <Button
+                onClick={() => history.push(ROUTES.ORDER_CREATE)}
+                size="large"
+                type="primary"
+                icon={<PlusCircleOutlined />}
+              >
+                Tạo đơn hàng
+              </Button>
+            </Permissions>
+          </Space>
+        </TitlePage>
       </Affix>
       <div style={{ marginTop: 15 }}>
         <Row gutter={[16, 16]} justify="space-between" style={{ marginRight: 0, marginLeft: 0 }}>
@@ -601,11 +601,10 @@ export default function OrderList() {
                               <div>Chiết khấu</div>
                               <div>
                                 {record.promotion
-                                  ? `${formatCash(+(record.promotion.value || 0))} ${
-                                      record.promotion.type && record.promotion.type !== 'VALUE'
-                                        ? '%'
-                                        : ''
-                                    }`
+                                  ? `${formatCash(+(record.promotion.value || 0))} ${record.promotion.type && record.promotion.type !== 'VALUE'
+                                    ? '%'
+                                    : ''
+                                  }`
                                   : 0}
                               </div>
                             </Row>
@@ -769,7 +768,7 @@ export default function OrderList() {
         summary={(pageData) => (
           <Table.Summary.Row>
             <Table.Summary.Cell>
-              <b>Tổng</b>
+              <b style={{ whiteSpace: 'nowrap' }}>Tổng</b>
             </Table.Summary.Cell>
             {columns.map((e, index) => {
               if (e.key === 'final_cost')
