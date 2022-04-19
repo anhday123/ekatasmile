@@ -214,6 +214,13 @@ module.exports._update = async (req, res, next) => {
         if (!product) {
             throw new Error('400: Sản phẩm không tồn tại!');
         }
+        let supplier = await client
+            .db(req.user.database)
+            .collection('Suppliers')
+            .findOne({ supplier_id: product.supplier_id });
+        if (!supplier) {
+            throw new Error(`400: Nhà sản xuất không tồn tại!`);
+        }
         let attributeMaxId = await client
             .db(req.user.database)
             .collection('AppSetting')
