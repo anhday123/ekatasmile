@@ -1,29 +1,9 @@
 const moment = require(`moment-timezone`);
 const TIMEZONE = process.env.TIMEZONE;
 const client = require(`../config/mongodb`);
+const { createTimeline } = require('../utils/date-handle');
+const { stringHandle } = require('../utils/string-handle');
 const DB = process.env.DATABASE;
-
-let removeUnicode = (text, removeSpace) => {
-    /*
-        string là chuỗi cần remove unicode
-        trả về chuỗi ko dấu tiếng việt ko khoảng trắng
-    */
-    if (typeof text != 'string') {
-        return '';
-    }
-    if (removeSpace && typeof removeSpace != 'boolean') {
-        throw new Error('Type of removeSpace input must be boolean!');
-    }
-    text = text
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/đ/g, 'd')
-        .replace(/Đ/g, 'D');
-    if (removeSpace) {
-        text = text.replace(/\s/g, '');
-    }
-    return text;
-};
 
 module.exports._get = async (req, res, next) => {
     try {
@@ -31,52 +11,7 @@ module.exports._get = async (req, res, next) => {
         if (req.query.performer_id) {
             aggregateQuery.push({ performer_id: Number(req.query.performer_id) });
         }
-        if (req.query['today']) {
-            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('days').format();
-            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('days').format();
-            delete req.query.today;
-        }
-        if (req.query['yesterday']) {
-            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, `days`).startOf('days').format();
-            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, `days`).endOf('days').format();
-            delete req.query.yesterday;
-        }
-        if (req.query['this_week']) {
-            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('weeks').format();
-            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('weeks').format();
-            delete req.query.this_week;
-        }
-        if (req.query['last_week']) {
-            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').startOf('weeks').format();
-            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').endOf('weeks').format();
-            delete req.query.last_week;
-        }
-        if (req.query['this_month']) {
-            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('months').format();
-            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('months').format();
-            delete req.query.this_month;
-        }
-        if (req.query['last_month']) {
-            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'months').startOf('months').format();
-            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'months').endOf('months').format();
-            delete req.query.last_month;
-        }
-        if (req.query['this_year']) {
-            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('years').format();
-            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('years').format();
-            delete req.query.this_year;
-        }
-        if (req.query['last_year']) {
-            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'years').startOf('years').format();
-            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'years').endOf('years').format();
-            delete req.query.last_year;
-        }
-        if (req.query['from_date']) {
-            req.query[`from_date`] = moment(req.query[`from_date`]).tz(TIMEZONE).startOf('days').format();
-        }
-        if (req.query['to_date']) {
-            req.query[`to_date`] = moment(req.query[`to_date`]).tz(TIMEZONE).endOf('days').format();
-        }
+        req.query = createTimeline(req.query);
         if (req.query.from_date) {
             aggregateQuery.push({ $match: { create_date: { $gte: req.query.from_date } } });
         }
@@ -84,21 +19,20 @@ module.exports._get = async (req, res, next) => {
             aggregateQuery.push({ $match: { create_date: { $lte: req.query.to_date } } });
         }
         if (req.query.type) {
-            aggregateQuery.push({ slug_type: new RegExp(removeUnicode(req.query.type || '', true), 'gi') });
+            aggregateQuery.push({
+                $match: { slug_type: new RegExp(stringHandle(req.query.type, { createSlug: true }), 'gi') },
+            });
         }
         if (req.query.properties) {
-            aggregateQuery.push({ slug_properties: new RegExp(removeUnicode(req.query.properties || '', true), 'gi') });
+            aggregateQuery.push({
+                $match: {
+                    slug_properties: new RegExp(stringHandle(req.query.properties, { createSlug: true }), 'gi'),
+                },
+            });
         }
         if (req.query.name) {
-            aggregateQuery.push({ slug_name: new RegExp(removeUnicode(req.query.name || '', true), 'gi') });
-        }
-        if (req.query.search) {
             aggregateQuery.push({
-                $or: [
-                    { sub_type: new RegExp(removeUnicode(req.query.type || '', true), 'gi') },
-                    { sub_properties: new RegExp(removeUnicode(req.query.properties || '', true), 'gi') },
-                    { sub_name: new RegExp(removeUnicode(req.query.name || '', true), 'gi') },
-                ],
+                $match: { slug_name: new RegExp(stringHandle(req.query.name, { createSlug: true }), 'gi') },
             });
         }
         // lấy các thuộc tính tùy chọn khác

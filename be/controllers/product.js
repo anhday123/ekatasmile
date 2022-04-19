@@ -214,6 +214,13 @@ module.exports._update = async (req, res, next) => {
         if (!product) {
             throw new Error('400: Sản phẩm không tồn tại!');
         }
+        let supplier = await client
+            .db(req.user.database)
+            .collection('Suppliers')
+            .findOne({ supplier_id: product.supplier_id });
+        if (!supplier) {
+            throw new Error(`400: Nhà sản xuất không tồn tại!`);
+        }
         let attributeMaxId = await client
             .db(req.user.database)
             .collection('AppSetting')
@@ -392,11 +399,11 @@ module.exports._update = async (req, res, next) => {
         await client
             .db(req.user.database)
             .collection('AppSetting')
-            .updateOne({ name: 'Attributes' }, { $set: { name: 'Attributes', value: attribute_id } }, { upsert: true });
+            .updateOne({ name: 'Attributes' }, { $set: { name: 'Attributes', value: attributeId } }, { upsert: true });
         await client
             .db(req.user.database)
             .collection('AppSetting')
-            .updateOne({ name: 'Variants' }, { $set: { name: 'Variants', value: variant_id } }, { upsert: true });
+            .updateOne({ name: 'Variants' }, { $set: { name: 'Variants', value: variantId } }, { upsert: true });
 
         await client
             .db(req.user.database)

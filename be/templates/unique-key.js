@@ -49,14 +49,6 @@ module.exports._createUniqueKey = async (client, databaseName) => {
 
         await client.db(databaseName).collection('ImportOrders').createIndexes({ order_id: 1 }, { unique: true });
         await client.db(databaseName).collection('ImportOrders').createIndexes({ code: 1 }, { unique: true });
-        await client
-            .db(databaseName)
-            .collection('ImportOrders')
-            .createIndexes({ import_order_id: 1 }, { unique: true });
-        await client
-            .db(databaseName)
-            .collection('ImportOrders')
-            .createIndexes({ import_order_code: 1 }, { unique: true });
         await client.db(databaseName).collection('ImportOrders').createIndexes({ status: 1 });
         await client.db(databaseName).collection('ImportOrders').createIndexes({ slug_name: 1 });
         await client.db(databaseName).collection('ImportOrders').createIndexes({ create_date: 1 });
@@ -134,14 +126,6 @@ module.exports._createUniqueKey = async (client, databaseName) => {
 
         await client.db(databaseName).collection('TransportOrders').createIndexes({ order_id: 1 }, { unique: true });
         await client.db(databaseName).collection('TransportOrders').createIndexes({ code: 1 }, { unique: true });
-        await client
-            .db(databaseName)
-            .collection('TransportOrders')
-            .createIndexes({ import_order_id: 1 }, { unique: true });
-        await client
-            .db(databaseName)
-            .collection('TransportOrders')
-            .createIndexes({ import_order_code: 1 }, { unique: true });
         await client.db(databaseName).collection('TransportOrders').createIndexes({ status: 1 });
         await client.db(databaseName).collection('TransportOrders').createIndexes({ slug_name: 1 });
         await client.db(databaseName).collection('TransportOrders').createIndexes({ create_date: 1 });
