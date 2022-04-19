@@ -307,6 +307,7 @@ module.exports._createImportOrder = async (req, res, next) => {
             order.products.map((eProduct) => {
                 insertLocations.push({
                     location_id: ++locationId,
+                    code: String(locationId).padStart(6, '0'),
                     product_id: eProduct.product_id,
                     variant_id: eProduct.variant_id,
                     branch_id: (order.import_location && order.import_location.branch_id) || 0,
@@ -320,6 +321,7 @@ module.exports._createImportOrder = async (req, res, next) => {
                 });
                 insertInventories.push({
                     inventory_id: ++inventoryId,
+                    code: String(inventoryId).padStart(6, '0'),
                     order_id: orderId,
                     product_id: eProduct.product_id,
                     variant_id: eProduct.variant_id,
@@ -1058,6 +1060,7 @@ module.exports._createTransportOrder = async (req, res, next) => {
                             if (!_insertLocations[`${eProduct.variant_id}-${eLocation.import_price}`]) {
                                 _insertLocations[`${eProduct.variant_id}-${eLocation.import_price}`] = {
                                     location_id: ++locationId,
+                                    code: String(locationId).padStart(6, '0'),
                                     product_id: eProduct.product_id,
                                     variant_id: eProduct.variant_id,
                                     branch_id: (order.import_location && order.import_location.branch_id) || 0,
@@ -1082,6 +1085,7 @@ module.exports._createTransportOrder = async (req, res, next) => {
                             if (!_insertLocations[`${eProduct.variant_id}-${eLocation.import_price}`]) {
                                 _insertLocations[`${eProduct.variant_id}-${eLocation.import_price}`] = {
                                     location_id: ++locationId,
+                                    code: String(locationId).padStart(6, '0'),
                                     product_id: eProduct.product_id,
                                     variant_id: eProduct.variant_id,
                                     branch_id: (order.import_location && order.import_location.branch_id) || 0,
@@ -1114,6 +1118,7 @@ module.exports._createTransportOrder = async (req, res, next) => {
             insertLocations.map((eLocation) => {
                 insertInventories.push({
                     inventory_id: ++inventoryId,
+                    code: String(inventoryId).padStart(6, '0'),
                     order_id: orderId,
                     product_id: eLocation.product_id,
                     variant_id: eLocation.variant_id,
@@ -1130,6 +1135,7 @@ module.exports._createTransportOrder = async (req, res, next) => {
                 });
                 insertInventories.push({
                     inventory_id: ++inventoryId,
+                    code: String(inventoryId).padStart(6, '0'),
                     order_id: orderId,
                     product_id: eLocation.product_id,
                     variant_id: eLocation.variant_id,
@@ -1495,6 +1501,7 @@ module.exports._updateTransportOrder = async (req, res, next) => {
                         if (!_insertInventories[`${eProduct.variant_id}-${eProduct.import_price}`]) {
                             _insertInventories[`${eProduct.variant_id}-${eProduct.import_price}`] = {
                                 inventory_id: ++inventoryId,
+                                code: String(inventoryId).padStart(6, '0'),
                                 order_id: _order.order_id,
                                 product_id: eProduct.product_id,
                                 variant_id: eProduct.variant_id,
@@ -1519,6 +1526,7 @@ module.exports._updateTransportOrder = async (req, res, next) => {
                         if (!_insertInventories[`${eProduct.variant_id}-${eProduct.import_price}`]) {
                             _insertInventories[`${eProduct.variant_id}-${eProduct.import_price}`] = {
                                 inventory_id: ++inventoryId,
+                                code: String(inventoryId).padStart(6, '0'),
                                 order_id: _order.order_id,
                                 product_id: eProduct.product_id,
                                 variant_id: eProduct.variant_id,
@@ -1596,6 +1604,7 @@ module.exports._updateTransportOrder = async (req, res, next) => {
             inventories.map((eInventory) => {
                 insertLocations.push({
                     location_id: ++locationId,
+                    code: String(locationId).padStart(6, '0'),
                     product_id: eInventory.product_id,
                     variant_id: eInventory.variant_id,
                     branch_id: (_order.import_location && _order.import_location.branch_id) || 0,
@@ -1609,6 +1618,7 @@ module.exports._updateTransportOrder = async (req, res, next) => {
                 });
                 insertInventories.push({
                     inventory_id: ++inventoryId,
+                    code: String(inventoryId).padStart(6, '0'),
                     order_id: eInventory.order_id,
                     product_id: eInventory.product_id,
                     variant_id: eInventory.variant_id,
