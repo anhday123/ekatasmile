@@ -292,7 +292,6 @@ module.exports._createImportOrder = async (req, res, next) => {
             order['verify_date'] = moment().tz(TIMEZONE).format();
             order['completer_id'] = Number(req.user.user_id);
             order['complete_date'] = moment().tz(TIMEZONE).format();
-            console.log(req.user.database);
             let locationMaxId = await client
                 .db(req.user.database)
                 .collection('AppSetting')
@@ -338,19 +337,17 @@ module.exports._createImportOrder = async (req, res, next) => {
                     updater_id: req.user.user_id,
                 });
             });
-            console.log(`location_id: ` + locationId);
-            console.log(`inventory_id: ` + inventoryId);
             await client
                 .db(req.user.database)
                 .collection('AppSetting')
-                .updateOne({ name: 'Locations' }, { $set: { name: 'Locations', value: locationId } }, { upset: true });
+                .updateOne({ name: 'Locations' }, { $set: { name: 'Locations', value: locationId } }, { upsert: true });
             await client
                 .db(req.user.database)
                 .collection('AppSetting')
                 .updateOne(
                     { name: 'Inventories' },
                     { $set: { name: 'Inventories', value: inventoryId } },
-                    { upset: true }
+                    { upsert: true }
                 );
             if (insertLocations.length > 0) {
                 await client.db(req.user.database).collection('Locations').insertMany(insertLocations);
@@ -372,7 +369,7 @@ module.exports._createImportOrder = async (req, res, next) => {
         await client
             .db(req.user.database)
             .collection('AppSetting')
-            .updateOne({ name: 'ImportOrders' }, { $set: { name: 'ImportOrders', value: orderId } }, { upset: true });
+            .updateOne({ name: 'ImportOrders' }, { $set: { name: 'ImportOrders', value: orderId } }, { upsert: true });
         await client.db(req.user.database).collection('ImportOrders').insertOne(order);
         res.send({
             success: true,
@@ -728,14 +725,14 @@ module.exports._updateImportOrder = async (req, res, next) => {
             await client
                 .db(req.user.database)
                 .collection('AppSetting')
-                .updateOne({ name: 'Locations' }, { $set: { name: 'Locations', value: locationId } }, { upset: true });
+                .updateOne({ name: 'Locations' }, { $set: { name: 'Locations', value: locationId } }, { upsert: true });
             await client
                 .db(req.user.database)
                 .collection('AppSetting')
                 .updateOne(
                     { name: 'Inventories' },
                     { $set: { name: 'Inventories', value: inventoryId } },
-                    { upset: true }
+                    { upsert: true }
                 );
             if (insertLocations.length > 0) {
                 await client.db(req.user.database).collection('Locations').insertMany(insertLocations);
