@@ -433,7 +433,8 @@ const BaseLayout = (props) => {
   const onSignOut = () => {
     dispatch({ type: ACTION.LOGOUT })
     dispatch({ type: 'UPDATE_INVOICE', data: [] })
-    window.location.href = `https://${process.env.REACT_APP_HOST}${ROUTES.CHECK_SUBDOMAIN}`
+    // window.location.href = `https://${process.env.REACT_APP_HOST}${ROUTES.CHECK_SUBDOMAIN}`
+    history.push(ROUTES.LOGIN)
   }
 
   useEffect(() => {
