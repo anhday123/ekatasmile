@@ -399,11 +399,11 @@ module.exports._update = async (req, res, next) => {
         await client
             .db(req.user.database)
             .collection('AppSetting')
-            .updateOne({ name: 'Attributes' }, { $set: { name: 'Attributes', value: attribute_id } }, { upsert: true });
+            .updateOne({ name: 'Attributes' }, { $set: { name: 'Attributes', value: attributeId } }, { upsert: true });
         await client
             .db(req.user.database)
             .collection('AppSetting')
-            .updateOne({ name: 'Variants' }, { $set: { name: 'Variants', value: variant_id } }, { upsert: true });
+            .updateOne({ name: 'Variants' }, { $set: { name: 'Variants', value: variantId } }, { upsert: true });
 
         await client
             .db(req.user.database)
