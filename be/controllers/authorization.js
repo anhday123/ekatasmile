@@ -499,7 +499,7 @@ module.exports._login = async (req, res, next) => {
             if (business && business.database_name) {
                 return business.database_name;
             }
-            throw new Error('404: Tài khoản không chính xác!');
+            throw new Error('404: Không tìm thấy doanh nghiệp này!');
         })();
         let [user] = await client
             .db(DB)
@@ -536,7 +536,7 @@ module.exports._login = async (req, res, next) => {
             ])
             .toArray();
         if (!user) {
-            throw new Error(`404: Tài khoản không không chính xác!`);
+            throw new Error(`404: Tài khoản không chính xác!`);
         }
         if (!bcrypt.compare(req.body.password, user.password)) {
             res.send({ success: false, message: `Mật khẩu không chính xác!` });
