@@ -295,7 +295,7 @@ module.exports._createImportOrder = async (req, res, next) => {
             let locationMaxId = await client
                 .db(req.user.database)
                 .collection('AppSetting')
-                .findOne({ name: 'ImportOrders' });
+                .findOne({ name: 'Locations' });
             let locationId = (locationMaxId && locationMaxId.value) || 0;
             let inventoryMaxId = await client
                 .db(req.user.database)
@@ -679,7 +679,7 @@ module.exports._updateImportOrder = async (req, res, next) => {
             let locationMaxId = await client
                 .db(req.user.database)
                 .collection('AppSetting')
-                .findOne({ name: 'ImportOrders' });
+                .findOne({ name: 'Locations' });
             let locationId = (locationMaxId && locationMaxId.value) || 0;
             let inventoryMaxId = await client
                 .db(req.user.database)
