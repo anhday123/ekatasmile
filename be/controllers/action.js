@@ -80,9 +80,9 @@ module.exports._getFileHistory = async (req, res, next) => {
         let page_size = Number(req.query.page_size || 50);
         aggregateQuery.push({ $skip: (page - 1) * page_size }, { $limit: page_size });
         let [actions, counts] = await Promise.all([
-            client.db(DB).collection(`FileHistories`).aggregate(aggregateQuery).toArray(),
+            client.db(req.user.database).collection(`FileHistories`).aggregate(aggregateQuery).toArray(),
             client
-                .db(DB)
+                .db(req.user.database)
                 .collection(`FileHistories`)
                 .aggregate([...countQuery, { $count: 'counts' }])
                 .toArray(),
@@ -99,7 +99,7 @@ module.exports._getFileHistory = async (req, res, next) => {
 
 module.exports._createFileHistory = async (req, res, next) => {
     try {
-        let fileMaxId = await client.db(DB).collection('AppSetting').findOne({ name: 'FileHistories' });
+        let fileMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'FileHistories' });
         let fileId = (fileMaxId && fileMaxId.value) || 0;
         let _file = {
             file_id: ++fileId,
@@ -117,10 +117,10 @@ module.exports._createFileHistory = async (req, res, next) => {
             slug_file_name: stringHandle(req.body.file_name || '', { createSlug: true }),
         };
         await client
-            .db(DB)
+            .db(req.user.database)
             .collection('AppSetting')
             .updateOne({ name: 'FileHistories' }, { $set: { name: 'FileHistories', value: fileId } }, { upsert: true });
-        let insert = await client.db(DB).collection(`FileHistories`).insertOne(_file);
+        let insert = await client.db(req.user.database).collection(`FileHistories`).insertOne(_file);
         if (!insert.insertedId) {
             throw new Error(`500: Ghi lịch sử xuất nhập file thất bại!`);
         }
