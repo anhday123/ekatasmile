@@ -20,13 +20,14 @@ import {
   Typography,
   Drawer,
   Checkbox,
+  Popconfirm
 } from 'antd'
 
 //icons
-import { PlusCircleOutlined, ArrowLeftOutlined } from '@ant-design/icons'
+import { PlusCircleOutlined, ArrowLeftOutlined, DeleteOutlined } from '@ant-design/icons'
 
 //apis
-import { addTax, getTaxs, updateTax } from 'apis/tax'
+import { addTax, getTaxs, updateTax, deleteTax } from 'apis/tax'
 
 //components
 import Permission from 'components/permission'
@@ -49,6 +50,7 @@ export default function Tax() {
   const [defaultActive, setDefaultActive] = useState(false)
   const [arrayUpdate, setArrayUpdate] = useState([])
   const [form] = Form.useForm()
+
   const onSelectChange = (selectedRowKeys) => {
     setSelectedRowKeys(selectedRowKeys)
     const array = []
@@ -317,6 +319,32 @@ export default function Tax() {
         })
     }
   }
+
+  const _deleteTax = async (tax_id) => {
+    try {
+      setLoading(true)
+      const res = await deleteTax({ tax_id: [tax_id] })
+      console.log(res)
+      if (res.status === 200) {
+        if (res.data.success) {
+          apiAllTaxData()
+          notification.success({ message: 'Xoá thuế thành công!' })
+        } else
+          notification.error({
+            message: res.data.message || 'Xoá thuế thất bại, vui lòng thử lại!',
+          })
+      } else
+        notification.error({
+          message: res.data.message || 'Xoá thuế thất bại, vui lòng thử lại!',
+        })
+
+      setLoading(false)
+    } catch (error) {
+      setLoading(false)
+      console.log(error)
+    }
+  }
+
   const columns = [
     {
       title: 'Tên thuế',
@@ -344,6 +372,23 @@ export default function Tax() {
         ) : (
           <Switch onChange={(e) => onChangeSwitch(e, record)} />
         ),
+    },
+    {
+      title: 'Hành động',
+      dataIndex: 'action',
+      width: 100,
+      render: (text, record) => <Popconfirm
+        onConfirm={() => _deleteTax(record.tax_id)}
+        title="Bạn có muốn xóa sản phẩm này không?"
+        okText="Đồng ý"
+        cancelText="Từ chối"
+      >
+        <Button
+          type="primary"
+          danger
+          icon={<DeleteOutlined />}
+        />
+      </Popconfirm>
     },
   ]
 
@@ -417,8 +462,8 @@ export default function Tax() {
                 clear === 1
                   ? []
                   : start !== ''
-                  ? [moment(start, dateFormat), moment(end, dateFormat)]
-                  : []
+                    ? [moment(start, dateFormat), moment(end, dateFormat)]
+                    : []
               }
               style={{ width: '100%' }}
               ranges={{

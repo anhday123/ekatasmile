@@ -48,6 +48,7 @@ import { uploadFile } from 'apis/upload'
 import { getSuppliers } from 'apis/supplier'
 import { getEmployees } from 'apis/employee'
 import { createOrderImportInventory, updateOrderImportInventory } from 'apis/inventory'
+import { getTaxs } from 'apis/tax'
 
 //components
 import Permission from 'components/permission'
@@ -62,6 +63,8 @@ export default function ImportInventory() {
   const [form] = Form.useForm()
   const branchIdApp = useSelector((state) => state.branch.branchId)
 
+  const [tax, setTax] = useState([])
+  const [valueTax, setValueTax] = useState('')
   const [users, setUsers] = useState([])
   const [branches, setBranches] = useState([])
   const [loadingUpload, setLoadingUpload] = useState(false)
@@ -100,7 +103,7 @@ export default function ImportInventory() {
     orderCreateNew.moneyToBePaidByCustomer = +(
       orderCreateNew.sumCostPaid +
       orderCreateNew.deliveryCharges +
-      (10 / 100) * orderCreateNew.moneyToBePaidByCustomer
+      (valueTax / 100) * orderCreateNew.moneyToBePaidByCustomer
     ).toFixed(0)
 
     form.setFieldsValue({ moneyToBePaidByCustomer: orderCreateNew.moneyToBePaidByCustomer })
@@ -488,6 +491,18 @@ export default function ImportInventory() {
     }
   }
 
+  const _getTaxs = async () => {
+    try {
+      const res = await getTaxs({ branch_id: branchIdApp })
+      console.log(res)
+      if (res.status === 200) {
+        setTax(res.data.data.filter(data => data.active === true))
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   useEffect(() => {
     const product_ids = new URLSearchParams(location.search).get('product_ids')
     if (product_ids) _getProductsByIds(product_ids)
@@ -498,6 +513,7 @@ export default function ImportInventory() {
     _getSuppliers()
     _getProductsSearch()
     _getUsers()
+    _getTaxs()
   }, [])
 
   useEffect(() => {
@@ -532,6 +548,10 @@ export default function ImportInventory() {
       })
     }
   }, [])
+
+  useEffect(() => {
+    _editOrder()
+  }, [valueTax])
 
   return (
     <div className="card">
@@ -781,9 +801,26 @@ export default function ImportInventory() {
                             </div>
                           </Row>
                           <Row wrap={false} justify="space-between">
-                            <div>VAT</div>
+                            <div>THUẾ</div>
                             {/* <div>{formatCash(orderCreate.VAT || 0)}</div> */}
-                            <div>10%</div>
+                            {/* <div>10%</div> */}
+                            <Select
+                              showSearch
+                              style={{ width: 120 }}
+                              placeholder="Search to Select"
+                              optionFilterProp="children"
+                            >
+                              {
+                                tax.map(item =>
+                                  <Select.Option value={item.tax_id}>
+                                    <div onClick={() => {
+                                      setValueTax(item.value)
+                                      _editOrder('tax', item.value)
+                                    }}>{item.name} {item.value} %</div>
+                                  </Select.Option>
+                                )
+                              }
+                            </Select>
                           </Row>
                           <Row wrap={false} justify="space-between">
                             <div>Chiết khấu</div>
