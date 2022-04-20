@@ -45,6 +45,7 @@ export default function OTP() {
 
           //luu branch id len redux
           const dataUser = jwt_decode(res.data.data.accessToken)
+          localStorage.setItem('accessToken', res.data.data.accessToken)
           dispatch({ type: 'SET_BRANCH_ID', data: dataUser.data.branch_id })
 
           await delay(300)

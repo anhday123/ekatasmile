@@ -1251,6 +1251,15 @@ export default function Product() {
                         icon={<DeleteOutlined />}
                       />
                     </Popconfirm>
+                    <div>
+                      <div>Pre-order</div>
+                      <Switch
+                        checked={record.is_pre_order}
+                        onClick={() => {
+                          _updateProduct({ is_pre_order: !record.is_pre_order }, record.product_id)
+                        }}
+                      />
+                    </div>
                   </Space>
                 ),
               }
