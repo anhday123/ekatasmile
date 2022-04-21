@@ -1078,6 +1078,7 @@ export default function Sell() {
 
       //encrypt body create order
       const bodyEncryption = encryptText(JSON.stringify(body))
+      console.log(body)
 
       const res = await addOrder({ order: bodyEncryption })
       console.log(res)

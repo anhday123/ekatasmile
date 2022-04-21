@@ -69,7 +69,7 @@ export default function ActivityDiary() {
     {
       title: 'Thời gian thao tác',
       dataIndex: 'date',
-      render: (text, record) => (text ? moment(text).format('YYYY-MM-DD hh:mm:ss') : ''),
+      render: (text, record) => (text ? moment(text).format('YYYY-MM-DD H:mm:ss') : ''),
       sorter: (a, b) => moment(a.date).unix() - moment(b.date).unix(),
     },
   ]

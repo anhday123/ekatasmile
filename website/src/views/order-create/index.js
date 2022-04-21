@@ -490,13 +490,13 @@ export default function OrderCreateShipping() {
     // }
     try {
       let totalDiscount =
-        (discount.value / 100) * productData.reduce((a, b) => a + b.total_quantity * b.price, 0)
+        (discount.value / 100) * productData.reduce((a, b) => a + b.quantity * b.price, 0)
       const dataList = productData.map((product) => {
         console.log(product)
         let productDiscount = 0
-        if (totalDiscount >= product.price * product.total_quantity) {
-          productDiscount = product.price * product.total_quantity
-          totalDiscount -= product.price * product.total_quantity
+        if (totalDiscount >= product.price * product.quantity) {
+          productDiscount = product.price * product.quantity
+          totalDiscount -= product.price * product.quantity
         } else {
           totalDiscount = 0
           productDiscount = totalDiscount
@@ -507,10 +507,11 @@ export default function OrderCreateShipping() {
           // supplier: product.suppliers.supplier_id,
           options: product.options,
           // has_variable: product.has_variable,
-          quantity: product.total_quantity,
-          total_cost: product.price * product.total_quantity,
+          price: product.price || 0,
+          quantity: product.quantity,
+          total_cost: product.price * product.quantity,
           discount: productDiscount,
-          final_cost: product.price * product.total_quantity - productDiscount,
+          final_cost: product.price * product.quantity - productDiscount,
         }
 
         return voucher
@@ -526,7 +527,7 @@ export default function OrderCreateShipping() {
         order_details: dataList,
         payment: '1',
         tax_list: tax,
-        // voucher: voucher,
+        voucher: voucher,
         transport: '1',
         total_cost: dataList.reduce((a, b) => a + b.final_cost, 0),
         discount: dataList.reduce((a, b) => a + b.discount, 0),

@@ -105,7 +105,8 @@ export default function Reports() {
           'Kho kiểm hàng ': item?.branch?.name || '',
           'Trạng thái': item.status || '',
           'Ngày tạo': item.create_date || '',
-          'Ngày kiểm': item.inventory_date || '',
+          'Ngày kiểm': item.last_update || '',
+          // 'Ngày kiểm': item.inventory_date || '',
           'Nhân viên tạo': item.creator_info.name || '',
           'Ghi chú': item.note || '',
         }))
@@ -271,8 +272,9 @@ export default function Reports() {
             return {
               ...column,
               render: (text, record) =>
-                record.inventory_date !== ''
-                  ? moment(record.inventory_date).format('DD/MM/YYYY, hh:mm')
+                record.last_update !== ''
+                  ? moment(record.last_update).format('DD/MM/YYYY, hh:mm')
+                  // ? moment(record.inventory_date).format('DD/MM/YYYY, hh:mm')
                   : 'Chưa kiểm',
             }
           if (column.key === 'creator_info')

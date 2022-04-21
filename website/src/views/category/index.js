@@ -41,7 +41,8 @@ import { uploadFile } from 'apis/upload'
 import { addCategory, updateCategory } from 'apis/category'
 import { getProducts, updateProduct } from 'apis/product'
 
-export default function Category() {
+export default function Category({ title }) {
+  console.log(title)
   const history = useHistory()
   const location = useLocation()
   const dispatch = useDispatch()
@@ -308,23 +309,25 @@ export default function Category() {
 
   return (
     <div className="card">
-      <TitlePage
-        isAffix={true}
-        title={
-          <Row
-            align="middle"
-            onClick={() => history.push(ROUTES.CATEGORIES)}
-            style={{ cursor: 'pointer' }}
-          >
-            <ArrowLeftOutlined />
-            <div style={{ marginLeft: 8 }}>{location.state ? 'Cập nhật' : 'Tạo'} nhóm sản phẩm</div>
-          </Row>
-        }
-      >
-        <Button size="large" type="primary" onClick={_addOrUpdateCategory}>
-          {location.state ? 'Cập nhật' : 'Tạo'} nhóm sản phẩm
-        </Button>
-      </TitlePage>
+      <div style={{ display: title === 'product-form' && 'none' }}>
+        <TitlePage
+          isAffix={true}
+          title={
+            <Row
+              align="middle"
+              onClick={() => history.push(ROUTES.CATEGORIES)}
+              style={{ cursor: 'pointer' }}
+            >
+              <ArrowLeftOutlined />
+              <div style={{ marginLeft: 8 }}>{location.state ? 'Cập nhật' : 'Tạo'} nhóm sản phẩm</div>
+            </Row>
+          }
+        >
+          <Button size="large" type="primary" onClick={_addOrUpdateCategory}>
+            {location.state ? 'Cập nhật' : 'Tạo'} nhóm sản phẩm
+          </Button>
+        </TitlePage>
+      </div>
       <Form layout="vertical" form={form}>
         <Row style={{ margin: '25px 0px' }}>
           <div style={{ width: '60%' }}>
@@ -613,6 +616,12 @@ export default function Category() {
             bán hàng trên thương mại điện tử
           </div>
         </Row>
+      </div>
+
+      <div style={{ width: '100%', display: 'flex', justifyContent: 'end' }}>
+        <Button size="large" type="primary" onClick={_addOrUpdateCategory} style={{ display: title === 'product-form' ? 'block' : 'none', width: '30%' }}>
+          Tạo nhóm sản phẩm
+        </Button>
       </div>
     </div>
   )
