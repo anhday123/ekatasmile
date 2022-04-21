@@ -272,6 +272,7 @@ export default function Product() {
           )
 
           e.variants.map((v) => {
+            console.log(v)
             let locationImport = {}
             v.locations.map((k) => {
               locationImport['Nơi nhập'] = k.type
@@ -279,19 +280,21 @@ export default function Product() {
               locationImport['Số lượng nhập'] = k.quantity
             })
 
-            dataExport.push({
-              ...objProduct,
-              'Tên phiên bản': v.title || '',
-              'Mã phiên bản': v.sku || '',
-              'Hình ảnh': v.image.join(', '),
-              'Giá nhập hàng': v.import_price || '',
-              'Giá vốn': v.base_price || '',
-              'Giá bán lẻ': v.sale_price || '',
-              'Giá bán sỉ': '',
-              'Số lượng sỉ': v.total_quantity || '',
-              'Số địa điểm nhập': v.locations.length || 0,
-              ...locationImport,
-            })
+            v.bulk_prices.map(si =>
+              dataExport.push({
+                ...objProduct,
+                'Tên phiên bản': v.title || '',
+                'Mã phiên bản': v.sku || '',
+                'Hình ảnh': v.image.join(', '),
+                'Giá nhập hàng': v.import_price_default || '',
+                'Giá vốn': v.base_price || '',
+                'Giá bán lẻ': v.price || '',
+                'Giá bán sỉ': si.price || '',
+                'Số lượng sỉ': `${si.min_quantity_apply} - ${si.max_quantity_apply}` || '',
+                'Số địa điểm nhập': v.locations.length || 0,
+                ...locationImport,
+              })
+            )
           })
         })
 
@@ -1251,6 +1254,15 @@ export default function Product() {
                         icon={<DeleteOutlined />}
                       />
                     </Popconfirm>
+                    <div>
+                      <div>Pre-order</div>
+                      <Switch
+                        checked={record.is_pre_order}
+                        onClick={() => {
+                          _updateProduct({ is_pre_order: !record.is_pre_order }, record.product_id)
+                        }}
+                      />
+                    </div>
                   </Space>
                 ),
               }

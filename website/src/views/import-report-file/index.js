@@ -7,11 +7,14 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import dataTest from './datatest'
 
+//apis
+import { getFileHistory } from 'apis/action'
+
 export default function ImportReportFile() {
   const history = useHistory()
 
   const [paramsFilter, setParamsFilter] = useState({ this_week: true, page: 1, page_size: 20 })
-  const [fileActionList, setFileActionList] = useState(dataTest)
+  const [fileActionList, setFileActionList] = useState([])
 
   const [valueDateTimeSearch, setValueDateTimeSearch] = useState({ this_week: true })
   const [valueDateSearch, setValueDateSearch] = useState(null) //dùng để hiện thị date trong filter by date
@@ -22,6 +25,18 @@ export default function ImportReportFile() {
   const [totalRecord, setTotalRecord] = useState(0)
   const typingTimeoutRef = useRef()
   const toggleOpenSelect = () => setIsOpenSelect(!isOpenSelect)
+
+  // const _getFileHistory = async (params) => {
+  //   try {
+  //     const res = await getFileHistory(paramsFilter)
+  //     console.log(res)
+  //     if (res.status === 200) setFileActionList(res.data.data)
+  //   }
+  //   catch (e) {
+  //     console.log(e)
+  //   }
+  // }
+
   const _search = (e) => {
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current)
@@ -39,23 +54,24 @@ export default function ImportReportFile() {
       setParamsFilter({ ...paramsFilter })
     }, 450)
   }
-  // const _getFileAction = async (params) => {
-  //   try {
-  //     setTableLoading(true)
-  //     const res = await getActionFile(params)
-  //     if (res.data.success) {
-  //       setFileActionList(res.data.data)
-  //       setTotalRecord(res.data.count)
-  //     }
-  //     setTableLoading(false)
-  //   } catch (err) {
-  //     setTableLoading(false)
-  //     console.log(err)
-  //   }
-  // }
-  // useEffect(() => {
-  //     _getFileAction(paramsFilter)
-  //   }, [paramsFilter])
+  const _getFileAction = async (params) => {
+    try {
+      setTableLoading(true)
+      const res = await getFileHistory(params)
+      if (res.data.success) {
+        setFileActionList(res.data.data)
+        setTotalRecord(res.data.count)
+      }
+      setTableLoading(false)
+    } catch (err) {
+      setTableLoading(false)
+      console.log(err)
+    }
+  }
+  useEffect(() => {
+      _getFileAction(paramsFilter)
+    }, [paramsFilter])
+
   const _onChangeDate = (dates, dateStrings) => {
     //khi search hoac filter thi reset page ve 1
     paramsFilter.page = 1
@@ -139,7 +155,7 @@ export default function ImportReportFile() {
       title: 'Tên người dùng',
       dataIndex: 'creator_info',
       render(data) {
-        return data && data.fullname
+        return data && data.name && data.name
       },
     },
     {
@@ -305,8 +321,8 @@ export default function ImportReportFile() {
                 //   suffixIcon={<SuffixIconCustom />}
                 onChange={(e) => setParamsFilter({ ...paramsFilter, type: e })}
               >
-                <Select.Option value="Import File">Nhập file</Select.Option>
-                <Select.Option value="Export File">Xuất file</Select.Option>
+                <Select.Option value="IMPORT">Nhập file</Select.Option>
+                <Select.Option value="EXPORT">Xuất file</Select.Option>
               </Select>
             </Col>
           </Row>

@@ -130,9 +130,8 @@ export default function ProductAdd() {
             title: `${(
               dataForm.name || ''
             ).toUpperCase()} ${attributes[0].option.toUpperCase()} ${value.toUpperCase()}`,
-            sku: `${
-              valueGeneratedSku || ''
-            }-${attributes[0].option.toUpperCase()}-${value.toUpperCase()}`,
+            sku: `${valueGeneratedSku || ''
+              }-${attributes[0].option.toUpperCase()}-${value.toUpperCase()}`,
             options: [{ name: attributes[0].option, value: value }],
             ...initVariant,
           })
@@ -145,9 +144,8 @@ export default function ProductAdd() {
               title: `${(
                 dataForm.name || ''
               ).toUpperCase()} ${attributes[1].option.toUpperCase()} ${value.toUpperCase()}`,
-              sku: `${
-                valueGeneratedSku || ''
-              }-${attributes[1].option.toUpperCase()}-${value.toUpperCase()}`,
+              sku: `${valueGeneratedSku || ''
+                }-${attributes[1].option.toUpperCase()}-${value.toUpperCase()}`,
               options: [{ name: attributes[1].option, value: value }],
               ...initVariant,
             })
@@ -159,9 +157,8 @@ export default function ProductAdd() {
               title: `${(
                 dataForm.name || ''
               ).toUpperCase()} ${attributes[0].option.toUpperCase()} ${value.toUpperCase()}`,
-              sku: `${
-                valueGeneratedSku || ''
-              }-${attributes[0].option.toUpperCase()}-${value.toUpperCase()}`,
+              sku: `${valueGeneratedSku || ''
+                }-${attributes[0].option.toUpperCase()}-${value.toUpperCase()}`,
               options: [{ name: attributes[0].option, value: value }],
             })
           })
@@ -173,9 +170,8 @@ export default function ProductAdd() {
                 title: `${(
                   dataForm.name || ''
                 ).toUpperCase()} ${attributes[0].option.toUpperCase()} ${v0} ${attributes[1].option.toUpperCase()} ${v1}`,
-                sku: `${
-                  valueGeneratedSku || ''
-                }-${attributes[0].option.toUpperCase()}-${v0}-${attributes[1].option.toUpperCase()}-${v1}`,
+                sku: `${valueGeneratedSku || ''
+                  }-${attributes[0].option.toUpperCase()}-${v0}-${attributes[1].option.toUpperCase()}-${v1}`,
                 options: [
                   { name: attributes[0].option, value: v0 },
                   { name: attributes[1].option, value: v1 },

@@ -9,6 +9,10 @@ import { Row, Button, Modal, Upload, message, notification, Table } from 'antd'
 import { DownloadOutlined } from '@ant-design/icons'
 import moment from 'moment'
 
+//apis
+import { uploadFile } from 'apis/upload'
+import { createFileHistory } from 'apis/action'
+
 export default function ImportFile({
   title,
   fileTemplated,
@@ -31,11 +35,21 @@ export default function ImportFile({
   const [loading, setLoading] = useState(false)
   const [columns, setColumns] = useState([])
   const [dataView, setDataView] = useState([])
+  const [dataHistory, setDataHistory] = useState({})
 
   const toggle = () => {
     setVisible(!visible)
     setFileUpload(null)
     if (reset) reset()
+  }
+
+  const _createFileHistory = async () => {
+    try {
+      const res = await createFileHistory(dataHistory)
+    }
+    catch (e) {
+      console.log(e)
+    }
   }
 
   const _handleUpload = async () => {
@@ -72,6 +86,7 @@ export default function ImportFile({
         if (res.status === 200) {
           if (res.data.success) {
             notification.success({ message: 'Nhập file excel thành công' })
+            _createFileHistory()
             reload()
             toggle()
           } else notification.error({ message: res.data.message || 'Nhập file excel thất bại' })
@@ -134,7 +149,15 @@ export default function ImportFile({
               setFileUpload(info.file.originFileObj)
 
               if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
-              typingTimeoutRef.current = setTimeout(() => {
+              typingTimeoutRef.current = setTimeout(async () => {
+                const urls = await uploadFile(info.file.originFileObj)
+                setDataHistory({
+                  action_name: 'Xuất file excel',
+                  file_name: info.file.name,
+                  type: 'IMPORT',
+                  property: '',
+                  links: [urls]
+                })
                 if (info.file.originFileObj) {
                   ExcelRenderer(info.file.originFileObj, (err, resp) => {
                     if (err) console.log(err)

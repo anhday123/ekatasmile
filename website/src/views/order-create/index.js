@@ -498,8 +498,8 @@ export default function OrderCreateShipping() {
           productDiscount = product.price * product.total_quantity
           totalDiscount -= product.price * product.total_quantity
         } else {
-          productDiscount = totalDiscount
           totalDiscount = 0
+          productDiscount = totalDiscount
         }
         const data = {
           product_id: product.product_id,
@@ -519,7 +519,6 @@ export default function OrderCreateShipping() {
       })
 
       // console.log(customerInfo)
-      // console.log(dataList)
       const data = {
         sale_location: { branch_id: branchIdApp },
         channel: 'website',
@@ -539,7 +538,7 @@ export default function OrderCreateShipping() {
         longtitude: '50.50',
         note: note,
       }
-      // console.log(data)
+      console.log(data)
 
       const bodyVoucher = {
         order: CryptoJS.AES.encrypt(JSON.stringify({ ...data, voucher }), 'vierthanhcong').toString(),
