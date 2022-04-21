@@ -41,8 +41,7 @@ import { uploadFile } from 'apis/upload'
 import { addCategory, updateCategory } from 'apis/category'
 import { getProducts, updateProduct } from 'apis/product'
 
-export default function Category({ title }) {
-  console.log(title)
+export default function Category({ title, toggle, reload }) {
   const history = useHistory()
   const location = useLocation()
   const dispatch = useDispatch()
@@ -253,13 +252,18 @@ export default function Category({ title }) {
         res = await updateCategory(body, location.state.category_id)
       } else res = await addCategory(body)
 
-      console.log(res)
       if (res.status === 200) {
         if (res.data.success) {
           notification.success({
             message: `${location.state ? 'Cập nhật' : 'Tạo'} nhóm sản phẩm thành công!`,
           })
-          history.push(ROUTES.CATEGORIES)
+          if (title === 'product-form') {
+            toggle()
+            reload()
+          } else {
+            history.push(ROUTES.CATEGORIES)
+          }
+
         } else
           notification.error({
             message:

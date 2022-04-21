@@ -1609,7 +1609,7 @@ export default function ProductAdd() {
         </Tabs>
       </Form>
       <Drawer width='70%' title="Tạo nhóm sản phẩm" placement="right" onClose={toggleDrawerListProduct} visible={visibleListProduct}>
-        <CreateCategory title='product-form' />
+        <CreateCategory title='product-form' toggle={toggleDrawerListProduct} reload={_getCategories} />
       </Drawer>
     </div>
   ) : (
