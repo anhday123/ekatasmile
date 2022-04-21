@@ -152,8 +152,8 @@ module.exports._delete = async (req, res, next) => {
     try {
         let _delete = [];
         for (let i in req.body.payment_method_id) {
-            if (req.body.payment_method_id > 0) {
-                _delete.push(req.body.payment_method_id);
+            if (req.body.payment_method_id[i] > 0) {
+                _delete.push(req.body.payment_method_id[i]);
             }
         }
         await client
