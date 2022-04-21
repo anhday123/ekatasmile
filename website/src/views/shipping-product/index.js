@@ -68,10 +68,11 @@ export default function ShippingProduct() {
       setLoading(true)
       const res = await getTransportOrders({ branch_id: branchIdApp })
       if (res.status === 200)
-        res.data.data.map((e) => {
-          e.products.map((product, index) =>
+        res.data.data.map((e ,index) => {
+          console.log("product", e.products)
+          e.products.map((product, ) =>
             dataExport.push({
-              STT: index + 1,
+              "STT": index+1,
               'Mã phiếu chuyển': e.code || '',
               'Mã sản phẩm (*)': product.product_info && (product.product_info.name || ''),
               'Mã phiên bản (*)': product.variant_info && (product.variant_info.sku || ''),
