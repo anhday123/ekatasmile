@@ -104,6 +104,7 @@ export default function ActivityDiary() {
       if (res.status === 200) {
         setCountAction(res.data.count)
         setActivityDiary(res.data.data)
+        console.log("nhật ký hoaatj động",res.data)
       }
       setLoading(false)
     } catch (error) {

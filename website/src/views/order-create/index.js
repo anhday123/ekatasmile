@@ -519,7 +519,6 @@ export default function OrderCreateShipping() {
           : { ...data, promotion: productDiscount ? promotion : ' ' }
       })
 
-      // console.log(customerInfo)
       const data = {
         sale_location: { branch_id: branchIdApp },
         channel: 'website',
@@ -547,11 +546,11 @@ export default function OrderCreateShipping() {
       const bodyPromotion = {
         order: CryptoJS.AES.encrypt(JSON.stringify({ ...data, promotion }), 'vierthanhcong').toString(),
       }
-
+      console.log("duyyyy")
       const res = voucher
         ? await apiOrderVoucher(bodyVoucher)
         : await apiOrderVoucher(bodyPromotion)
-      // console.log(bodyVoucher, bodyPromotion)
+      console.log("duy",bodyVoucher, bodyPromotion)
       console.log(res)
       if (res.data.success) {
         notification.success({ message: 'Tạo hóa đơn thành công' })
@@ -629,6 +628,7 @@ export default function OrderCreateShipping() {
     _getCustomers()
     _getBranches()
     _getProductsSearch()
+    _getCustomerAfterEditCustomer()
   }, [])
 
   useEffect(() => {

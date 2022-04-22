@@ -142,6 +142,7 @@ export default function Customer() {
       if (res.status === 200) {
         setCustomers(res.data.data)
         setCountCustomer(res.data.count)
+        console.log("resss",res.data.data)
       }
       setTableLoading(false)
     } catch (e) {

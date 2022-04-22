@@ -1298,7 +1298,7 @@ export default function Sell() {
 
       <div className={styles['sell-header']}>
         <Row align="middle" wrap={false}>
-          <div className="select-product-sell">
+          <div className="select-product-sell ">
             <Select
               notFoundContent={loadingProduct ? <Spin size="small" /> : null}
               dropdownClassName="dropdown-select-search-product"
