@@ -1,6 +1,5 @@
 import axios from 'axios'
 import { stringify } from 'querystring'
-
 export const FetchAPI = async (
   path,
   method,
@@ -25,7 +24,6 @@ export const FetchAPI = async (
     }
   }
 }
-
 export const get = (path, query = {}, headers = {}, endpoint) =>
   FetchAPI(`${path}?${stringify(query)}`, 'GET', headers, null, endpoint)
 export const post = (path, body, headers, endpoint) =>

@@ -14,6 +14,7 @@ import NotSupportMobile from 'components/not-support-mobile'
 import TitlePage from 'components/title-page'
 import SupplierForm from 'views/supplier/supplier-form'
 import Permission from 'components/permission'
+import CreateCategory from 'views/category'
 
 //antd
 import {
@@ -37,6 +38,7 @@ import {
   Tabs,
   TreeSelect,
   Badge,
+  Drawer,
 } from 'antd'
 
 //icons
@@ -75,6 +77,7 @@ export default function ProductAdd() {
   const dataUser = useSelector((state) => state.login.dataUser)
   const branchIdApp = useSelector((state) => state.branch.branchId)
 
+  const [visibleListProduct, setVisibleListProduct] = useState(false)
   const [keyTab, setKeyTab] = useState('1')
   const [isRenderFirst, setIsRenderFirst] = useState(false)
   const [files, setFiles] = useState([])
@@ -96,6 +99,10 @@ export default function ProductAdd() {
   const [bulkPrices, setBulkPrices] = useState([
     { min_quantity_apply: 1, max_quantity_apply: 999, price: 0 },
   ]) //giá sỉ
+
+  const toggleDrawerListProduct = () => {
+    setVisibleListProduct(!visibleListProduct);
+  }
 
   const addAttribute = () => {
     let attributesNew = [...attributes]
@@ -1084,37 +1091,43 @@ export default function ProductAdd() {
                 </Row>
               </Col>
               <Col xs={24} sm={24} md={8} lg={8} xl={8}>
-                <Form.Item
-                  rules={[{ required: true, message: 'Vui lòng chọn nhóm sản phẩm' }]}
-                  label="Nhóm sản phẩm"
-                  name="category_id"
-                >
-                  <TreeSelect
-                    showCheckedStrategy={TreeSelect.SHOW_ALL}
-                    size="large"
-                    style={{ width: '100%' }}
-                    treeNodeFilterProp="title"
-                    maxTagCount="responsive"
-                    placeholder="Chọn nhóm sản phẩm"
-                    allowClear
-                    multiple
-                    treeDefaultExpandAll
+                <Row wrap={false} align="middle">
+                  <Form.Item
+                    rules={[{ required: true, message: 'Vui lòng chọn nhóm sản phẩm' }]}
+                    label="Nhóm sản phẩm"
+                    name="category_id"
+                    style={{ marginRight: 10, width: '100%' }}
                   >
-                    {categories.map((category) => (
-                      <TreeSelect.TreeNode value={category.category_id} title={category.name}>
-                        {category.children_category.map((child) => (
-                          <TreeSelect.TreeNode value={child.category_id} title={child.name}>
-                            {child.children_category.map((e) => (
-                              <TreeSelect.TreeNode value={e.category_id} title={e.name}>
-                                {e.name}
-                              </TreeSelect.TreeNode>
-                            ))}
-                          </TreeSelect.TreeNode>
-                        ))}
-                      </TreeSelect.TreeNode>
-                    ))}
-                  </TreeSelect>
-                </Form.Item>
+                    <TreeSelect
+                      showCheckedStrategy={TreeSelect.SHOW_ALL}
+                      size="large"
+                      style={{ width: '100%' }}
+                      treeNodeFilterProp="title"
+                      maxTagCount="responsive"
+                      placeholder="Chọn nhóm sản phẩm"
+                      allowClear
+                      multiple
+                      treeDefaultExpandAll
+                    >
+                      {categories.map((category) => (
+                        <TreeSelect.TreeNode value={category.category_id} title={category.name}>
+                          {category.children_category.map((child) => (
+                            <TreeSelect.TreeNode value={child.category_id} title={child.name}>
+                              {child.children_category.map((e) => (
+                                <TreeSelect.TreeNode value={e.category_id} title={e.name}>
+                                  {e.name}
+                                </TreeSelect.TreeNode>
+                              ))}
+                            </TreeSelect.TreeNode>
+                          ))}
+                        </TreeSelect.TreeNode>
+                      ))}
+                    </TreeSelect>
+                  </Form.Item>
+                  <Tooltip title="Tạo nhóm sản phẩm">
+                    <Button size="large" type="primary" icon={<PlusOutlined />} onClick={toggleDrawerListProduct} />
+                  </Tooltip>
+                </Row>
               </Col>
               <Col xs={24} sm={24} md={8} lg={8} xl={8}>
                 <Form.Item
@@ -1595,6 +1608,9 @@ export default function ProductAdd() {
           </Tabs.TabPane> */}
         </Tabs>
       </Form>
+      <Drawer width='70%' title="Tạo nhóm sản phẩm" placement="right" onClose={toggleDrawerListProduct} visible={visibleListProduct}>
+        <CreateCategory title='product-form' toggle={toggleDrawerListProduct} reload={_getCategories} />
+      </Drawer>
     </div>
   ) : (
     <NotSupportMobile />
