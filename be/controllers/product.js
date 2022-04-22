@@ -842,21 +842,25 @@ module.exports.importFileC = async (req, res, next) => {
                             length:
                                 (!isNaN(Number(eRow['chieu-dai'])) && Number(eRow['chieu-dai'])) ||
                                 (() => {
+                                    return 0;
                                     throw new Error('400: Chiều dài không hợp lệ');
                                 })(),
                             width:
                                 (!isNaN(Number(eRow['chieu-rong'])) && Number(eRow['chieu-rong'])) ||
                                 (() => {
+                                    return 0;
                                     throw new Error('400: Chiều rộng không hợp lệ');
                                 })(),
                             height:
                                 (!isNaN(Number(eRow['chieu-cao'])) && Number(eRow['chieu-cao'])) ||
                                 (() => {
+                                    return 0;
                                     throw new Error('400: Chiều cao không hợp lệ');
                                 })(),
                             weight:
                                 (!isNaN(Number(eRow['khoi-luong'])) && Number(eRow['khoi-luong'])) ||
                                 (() => {
+                                    return 0;
                                     throw new Error('400: Khối lượng không hợp lệ');
                                 })(),
                             unit: eRow['don-vi'] || '',
