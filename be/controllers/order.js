@@ -348,8 +348,8 @@ module.exports._create = async (req, res, next) => {
             if (pointSetting) {
                 let decreasePoint = 0;
                 for (let i in _order.payments) {
-                    if (payments[i].method == 'POINT') {
-                        decreasePoint = payments[i].value / pointSetting.exchange_money_rate;
+                    if (_order.payments[i].method == 'POINT') {
+                        decreasePoint = _order.payments[i].value / pointSetting.exchange_money_rate;
                     }
                 }
                 if (decreasePoint > customer.point) {

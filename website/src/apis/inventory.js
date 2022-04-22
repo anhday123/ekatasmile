@@ -8,11 +8,11 @@ export const deleteOrderImportInventory = (id) =>
   destroy('/inventory/import/delete', { order_id: [id] })
 export const uploadOrdersImportInventory = (formData) =>
   post('/inventory/import/create/file', formData)
-export const getStatusOrderImportInventory = () => get('/enum/importorder')
+export const getStatusOrderImportInventory = () => get('/enum/import-order')
 
-export const getCheckInventoryNote = (params) => get('/inventory/inventorynote', params)
-export const createCheckInventoryNote = (body) => post('/inventory/inventorynote/create', body)
+export const getCheckInventoryNote = (params) => get('/inventory/inventory-note', params)
+export const createCheckInventoryNote = (body) => post('/inventory/inventory-note/create', body)
 export const importCheckInventoryNote = (formData) =>
-  post('/inventory/inventorynote/create/file', formData)
+  post('/inventory/inventory-note/create/file', formData)
 export const updateCheckInventoryNote = (body, id) =>
-  patch('/inventory/inventorynote/update/' + id, body)
+  patch('/inventory/inventory-note/update/' + id, body)
