@@ -110,9 +110,11 @@ export default function Employee() {
       const res = await getEmployees({ ...paramsFilter, branch_id: branchIdApp })
       console.log(res)
       if (res.status === 200) {
-        const employees = res.data.data.filter((employee) => employee.role_id !== 1)
-        setUsers(employees)
+        // const employees = res.data.data.filter((employee) => employee.role_id !== 1)
+        setUsers(res.data.data)
         setCountUser(res.data.count)
+        console.log("res.data.data",res.data.data)
+        
       }
       setLoading(false)
     } catch (e) {

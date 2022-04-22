@@ -7,7 +7,8 @@
     padding: 8px 20px;
     display: flex;
     align-items: center;
-
+    position: fixed;
+    z-index: 10;
     .search-product {
       width: 300px;
       border-radius: 8px;
@@ -38,14 +39,17 @@
       flex-direction: column;
       padding: 10px 15px;
       position: relative;
+      padding-top: 60px;
 
       .sell-right__footer-btn {
         position: fixed;
-        width: 30%;
+        width: 25%;
         bottom: 10px;
-        right: -10px;
+        right: -7px;
         background-color: white;
         z-index: 10;
+        
+
       }
     }
 
