@@ -52,22 +52,40 @@ export default function CreateReport() {
   const [branches, setBranches] = useState([])
   const [users, setUsers] = useState([])
   const [listProduct, setListProduct] = useState([])
+  console.log(listProduct)
   const [selectedKeys, setSelectedKeys] = useState([])
 
   function getSelectedKeys(checkedValues) {
     setSelectedKeys(checkedValues)
   }
 
-  const getDataToCreate = (data, variant) => {
-    const body = {
-      variant_id: variant.variant_id,
-      sku: variant.sku,
-      title: variant.title,
-      unit: data.unit,
-      total_quantity: variant.total_quantity,
-      real_quantity: 1,
+  const getDataToCreate = async (data, variant) => {
+    console.log(data)
+    await form.validateFields()
+    const dataForm = form.getFieldsValue()
+    data.variants.map(item => {
+      item.locations.map(location => {
+        dataForm.branch_id === location.branch_id &&
+          // const body = {
+          //   variant_id: variant.variant_id,
+          //   sku: variant.sku,
+          //   title: variant.title,
+          //   unit: data.unit,
+          //   total_quantity: dataForm.branch_id === location.branch_id ? location.quantity : location.quantity,
+          //   real_quantity: 1,
+          // }
+          // console.log(body)
+          setListProduct([...listProduct, {
+            variant_id: variant.variant_id,
+            sku: variant.sku,
+            title: variant.title,
+            unit: data.unit,
+            total_quantity: dataForm.branch_id === location.branch_id ? location.quantity : location.quantity,
+            real_quantity: 1,
+          }])
+      })
     }
-    setListProduct([...listProduct, body])
+    )
   }
 
   const deleteDataToCreate = (id) => {
@@ -222,6 +240,7 @@ export default function CreateReport() {
     },
     {
       title: 'Tồn chi nhánh',
+      // render: (text, record) => console.log(record.total_quantity),
       render: (text, record) => formatCash(record.total_quantity || 0),
     },
     {
@@ -276,6 +295,10 @@ export default function CreateReport() {
     }
   }, [])
 
+  useEffect(() => {
+
+  }, [])
+
   return (
     <div className="card">
       <Form layout="vertical" form={form} onFinish={_createOrUpdateCheckInventoryNote}>
@@ -319,6 +342,7 @@ export default function CreateReport() {
                 style={{ width: '100%' }}
                 placeholder="Chọn chi nhánh"
                 optionFilterProp="children"
+                onChange={e => console.log(e)}
               >
                 {branches.map((branch, index) => (
                   <Option key={index} value={branch.branch_id}>
