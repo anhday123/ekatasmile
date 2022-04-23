@@ -6,6 +6,7 @@ const DB = process.env.DATABASE;
 const { createTimeline } = require('../utils/date-handle');
 const { stringHandle } = require('../utils/string-handle');
 
+const promotionService = require(`../services/promotion`);
 const { Promotion, Voucher } = require('../models/promotion');
 
 module.exports._get = async (req, res, next) => {
@@ -23,10 +24,7 @@ module.exports._create = async (req, res, next) => {
                 throw new Error(`400: Thiếu thuộc tính ${e}!`);
             }
         });
-        let promotionMaxId = await client
-            .db(req.user.database)
-            .collection('AppSetting')
-            .findOne({ name: 'Promotions' });
+        let promotionMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Promotions' });
         let promotionId = (promotionMaxId && promotionMaxId.value) || 0;
         req.body.promotion_id = ++promotionId;
         req.body.create_date = moment().tz(TIMEZONE).format();
@@ -36,19 +34,13 @@ module.exports._create = async (req, res, next) => {
         req.body.is_default = true;
         req.body.is_active = true;
         let _promotion = new Promotion(req.body);
-        let checkExists = await client
-            .db(req.user.database)
-            .collection('Promotions')
-            .findOne({ slug_name: _promotion.slug_name });
+        let checkExists = await client.db(req.user.database).collection('Promotions').findOne({ slug_name: _promotion.slug_name });
         if (checkExists) {
             throw new Error(`400: Promotion already exists!`);
         }
         let insertVouchers = [];
         if (_promotion.voucher_quantity > 0) {
-            let voucherMaxId = await client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .findOne({ name: 'Vouchers' });
+            let voucherMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Vouchers' });
             let voucherId = (voucherMaxId && voucherMaxId.value) || 0;
             for (let i = 0; i < _promotion.voucher_quantity; i++) {
                 let suffixes = String(Math.random()).substr(2, String(_promotion.voucher_quantity).length + 2);
@@ -63,11 +55,7 @@ module.exports._create = async (req, res, next) => {
                 await client
                     .db(req.user.database)
                     .collection('AppSetting')
-                    .updateOne(
-                        { name: 'Vouchers' },
-                        { $set: { name: 'Vouchers', value: voucherId } },
-                        { upsert: true }
-                    );
+                    .updateOne({ name: 'Vouchers' }, { $set: { name: 'Vouchers', value: voucherId } }, { upsert: true });
                 let inserts = await client.db(req.user.database).collection('Vouchers').insertMany(insertVouchers);
                 if (!inserts.insertedIds) {
                     throw new Error(`400: Create voucher fail, please try again!`);
@@ -88,10 +76,7 @@ module.exports._create = async (req, res, next) => {
 module.exports._update = async (req, res, next) => {
     try {
         req.params.promotion_id = Number(req.params.promotion_id);
-        let oldPromotion = await client
-            .db(req.user.database)
-            .collection(`Promotions`)
-            .findOne({ promotion_id: req.params.promotion_id });
+        let oldPromotion = await client.db(req.user.database).collection(`Promotions`).findOne({ promotion_id: req.params.promotion_id });
         if (!oldPromotion) {
             throw new Error(`400: Promotion is not exists!`);
         }
@@ -105,10 +90,7 @@ module.exports._update = async (req, res, next) => {
         if (checkExists) {
             throw new Error(`400: Promotion already exists!`);
         }
-        await client
-            .db(req.user.database)
-            .collection('Promotions')
-            .updateOne({ promotion_id: req.params.promotion_id }, { $set: _promotion });
+        await client.db(req.user.database).collection('Promotions').updateOne({ promotion_id: req.params.promotion_id }, { $set: _promotion });
         res.send({ success: true, data: _promotion });
     } catch (err) {
         next(err);
