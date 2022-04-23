@@ -100,7 +100,7 @@ export default function ReportInventory() {
             code: e.product ? e.product.code : '',
             name: e.product ? e.product.name : '',
             unit: e.product ? e.product.unit : '',
-            categories: e.product._categories ? e.product._categories : [],
+            categories: e.product ? e.product._categories : [],
           }
 
           e.warehouse.map((w) => {
@@ -166,7 +166,7 @@ export default function ReportInventory() {
             code: e.product ? e.product.code : '',
             name: e.product ? e.product.name : '',
             unit: e.product ? e.product.unit : '',
-            categories: e.product._categories ? e.product._categories : [],
+            categories: e.product ? e.product._categories : [],
           }
 
           e.warehouse.map((w) => {
