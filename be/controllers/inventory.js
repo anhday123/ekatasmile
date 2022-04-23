@@ -172,17 +172,13 @@ module.exports._createImportOrder = async (req, res, next) => {
     try {
         if (req.body.code == undefined) throw new Error('400: Vui lòng truyền số hoá đơn');
 
-        var orderImport = await client
-            .db(req.user.database)
-            .collection('ImportOrders')
-            .findOne({ code: req.body.code });
+        var orderImport = await client.db(req.user.database).collection('ImportOrders').findOne({ code: req.body.code });
 
         if (orderImport != undefined) throw new Error('400: Số hoá đơn đã tồn tại');
 
         if (req.body.status == 'COMPLETE') {
             req.body.products.map((item) => {
-                if (item.quantity <= 0 || item.quantity == undefined)
-                    throw new Error('400: Số lượng sản phẩm phải lớn hơn 0');
+                if (item.quantity <= 0 || item.quantity == undefined) throw new Error('400: Số lượng sản phẩm phải lớn hơn 0');
             });
         }
         let orderMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'ImportOrders' });
@@ -292,15 +288,9 @@ module.exports._createImportOrder = async (req, res, next) => {
             order['verify_date'] = moment().tz(TIMEZONE).format();
             order['completer_id'] = Number(req.user.user_id);
             order['complete_date'] = moment().tz(TIMEZONE).format();
-            let locationMaxId = await client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .findOne({ name: 'Locations' });
+            let locationMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Locations' });
             let locationId = (locationMaxId && locationMaxId.value) || 0;
-            let inventoryMaxId = await client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .findOne({ name: 'Inventories' });
+            let inventoryMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Inventories' });
             let inventoryId = (inventoryMaxId && inventoryMaxId.value) || 0;
             let insertLocations = [];
             let insertInventories = [];
@@ -344,11 +334,7 @@ module.exports._createImportOrder = async (req, res, next) => {
             await client
                 .db(req.user.database)
                 .collection('AppSetting')
-                .updateOne(
-                    { name: 'Inventories' },
-                    { $set: { name: 'Inventories', value: inventoryId } },
-                    { upsert: true }
-                );
+                .updateOne({ name: 'Inventories' }, { $set: { name: 'Inventories', value: inventoryId } }, { upsert: true });
             if (insertLocations.length > 0) {
                 await client.db(req.user.database).collection('Locations').insertMany(insertLocations);
             }
@@ -361,10 +347,7 @@ module.exports._createImportOrder = async (req, res, next) => {
             client
                 .db(req.user.database)
                 .collection('Variants')
-                .updateOne(
-                    { variant_id: _variant.variant_id },
-                    { $set: { import_price_default: _variant.import_price } }
-                );
+                .updateOne({ variant_id: _variant.variant_id }, { $set: { import_price_default: _variant.import_price } });
         }
         await client
             .db(req.user.database)
@@ -419,9 +402,7 @@ module.exports._createImportOrderFile = async (req, res, next) => {
                 }
                 if (errorColumns.length > 0) {
                     // errorRows.push(_row);
-                    throw new Error(
-                        `400: Giá trị các cột ${errorColumns.join(', ')} tại dòng thứ ${i + 2} không hợp lệ!`
-                    );
+                    throw new Error(`400: Giá trị các cột ${errorColumns.join(', ')} tại dòng thứ ${i + 2} không hợp lệ!`);
                 } else {
                     productSkus.push(_row['ma-san-pham']);
                     variantSkus.push(_row['ma-phien-ban']);
@@ -678,15 +659,9 @@ module.exports._updateImportOrder = async (req, res, next) => {
             _order['verify_date'] = moment().tz(TIMEZONE).format();
             _order['completer_id'] = Number(req.user.user_id);
             _order['complete_date'] = moment().tz(TIMEZONE).format();
-            let locationMaxId = await client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .findOne({ name: 'Locations' });
+            let locationMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Locations' });
             let locationId = (locationMaxId && locationMaxId.value) || 0;
-            let inventoryMaxId = await client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .findOne({ name: 'Inventories' });
+            let inventoryMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Inventories' });
             let inventoryId = (inventoryMaxId && inventoryMaxId.value) || 0;
             let insertLocations = [];
             let insertInventories = [];
@@ -729,11 +704,7 @@ module.exports._updateImportOrder = async (req, res, next) => {
             await client
                 .db(req.user.database)
                 .collection('AppSetting')
-                .updateOne(
-                    { name: 'Inventories' },
-                    { $set: { name: 'Inventories', value: inventoryId } },
-                    { upsert: true }
-                );
+                .updateOne({ name: 'Inventories' }, { $set: { name: 'Inventories', value: inventoryId } }, { upsert: true });
             if (insertLocations.length > 0) {
                 await client.db(req.user.database).collection('Locations').insertMany(insertLocations);
             }
@@ -769,32 +740,18 @@ module.exports._getTransportOrder = async (req, res, next) => {
         if (req.query.code) {
             aggregateQuery.push({ $match: { code: String(req.query.code) } });
         }
-        if (req.query.export_location_name) {
-            aggregateQuery.push({
-                $match: {
-                    'export_location_info.slug_name': new RegExp(
-                        removeUnicode(req.query.export_location_name, true).toLowerCase()
-                    ),
-                },
-            });
+        if (req.query.export_location_id) {
+            aggregateQuery.push({ $match: { 'export_location.branch_id': Number(req.query.export_location_id) } });
         }
-        if (req.query.import_location_name) {
-            aggregateQuery.push({
-                $match: {
-                    'import_location_info.slug_name': new RegExp(
-                        removeUnicode(req.query.import_location_name, true).toLowerCase()
-                    ),
-                },
-            });
+        if (req.query.import_location_id) {
+            aggregateQuery.push({ $match: { 'import_location.branch_id': Number(req.query.import_location_id) } });
         }
         if (req.query.status) {
             aggregateQuery.push({ $match: { status: String(req.query.status) } });
         }
         req.query = createTimeline(req.query);
         if (req.query.from_date) {
-            aggregateQuery.push({
-                $match: { create_date: { $gte: req.query.from_date } },
-            });
+            aggregateQuery.push({ $match: { create_date: { $gte: req.query.from_date } } });
         }
         if (req.query.to_date) {
             aggregateQuery.push({
@@ -875,12 +832,9 @@ module.exports._getTransportOrder = async (req, res, next) => {
         });
         let countQuery = [...aggregateQuery];
         aggregateQuery.push({ $sort: { create_date: -1 } });
-        if (req.query.page && req.query.page_size) {
-            let page = Number(req.query.page) || 1;
-            let page_size = Number(req.query.page_size) || 50;
-            aggregateQuery.push({ $skip: (page - 1) * page_size }, { $limit: page_size });
-        }
-
+        let page = Number(req.query.page || 1);
+        let page_size = Number(req.query.page_size || 50);
+        aggregateQuery.push({ $skip: (page - 1) * page_size }, { $limit: page_size });
         // lấy data từ database
         let [orders, counts] = await Promise.all([
             client.db(req.user.database).collection(`TransportOrders`).aggregate(aggregateQuery).toArray(),
@@ -902,10 +856,7 @@ module.exports._getTransportOrder = async (req, res, next) => {
 
 module.exports._createTransportOrder = async (req, res, next) => {
     try {
-        let maxOrderId = await client
-            .db(req.user.database)
-            .collection('AppSetting')
-            .findOne({ name: 'TransportOrders' });
+        let maxOrderId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'TransportOrders' });
         let orderId = (maxOrderId && maxOrderId.value) || 0;
         const exportAt = (() => {
             if (req.body.export_location && req.body.export_location.branch_id) {
@@ -1008,15 +959,9 @@ module.exports._createTransportOrder = async (req, res, next) => {
             order['verify_date'] = moment().tz(TIMEZONE).format();
             order['completer_id'] = Number(req.user.user_id);
             order['complete_date'] = moment().tz(TIMEZONE).format();
-            let locationMaxId = await client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .findOne({ name: 'Locations' });
+            let locationMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Locations' });
             let locationId = (locationMaxId && locationMaxId.value) || 0;
-            let inventoryMaxId = await client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .findOne({ name: 'Inventories' });
+            let inventoryMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Inventories' });
             let inventoryId = (inventoryMaxId && inventoryMaxId.value) || 0;
             let sortQuery = (() => {
                 if (req.user._business.price_recipe == 'LIFO') {
@@ -1071,8 +1016,7 @@ module.exports._createTransportOrder = async (req, res, next) => {
                                     updater_id: req.user.user_id,
                                 };
                             } else {
-                                _insertLocations[`${eProduct.variant_id}-${eLocation.import_price}`].quantity +=
-                                    eLocation.quantity;
+                                _insertLocations[`${eProduct.variant_id}-${eLocation.import_price}`].quantity += eLocation.quantity;
                             }
                             quantity -= eLocation.quantity;
                             eLocation.quantity = 0;
@@ -1096,8 +1040,7 @@ module.exports._createTransportOrder = async (req, res, next) => {
                                     updater_id: req.user.user_id,
                                 };
                             } else {
-                                _insertLocations[`${eProduct.variant_id}-${eLocation.import_price}`].quantity +=
-                                    quantity;
+                                _insertLocations[`${eProduct.variant_id}-${eLocation.import_price}`].quantity += quantity;
                             }
                             eLocation.quantity -= quantity;
                             quantity = 0;
@@ -1107,9 +1050,7 @@ module.exports._createTransportOrder = async (req, res, next) => {
                     }
                 }
                 if (quantity > 0) {
-                    throw new Error(
-                        `400: Sản phẩm ${eProduct.product_info && eProduct.product_info.sku} không đủ số lượng tồn kho!`
-                    );
+                    throw new Error(`400: Sản phẩm ${eProduct.product_info && eProduct.product_info.sku} không đủ số lượng tồn kho!`);
                 }
             });
             let insertLocations = Object.values(_insertLocations);
@@ -1156,11 +1097,7 @@ module.exports._createTransportOrder = async (req, res, next) => {
             await client
                 .db(req.user.database)
                 .collection('AppSetting')
-                .updateOne(
-                    { name: 'Inventories' },
-                    { $set: { name: 'Inventories', value: inventoryId } },
-                    { upsert: true }
-                );
+                .updateOne({ name: 'Inventories' }, { $set: { name: 'Inventories', value: inventoryId } }, { upsert: true });
             await client.db(req.user.database).collection('Locations').insertMany(insertLocations);
             for (let i in updateLocations) {
                 delete updateLocations[i]._id;
@@ -1174,11 +1111,7 @@ module.exports._createTransportOrder = async (req, res, next) => {
         await client
             .db(req.user.database)
             .collection('AppSetting')
-            .updateOne(
-                { name: 'TransportOrders' },
-                { $set: { name: 'TransportOrders', value: orderId } },
-                { upsert: true }
-            );
+            .updateOne({ name: 'TransportOrders' }, { $set: { name: 'TransportOrders', value: orderId } }, { upsert: true });
         await client.db(req.user.database).collection('TransportOrders').insertOne(order);
         res.send({ success: true, data: order });
     } catch (err) {
@@ -1225,9 +1158,7 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
                 }
                 if (errorColumns.length > 0) {
                     // errorRows.push(_row);
-                    throw new Error(
-                        `400: Giá trị các cột ${errorColumns.join(', ')} tại dòng thứ ${i + 2} không hợp lệ!`
-                    );
+                    throw new Error(`400: Giá trị các cột ${errorColumns.join(', ')} tại dòng thứ ${i + 2} không hợp lệ!`);
                 } else {
                     productSkus.push(_row['ma-san-pham']);
                     variantSkus.push(_row['ma-phien-ban']);
@@ -1352,11 +1283,7 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
         await client
             .db(req.user.database)
             .collection('AppSetting')
-            .updateOne(
-                { name: 'TransportOrders' },
-                { $set: { name: 'TransportOrders', value: orderId } },
-                { upsert: true }
-            );
+            .updateOne({ name: 'TransportOrders' }, { $set: { name: 'TransportOrders', value: orderId } }, { upsert: true });
         let insert = await client.db(req.user.database).collection('TransportOrders').insertMany(orders);
         if (!insert.insertedIds) {
             throw new Error(`500: Tạo phiếu chuyển thất bại!`);
@@ -1454,15 +1381,9 @@ module.exports._updateTransportOrder = async (req, res, next) => {
                 }
                 return { create_date: -1 };
             })();
-            let locationMaxId = await client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .findOne({ name: 'Locations' });
+            let locationMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Locations' });
             let locationId = (locationMaxId && locationMaxId.value) || 0;
-            let inventoryMaxId = await client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .findOne({ name: 'Inventories' });
+            let inventoryMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Inventories' });
             let inventoryId = (inventoryMaxId && inventoryMaxId.value) || 0;
             let locations = await client
                 .db(req.user.database)
@@ -1515,8 +1436,7 @@ module.exports._updateTransportOrder = async (req, res, next) => {
                                 updater_id: req.user.user_id,
                             };
                         } else {
-                            _insertInventories[`${eProduct.variant_id}-${eProduct.import_price}`].export_quantity +=
-                                detailQuantity;
+                            _insertInventories[`${eProduct.variant_id}-${eProduct.import_price}`].export_quantity += detailQuantity;
                         }
                         location.quantity -= detailQuantity;
                         detailQuantity = 0;
@@ -1540,8 +1460,7 @@ module.exports._updateTransportOrder = async (req, res, next) => {
                                 updater_id: req.user.user_id,
                             };
                         } else {
-                            _insertInventories[`${eProduct.variant_id}-${eProduct.import_price}`].export_quantity +=
-                                location.quantity;
+                            _insertInventories[`${eProduct.variant_id}-${eProduct.import_price}`].export_quantity += location.quantity;
                         }
                         detailQuantity -= location.quantity;
                         location.quantity = 0;
@@ -1561,11 +1480,7 @@ module.exports._updateTransportOrder = async (req, res, next) => {
             await client
                 .db(req.user.database)
                 .collection('AppSetting')
-                .updateOne(
-                    { name: 'Inventories' },
-                    { $set: { name: 'Inventories', value: inventoryId } },
-                    { upsert: true }
-                );
+                .updateOne({ name: 'Inventories' }, { $set: { name: 'Inventories', value: inventoryId } }, { upsert: true });
             if (updateLocations.length > 0) {
                 for (let i in updateLocations) {
                     delete updateLocations[i]._id;
@@ -1582,15 +1497,9 @@ module.exports._updateTransportOrder = async (req, res, next) => {
         if (_order.status == 'COMPLETE' && order.status == 'VERIFY') {
             _order['completer_id'] = Number(req.user.user_id);
             _order['complete_date'] = moment().tz(TIMEZONE).format();
-            let locationMaxId = await client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .findOne({ name: 'Locations' });
+            let locationMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Locations' });
             let locationId = (locationMaxId && locationMaxId.value) || 0;
-            let inventoryMaxId = await client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .findOne({ name: 'Inventories' });
+            let inventoryMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Inventories' });
             let inventoryId = (inventoryMaxId && inventoryMaxId.value) || 0;
             let inventories = await client
                 .db(req.user.database)
@@ -1639,11 +1548,7 @@ module.exports._updateTransportOrder = async (req, res, next) => {
             await client
                 .db(req.user.database)
                 .collection('AppSetting')
-                .updateOne(
-                    { name: 'Inventories' },
-                    { $set: { name: 'Inventories', value: inventoryId } },
-                    { upsert: true }
-                );
+                .updateOne({ name: 'Inventories' }, { $set: { name: 'Inventories', value: inventoryId } }, { upsert: true });
             if (insertLocations.length > 0) {
                 await client.db(req.user.database).collection('Locations').insertMany(insertLocations);
             }
@@ -1659,10 +1564,7 @@ module.exports._updateTransportOrder = async (req, res, next) => {
             _order['canceler_id'] = Number(req.user.user_id);
             _order['cancel_date'] = moment().tz(TIMEZONE).format();
             if (order.status != 'DRAFT') {
-                let importOrderMaxId = await client
-                    .db(req.user.database)
-                    .collection('AppSetting')
-                    .findOne({ name: 'ImportOrders' });
+                let importOrderMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'ImportOrders' });
                 let importOrderId = (importOrderMaxId && importOrderMaxId.value) || 0;
                 let importOrder = {
                     order_id: importOrderId,
@@ -1865,10 +1767,7 @@ module.exports._getInventoryNote = async (req, res, next) => {
 
 module.exports._createInventoryNote = async (req, res, next) => {
     try {
-        let inventoryNoteMaxId = await client
-            .db(req.user.database)
-            .collection('AppSetting')
-            .findOne({ name: 'InventoryNotes' });
+        let inventoryNoteMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'InventoryNotes' });
         let inventoryNoteId = (() => {
             if (inventoryNoteMaxId && inventoryNoteMaxId.value) {
                 return inventoryNoteMaxId.value;
@@ -1876,10 +1775,7 @@ module.exports._createInventoryNote = async (req, res, next) => {
             return 0;
         })();
         inventoryNoteId++;
-        let branch = await client
-            .db(req.user.database)
-            .collection('Branchs')
-            .findOne({ branch_id: req.body.branch_id });
+        let branch = await client.db(req.user.database).collection('Branchs').findOne({ branch_id: req.body.branch_id });
         if (!branch) {
             throw new Error('400: Chi nhánh không tồn tại!');
         }
@@ -1922,11 +1818,7 @@ module.exports._createInventoryNote = async (req, res, next) => {
         await client
             .db(req.user.database)
             .collection('AppSetting')
-            .updateOne(
-                { name: 'InventoryNotes' },
-                { $set: { name: 'InventoryNotes', value: inventoryNoteId } },
-                { upsert: true }
-            );
+            .updateOne({ name: 'InventoryNotes' }, { $set: { name: 'InventoryNotes', value: inventoryNoteId } }, { upsert: true });
         await client.db(req.user.database).collection('InventoryNotes').insertOne(_inventoryNote);
         res.send({ success: true, data: _inventoryNote });
     } catch (err) {
@@ -1986,15 +1878,9 @@ module.exports._updateInventoryNote = async (req, res, next) => {
         }
         if (inventoryNote.balance == false && _inventoryNote.balance == true) {
             // Cân bằng lại số lượng sản phẩm trong kho theo số lượng thực tế
-            let locationMaxId = await client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .findOne({ name: 'Locations' });
+            let locationMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Locations' });
             let locationId = (locationMaxId && locationMaxId.value) || 0;
-            let InventoryMaxId = await client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .findOne({ name: 'Inventories' });
+            let InventoryMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Inventories' });
             let inventoryId = (InventoryMaxId && InventoryMaxId.value) || 0;
             let variantIds = [];
             for (let i in _inventoryNote.products) {
@@ -2037,8 +1923,7 @@ module.exports._updateInventoryNote = async (req, res, next) => {
                         location_id: ++locationId,
                         product_id: eProduct.product_id,
                         variant_id: eProduct.variant_id,
-                        price_id:
-                            _prices[`${eProduct.product_id}-${eProduct.variant_id}-${eProduct.import_price}`].price_id,
+                        price_id: _prices[`${eProduct.product_id}-${eProduct.variant_id}-${eProduct.import_price}`].price_id,
                         branch_id: (() => {
                             if (order.import_location && order.import_location.branch_id) {
                                 return order.import_location.branch_id;
