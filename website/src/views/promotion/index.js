@@ -208,7 +208,7 @@ export default function Promotion() {
       // render: (text,record) => data.promotionType,
     },
     {
-      title: 'Gía trị khuyến mãi',
+      title: 'Giá trị khuyến mãi',
       dataIndex: 'value',
       sorter: (a, b) => compare(a, b, 'value'),
       render: (text, record) => <span>{formatCash(text)}</span>,
