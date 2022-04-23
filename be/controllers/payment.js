@@ -150,8 +150,9 @@ module.exports._delete = async (req, res, next) => {
         let isDefault = false;
         for (let i in req.body.payment_method_id) {
             if (req.body.payment_method_id[i] > 0) {
-                isDefault = true;
                 _delete.push(req.body.payment_method_id[i]);
+            } else {
+                isDefault = true;
             }
         }
         await client
