@@ -313,6 +313,7 @@ module.exports._create = async (req, res, next) => {
                     });
                     insertInventories.push({
                         inventory_id: ++inventoryId,
+                        code: String(inventoryId).padStart(6, '0'),
                         product_id: eDetail.product_id,
                         variant_id: eDetail.variant_id,
                         branch_id: (_order.sale_location && _order.sale_location.branch_id) || 0,
