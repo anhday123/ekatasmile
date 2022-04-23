@@ -243,7 +243,7 @@ module.exports._create = async (req, res, next) => {
                     _locations[eLocation.variant_id].push(eLocation);
                 }
             });
-            let inventoryMaxId = await client.db(req.user.database).collection('Inventories').findOne({ name: 'Inventories' });
+            let inventoryMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Inventories' });
             let inventoryId = (inventoryMaxId && inventoryMaxId.value) || 0;
             console.log(inventoryId);
             let pointSetting = await client
