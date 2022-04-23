@@ -159,7 +159,7 @@ module.exports._delete = async (req, res, next) => {
             .collection('PaymentMethods')
             .deleteMany({ payment_method_id: { $in: _delete } });
         if (isDefault) {
-            res.send({ success: true, data: 'Không thể xóa phương thức mặc định của hệ thống!' });
+            res.send({ success: false, data: 'Không thể xóa phương thức mặc định của hệ thống!' });
         } else {
             res.send({ success: true, data: 'Xóa phương thức thanh toán thành công!' });
         }
