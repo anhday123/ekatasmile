@@ -81,16 +81,12 @@ module.exports._create = async (req, res, next) => {
             await client
                 .db(req.user.database)
                 .collection('PaymentMethods')
-                .updateMany({ business_id: req.user.business_id }, { $set: { default: false } });
+                .updateMany({}, { $set: { default: false } });
         }
         await client
             .db(req.user.database)
             .collection('AppSetting')
-            .updateOne(
-                { name: 'PaymentMethods' },
-                { $set: { name: 'PaymentMethods', value: payment_method_id } },
-                { upsert: true }
-            );
+            .updateOne({ name: 'PaymentMethods' }, { $set: { name: 'PaymentMethods', value: payment_method_id } }, { upsert: true });
         req[`body`] = _paymentMethod;
         await paymentService._create(req, res, next);
     } catch (err) {
@@ -139,7 +135,7 @@ module.exports._update = async (req, res, next) => {
             await client
                 .db(req.user.database)
                 .collection('PaymentMethods')
-                .updateMany({ business_id: req.user.business_id }, { $set: { default: false } });
+                .updateMany({}, { $set: { default: false } });
         }
         req['body'] = _paymentMethod;
         await paymentService._update(req, res, next);
@@ -151,8 +147,10 @@ module.exports._update = async (req, res, next) => {
 module.exports._delete = async (req, res, next) => {
     try {
         let _delete = [];
+        let isDefault = false;
         for (let i in req.body.payment_method_id) {
             if (req.body.payment_method_id[i] > 0) {
+                isDefault = true;
                 _delete.push(req.body.payment_method_id[i]);
             }
         }
@@ -160,7 +158,11 @@ module.exports._delete = async (req, res, next) => {
             .db(req.user.database)
             .collection('PaymentMethods')
             .deleteMany({ payment_method_id: { $in: _delete } });
-        res.send({ success: true, data: 'Xóa phương thức thanh toán thành công!' });
+        if (isDefault) {
+            res.send({ success: true, data: 'Không thể xóa phương thức mặc định của hệ thống!' });
+        } else {
+            res.send({ success: true, data: 'Xóa phương thức thanh toán thành công!' });
+        }
     } catch (err) {
         next(err);
     }
