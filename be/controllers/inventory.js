@@ -52,14 +52,9 @@ module.exports._getImportOrder = async (req, res, next) => {
                 $match: { verifier_id: Number(req.query.verifier_id) },
             });
         }
-        if (req.query.branch_id) {
+        if (req.query.import_location_id) {
             aggregateQuery.push({
-                $match: { 'import_location.branch_id': Number(req.query.branch_id) },
-            });
-        }
-        if (req.query.store_id) {
-            aggregateQuery.push({
-                $match: { 'import_location.store_id': Number(req.query.store_id) },
+                $match: { 'import_location.branch_id': Number(req.query.import_location_id) },
             });
         }
         if (req.query.status) {
@@ -76,6 +71,11 @@ module.exports._getImportOrder = async (req, res, next) => {
                 $match: { create_date: { $lte: req.query.to_date } },
             });
         }
+        let countQuery = [...aggregateQuery];
+        aggregateQuery.push({ $sort: { create_date: -1 } });
+        let page = Number(req.query.page) || 1;
+        let page_size = Number(req.query.page_size) || 50;
+        aggregateQuery.push({ $skip: (page - 1) * page_size }, { $limit: page_size });
         aggregateQuery.push(
             {
                 $lookup: {
@@ -87,7 +87,17 @@ module.exports._getImportOrder = async (req, res, next) => {
             },
             { $unwind: { path: '$_completer', preserveNullAndEmptyArrays: true } }
         );
-
+        aggregateQuery.push(
+            {
+                $lookup: {
+                    from: 'Branchs',
+                    localField: 'import_location.branch_id',
+                    foreignField: 'branch_id',
+                    as: 'import_location_info',
+                },
+            },
+            { $unwind: { path: '$import_location_info', preserveNullAndEmptyArrays: true } }
+        );
         aggregateQuery.push(
             {
                 $lookup: {
@@ -141,13 +151,6 @@ module.exports._getImportOrder = async (req, res, next) => {
                 '_creator.password': 0,
             },
         });
-        let countQuery = [...aggregateQuery];
-        aggregateQuery.push({ $sort: { create_date: -1 } });
-        if (req.query.page && req.query.page_size) {
-            let page = Number(req.query.page) || 1;
-            let page_size = Number(req.query.page_size) || 50;
-            aggregateQuery.push({ $skip: (page - 1) * page_size }, { $limit: page_size });
-        }
 
         // lấy data từ database
         let [orders, counts] = await Promise.all([
