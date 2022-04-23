@@ -738,7 +738,7 @@ module.exports._getTransportOrder = async (req, res, next) => {
             aggregateQuery.push({ $match: { order_id: Number(req.query.order_id) } });
         }
         if (req.query.code) {
-            aggregateQuery.push({ $match: { code: String(req.query.code) } });
+            aggregateQuery.push({ $match: { code: new RegExp(stringHandle(req.query.code), 'gi') } });
         }
         if (req.query.export_location_id) {
             aggregateQuery.push({ $match: { 'export_location.branch_id': Number(req.query.export_location_id) } });
