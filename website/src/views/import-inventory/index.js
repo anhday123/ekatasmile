@@ -374,7 +374,7 @@ export default function ImportInventory() {
 
       delete body.moneyToBePaidByCustomer
       delete body.paid
-
+      console.log(body)
       let res
       if (location.state) res = await updateOrderImportInventory(body, location.state.order_id)
       else res = await createOrderImportInventory({ ...body, status: status })
@@ -807,8 +807,9 @@ export default function ImportInventory() {
                             <Select
                               showSearch
                               style={{ width: 120 }}
-                              placeholder="Search to Select"
+                              placeholder="Chọn thuế"
                               optionFilterProp="children"
+                              allowClear
                             >
                               {
                                 tax.map(item =>
@@ -973,11 +974,13 @@ export default function ImportInventory() {
                 rules={[{ required: true, message: 'Vui lòng chọn địa điểm nhận hàng!' }]}
               >
                 <Select
+                  value=''
                   showSearch
                   optionFilterProp="children"
                   placeholder="Chọn địa điểm nhận hàng"
                   style={{ width: '100%' }}
                   onChange={(value, option) => {
+                    console.log(value)
                     let p = {}
                     if (value) {
                       const branchFind = branches.find((e) => e.branch_id === value)

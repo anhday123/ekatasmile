@@ -152,7 +152,7 @@ export default function ImportFile({
               typingTimeoutRef.current = setTimeout(async () => {
                 const urls = await uploadFile(info.file.originFileObj)
                 setDataHistory({
-                  action_name: 'Xuất file excel',
+                  action_name: 'Nhập file excel',
                   file_name: info.file.name,
                   type: 'IMPORT',
                   property: '',
