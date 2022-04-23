@@ -41,6 +41,7 @@ export default function ReportInventory() {
   const [countReport, setCountReport] = useState(0)
   const [warehousesNameExport, setWarehousesNameExport] = useState([])
   const [warehousesName, setWarehousesName] = useState([])
+  const [valueFilter, setValueFilter] = useState()
 
   const onChangeDate = (date, dateString) => {
     if (date) {
@@ -54,7 +55,9 @@ export default function ReportInventory() {
     setParamsFilter({ ...paramsFilter, page: 1 })
   }
 
-  const _clearFilters = () => {
+  const _clearFilters = async () => {
+    await _reportInventory()
+    setValueFilter()
     setParamsFilter({ page: 1, page_size: 20 })
   }
 
@@ -247,6 +250,7 @@ export default function ReportInventory() {
 
   useEffect(() => {
     setParamsFilter({ ...paramsFilter, branch_id: branchIdApp })
+    _clearFilters()
   }, [branchIdApp])
 
   useEffect(() => {
@@ -337,7 +341,13 @@ export default function ReportInventory() {
             style={{ width: '100%' }}
           >
             {branches.map((branch, index) => (
-              <Select.Option value={branch.branch_id} key={index}>
+              <Select.Option value={branch.branch_id} key={index} 
+              onChange={e => {
+                setParamsFilter({ ...paramsFilter, type: e })
+                setValueFilter(e)
+              }}
+              
+              >
                 {branch.name}
               </Select.Option>
             ))}
@@ -355,7 +365,9 @@ export default function ReportInventory() {
             value={
               paramsFilter.category_id ? paramsFilter.category_id.split('---').map((e) => +e) : []
             }
+            
             onChange={(value) => {
+              
               if (value.length) setParamsFilter({ ...paramsFilter, category_id: value.join('---') })
               else {
                 delete paramsFilter.category_id
@@ -384,7 +396,8 @@ export default function ReportInventory() {
       <Button
         onClick={_clearFilters}
         style={{
-          display: Object.keys(paramsFilter).length <= 4 && 'none',
+          
+          display: Object.keys(paramsFilter).length < 3 && 'none',
           width: '10%',
           marginBottom: 10,
         }}

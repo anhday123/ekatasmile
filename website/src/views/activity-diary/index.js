@@ -48,6 +48,7 @@ export default function ActivityDiary() {
     },
     {
       title: 'Tên người dùng',
+      sortDirections: ['descend'],
       render: (text, record) =>
         record.data ? `${record.data.first_name || ''} ${record.data.last_name || ''}` : '',
     },
@@ -69,8 +70,11 @@ export default function ActivityDiary() {
     {
       title: 'Thời gian thao tác',
       dataIndex: 'date',
+      defaultSortOrder: 'descend',
+     
       render: (text, record) => (text ? moment(text).format('YYYY-MM-DD H:mm:ss') : ''),
-      sorter: (a, b) => moment(a.date).unix() - moment(b.date).unix(),
+      // sorter: (a, b) => moment(a.date).unix() - moment(b.date).unix(),
+      sorter: (a, b) => new Date(a.date) - new Date(b.date),
     },
   ]
 
