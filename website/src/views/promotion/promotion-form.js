@@ -264,13 +264,13 @@ export default function PromotionAdd(props) {
                 <Col span={12}>
                   <Form.Item name="type" initialValue="VALUE" label='Loại khuyến mãi'>
                     <Select placeholder='Chọn loại khuyến mãi' size="large">
-                      <Option value="VALUE">Gía trị</Option>
+                      <Option value="VALUE">Giá trị</Option>
                       <Option value="PERCENT">Phần trăm</Option>
                     </Select>
                   </Form.Item>
                 </Col>
                 <Col span={12}>
-                  <Form.Item name="value" label='Gía trị khuyến mãi'>
+                  <Form.Item name="value" label='Giá trị khuyến mãi'>
                     <InputNumber
                       placeholder='Nhập giá trị khuyến mãi'
                       size="large"
