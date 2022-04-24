@@ -47,3 +47,18 @@ module.exports._updateAppInfo = async (req, res, next) => {
         next(err);
     }
 };
+
+module.exports._addGHNToken = async (req, res, next) => {
+    try {
+        if (!req.body.ghn_token) {
+            throw new Error(`400: Missing field ghn_token!`);
+        }
+        await client
+            .db(req.user.database)
+            .collection('AppSetting')
+            .updateOne({ name: 'GHNToken' }, { $set: { name: 'GHNToken', value: req.body.ghn_token } }, { upsert: true });
+        res.send({ success: true, data: req.body });
+    } catch (err) {
+        next(err);
+    }
+};

@@ -1,9 +1,10 @@
 const moment = require(`moment-timezone`);
 const TIMEZONE = process.env.TIMEZONE;
 const client = require(`../config/mongodb`);
-const DB = process.env.DATABASE;
+const SDB = process.env.DATABASE;
 const { Branch } = require('../models/branch');
 const branchService = require(`../services/branch`);
+const ghn = require('../shipping/GHN');
 
 let removeUnicode = (text, removeSpace) => {
     /*
@@ -74,6 +75,7 @@ module.exports._create = async (req, res, next) => {
             latitude: req.body.latitude || '',
             longitude: req.body.longitude || '',
             type: req.body.type,
+            GHN_shop_id: req.body.GHN_shop_id || 0,
             address: req.body.address || '',
             ward: req.body.ward || '',
             district: req.body.district || '',
@@ -142,6 +144,7 @@ module.exports._update = async (req, res, next) => {
             latitude: _branch.latitude,
             longitude: _branch.longitude,
             type: _branch.type,
+            GHN_shop_id: req.body.GHN_shop_id || 0,
             address: _branch.address,
             ward: _branch.ward,
             district: _branch.district,
@@ -158,6 +161,25 @@ module.exports._update = async (req, res, next) => {
             slug_district: removeUnicode(String(_branch.district || ''), true).toLowerCase(),
             slug_province: removeUnicode(String(_branch.province || ''), true).toLowerCase(),
         };
+        if (req.body.connect_ghn) {
+            let ward = await client.db(SDB).collection('Wards').findOne({ ward_name: _branch.ward });
+            let setting = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'GHNToken' });
+            let token =
+                (setting && setting.value) ||
+                (() => {
+                    throw new Error(`400: GHN token chưa được cài đặt!`);
+                })();
+            _branch.GHN_shop_id = await ghn._createWarehouse(
+                {
+                    name: _branch.name,
+                    phone: _branch.phone,
+                    address: _branch.address,
+                    ward_code: ward.ward_code,
+                    district_id: ward.district_id,
+                },
+                token
+            );
+        }
         req[`body`] = _branch;
         await branchService._update(req, res, next);
     } catch (err) {
