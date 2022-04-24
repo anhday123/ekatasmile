@@ -16,7 +16,32 @@ const upload = new S3({
 })
 /* config upload S3 */
 
+export const uploadFileToExport = async (buffer, fileName) => {
+  const s3 = upload
+  let prefix = new Date().getTime().toString(16);
+  prefix += '/' + Number(String(Math.random()).substring(2, 10)).toString(16);
+  prefix += '/' + Number(String(Math.random()).substring(2, 10)).toString(16);
+  fileName = prefix + '/' + fileName;
+  return new Promise(async (resolve, reject) => {
+    s3.putObject(
+      {
+        Body: buffer,
+        Bucket: 'admin-order',
+        Key: fileName,
+        ACL: 'public-read',
+      },
+      (err, data) => {
+        if (err) {
+          console.log(err);
+        }
+        resolve('https://s3.ap-northeast-1.wasabisys.com/' + 'admin-order' + '/' + fileName);
+      }
+    );
+  });
+};
+
 export const uploadFile = async (file) => {
+  console.log(file)
   try {
     const _d = moment(new Date()).format('YYYY/MM/DD') + '/' + uuidv4()
 

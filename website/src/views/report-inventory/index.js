@@ -24,7 +24,7 @@ import { getCategories } from 'apis/category'
 export default function ReportInventory() {
   const history = useHistory()
   const branchIdApp = useSelector((state) => state.branch.branchId)
-
+  const [valueFilter, setValueFilter] = useState()
   const [branches, setBranches] = useState([])
   const [categories, setCategories] = useState([])
   const [reportInventory, setReportInventory] = useState([])
@@ -40,6 +40,11 @@ export default function ReportInventory() {
   const [warehousesName, setWarehousesName] = useState([])
   const [warehousesNameExport, setWarehousesNameExport] = useState([])
 
+  const _onFilter = (attribute = '', value = '') => {
+    if (value) paramsFilter[attribute] = value
+    else delete paramsFilter[attribute]
+    setParamsFilter({ ...paramsFilter, page: 1 })
+  }
   const onChangeDate = (date, dateString) => {
     if (date) {
       paramsFilter.from_date = dateString[0]
@@ -52,7 +57,9 @@ export default function ReportInventory() {
     setParamsFilter({ ...paramsFilter, page: 1 })
   }
 
-  const _clearFilters = () => {
+  const _clearFilters = async() => {
+    await _reportInventory()
+    setValueFilter()
     setParamsFilter({ page: 1, page_size: 20 })
   }
 
@@ -98,13 +105,15 @@ export default function ReportInventory() {
         res.data.data.map((e) => {
           let report = {
             code: e.product ? e.product.code : '',
-            name: e.product ? e.product.name : '',
+            name: e.product ? e.product.title : '',
             unit: e.product ? e.product.unit : '',
-            categories: e.product._categories ? e.product._categories : [],
+            categories: e.product ? e.product._categories : [],
           }
 
           e.warehouse.map((w) => {
-            if (w.branch) report[w.branch.name] = { quantity: w.quantity || 0, price: w.price || 0 }
+            if (w.branch) {
+              report[w.branch.name] = { quantity: w.quantity || 0, price: w.price || 0 }
+            }
           })
 
           reportNew.push(report)
@@ -115,24 +124,27 @@ export default function ReportInventory() {
             if (item.branch) {
               const findBranch = columnsNew.find((e) => e.title === item.branch.name)
               if (!findBranch) {
-                const branchName = item.branch ? item.branch.name : ''
                 const column = {
-                  title: branchName,
+                  title: item.branch ? item.branch.name : '',
                   children: [
                     {
                       title: 'Số lượng',
                       render: (text, record) =>
-                        record[branchName] ? formatCash(record[branchName].quantity || 0) : 0,
+                        record[item.branch ? item.branch.name : '']
+                          ? formatCash(record[item.branch ? item.branch.name : ''].quantity || 0)
+                          : 0,
                     },
                     {
                       title: 'Thành tiền',
                       render: (text, record) =>
-                        record[branchName] ? formatCash(record[branchName].price || 0) : 0,
+                        record[item.branch ? item.branch.name : '']
+                          ? formatCash(record[item.branch ? item.branch.name : ''].price || 0)
+                          : 0,
                     },
                   ],
                 }
 
-                warehousesNameNew.push(branchName)
+                warehousesNameNew.push(item.branch ? item.branch.name : '')
                 columnsNew.push(column)
               }
             }
@@ -140,7 +152,7 @@ export default function ReportInventory() {
         })
 
         setWarehousesName([...warehousesNameNew])
-        setReportInventory([...reportNew])
+        setReportInventory(reportNew)
         setColumns([...columnsNew])
       }
       setLoading(false)
@@ -166,7 +178,7 @@ export default function ReportInventory() {
             code: e.product ? e.product.code : '',
             name: e.product ? e.product.name : '',
             unit: e.product ? e.product.unit : '',
-            categories: e.product._categories ? e.product._categories : [],
+            categories: e.product ? e.product._categories : [],
           }
 
           e.warehouse.map((w) => {
@@ -240,7 +252,9 @@ export default function ReportInventory() {
   }, [])
 
   useEffect(() => {
+    
     setParamsFilter({ ...paramsFilter, branch_id: branchIdApp })
+    _clearFilters()
   }, [branchIdApp])
 
   useEffect(() => {
@@ -313,17 +327,23 @@ export default function ReportInventory() {
             size={FILTER_SIZE}
             allowClear
             bordered={false}
+            // onChange={(value) => {
+            //   if (value) paramsFilter.branch_id = value
+            //   else delete paramsFilter.branch_id
+            //   setParamsFilter({ ...paramsFilter, page: 1 })
+            // }}
+            onChange={(value) => _onFilter('branch_id', value)}
             value={paramsFilter.branch_id}
-            onChange={(value) => {
-              if (value) paramsFilter.branch_id = value
-              else delete paramsFilter.branch_id
-              setParamsFilter({ ...paramsFilter, page: 1 })
-            }}
             placeholder="Lọc theo chi nhánh"
             style={{ width: '100%' }}
           >
             {branches.map((branch, index) => (
-              <Select.Option value={branch.branch_id} key={index}>
+              <Select.Option value={branch.branch_id} key={index} 
+              onChange={e => {
+                setParamsFilter({ ...paramsFilter, type: e })
+                setValueFilter(e)
+              }}
+              >
                 {branch.name}
               </Select.Option>
             ))}
@@ -351,7 +371,7 @@ export default function ReportInventory() {
             allowClear
           >
             {categories.map((category) => (
-              <TreeSelect.TreeNode value={category.category_id} title={category.name}>
+              <TreeSelect.TreeNode value={category.category_id} title={category.name} >
                 {category.children_category.map((child) => (
                   <TreeSelect.TreeNode value={child.category_id} title={child.name}>
                     {child.children_category &&
@@ -371,7 +391,7 @@ export default function ReportInventory() {
         onClick={_clearFilters}
         style={{
           marginLeft: 10,
-          display: Object.keys(paramsFilter).length <= 4 && 'none',
+          display: Object.keys(paramsFilter).length < 3 && 'none',
           width: '10%',
           marginBottom: 10,
         }}

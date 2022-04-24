@@ -145,6 +145,7 @@ export default function ImportFile({
                 : Upload.LIST_IGNORE
             }}
             onChange={(info) => {
+              console.log(info)
               if (info.file.status !== 'done') info.file.status = 'done'
               setFileUpload(info.file.originFileObj)
 

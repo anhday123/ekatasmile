@@ -55,7 +55,7 @@ export default function ShippingProduct() {
   const [transportOrders, setTransportOrders] = useState([])
   const [loading, setLoading] = useState(false)
   const [isOpenSelect, setIsOpenSelect] = useState(false)
-  const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
+  const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 ,export_location_id:0})
   const toggleOpenSelect = () => setIsOpenSelect(!isOpenSelect)
   const [valueSearch, setValueSearch] = useState('')
   const [valueDateSearch, setValueDateSearch] = useState(null) //dùng để hiện thị date trong filter by date
@@ -163,6 +163,7 @@ export default function ShippingProduct() {
   }
 
   const _onFilters = (attribute = '', value = '') => {
+  
     if (value) paramsFilter[attribute] = value
     else delete paramsFilter[attribute]
 
