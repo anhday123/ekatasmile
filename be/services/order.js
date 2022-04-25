@@ -69,7 +69,7 @@ module.exports._get = async (req, res, next) => {
         }
 
         if (req.query.code) {
-            aggregateQuery.push({ $match: { code: stringHandle(req.query.code, { createRegexQuery: true }) } });
+            aggregateQuery.push({ $match: { code: new RegExp(stringHandle(req.query.code, { createRegexQuery: true }), 'gi') } });
         }
 
         if (req.query.customer_id) {
@@ -79,7 +79,7 @@ module.exports._get = async (req, res, next) => {
         }
         if (req.query.customer_code) {
             aggregateQuery.push({
-                $match: { 'customer.code': Number(req.query.customer_code) },
+                $match: { 'customer.code': new RegExp(stringHandle(req.query.customer_code, { createRegexQuery: true }), 'gi') },
             });
         }
         if (req.query.creator_id) {
