@@ -52,7 +52,6 @@ export default function OrdersReturn() {
       if (res.status === 200) {
         setOrdersRefund(res.data.data)
         setCountOrdersRefund(res.data.count)
-        console.log("đơn hàng trả", res.data)
         let finalCost = 0
         let discount = 0
         let cost = 0

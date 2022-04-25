@@ -8,10 +8,10 @@ import moment from 'moment'
 
 //apis
 import { getCustomers } from 'apis/customer'
-import { getFinances } from 'apis/report'
+import { addFinances, getFinances } from 'apis/report'
 
 //antd
-import { Row, Space, Button, Input, Select, Table, Modal, Form, InputNumber } from 'antd'
+import { Row, Space, Button, Input, Select, Table, Modal, Form, InputNumber, notification } from 'antd'
 
 //icons
 import {
@@ -37,30 +37,67 @@ export default function ReceiptsAndPayment() {
   const [finances, setFinances] = useState([])
 
   const [paramsFilter, setParamsFilter] = useState({}) //params search by site, date, order name
-
   const ModalCreatePaymentOrReceipts = ({ type }) => {
     const [visible, setVisible] = useState(false)
     const toggle = () => setVisible(!visible)
 
     const [form] = Form.useForm()
-
-    const _createPaymentOrReceipts = async () => {
-      let isValidated = true
-
-      try {
-        await form.validateFields()
-        isValidated = true
-      } catch (error) {
-        isValidated = false
+    const onFinish = async (values) => {
+      const body = {
+        ...values,
+        source: "CUSTOMER_PAY",
+        note: values.note,
+        payer: values.payer,
+        value: values.value,
+        receiver: values.receiver,
+        type: values.type,
+        payments: [
+          {
+            payment_method_id: 1,
+            name: values.payments,
+            value: values.values,
+          }
+        ],
+        status: "COMPLETE",
       }
-      console.log(isValidated)
-      if (!isValidated) return
+      console.log("body", body)
+      let res
+      res = await addFinances(body)
+      if (res.status === 200) {
+        if (res.data.success){
+          _getFinances()
+          console.log("res.data.data", res.data.data)
+          notification.success({ message: 'Tạo phiếu thành công !' })
+        }
+        else
+          notification.error({
+            message: res.data.message || 'Tạo phiếu thất bại, vui lòng thử lại!',
+          })
+        }else
+        notification.error({
+          message: res.data.message || 'Tạo phiếu thất bại, vui lòng thử lại!',
+        })
 
-      try {
-      } catch (error) {
-        console.log(error)
-      }
+
     }
+    // const _createPaymentOrReceipts = async () => {
+    //   let isValidated = true
+
+    //   try {
+
+    //     await form.validateFields()
+    //     isValidated = true
+    //   } catch (error) {
+    //     isValidated = false
+    //   }
+    //   console.log(isValidated)
+    //   if (!isValidated) return
+
+    //   try {
+    //   } catch (error) {
+    //     console.log(error)
+    //   }
+    // }
 
     return (
       <>
@@ -76,34 +113,20 @@ export default function ReceiptsAndPayment() {
         >
           {type === 'payment' ? 'Tạo phiếu chi' : 'Tạo phiếu thu'}
         </Button>
+     
         <Modal
           width={650}
           onCancel={toggle}
           visible={visible}
           title={type === 'payment' ? 'Tạo phiếu chi' : 'Tạo phiếu thu'}
-          footer={
-            <Row justify="end">
-              <Button
-                style={{
-                  backgroundColor: type === 'payment' ? '#DE7C08' : '#0877DE',
-                  borderColor: type === 'payment' ? '#DE7C08' : '#0877DE',
-                  borderRadius: 5,
-                  color: 'white',
-                  fontWeight: 600,
-                }}
-                onClick={_createPaymentOrReceipts}
-              >
-                {type === 'payment' ? 'Tạo phiếu chi' : 'Tạo phiếu thu'}
-              </Button>
-            </Row>
-          }
+          footer={false}
         >
-          <Form form={form} layout="vertical">
+          <Form onFinish={onFinish} form={form} layout="vertical">
             <Space direction="vertical" style={{ width: '100%' }}>
               <Row justify="space-between">
                 <Form.Item
-                  name="receiver"
-                  label="Nhóm người nhận"
+                  name="payer"
+                  label="Người trả"
                   rules={[
                     {
                       required: true,
@@ -111,15 +134,20 @@ export default function ReceiptsAndPayment() {
                     },
                   ]}
                 >
-                  <Select placeholder="Chọn nhóm người nhận" style={{ width: 280 }}>
-                    <Select.Option value="">Khách hàng</Select.Option>
-                    <Select.Option value="">Nhà cung cấp</Select.Option>
-                    <Select.Option value="">Nhân viên</Select.Option>
-                    <Select.Option value="">Đối tác vận chuyển</Select.Option>
+                  <Select showSearch placeholder="Chọn chọn  trả" style={{ width: 280 }}>
+                    {customers.map((customer, index) => (
+                      <Select.Option
+                        key={index}
+                        value={(customer.first_name || '') + ' ' + (customer.last_name || '')}
+                      >
+                        {(customer.first_name || '') + ' ' + (customer.last_name || '')} -{' '}
+                        {customer.phone || ''}
+                      </Select.Option>
+                    ))}
                   </Select>
                 </Form.Item>
                 <Form.Item
-                  name="nameReceiver"
+                  name="receiver"
                   label="Tên người nhận"
                   rules={[{ required: true, message: 'Vui lòng chọn tên người nhận' }]}
                 >
@@ -138,14 +166,17 @@ export default function ReceiptsAndPayment() {
               </Row>
               <Row justify="space-between">
                 <Form.Item
-                  name="paymentType"
+                  name="type"
                   label="Loại phiếu chi"
                   rules={[{ required: true, message: 'Vui lòng chọn loại phiếu chi' }]}
                 >
-                  <Select placeholder="Chọn loại phiếu chi" style={{ width: 280 }}></Select>
+                  <Select placeholder="Chọn loại phiếu chi" style={{ width: 280 }}>
+                    <Select.Option value="REVENUE">REVENUE</Select.Option>
+                    <Select.Option value="REVENUE">REVENUE</Select.Option>
+                  </Select>
                 </Form.Item>
                 <Form.Item
-                  name="valueReceiver"
+                  name="value"
                   label="Giá trị ghi nhận"
                   rules={[
                     {
@@ -159,7 +190,7 @@ export default function ReceiptsAndPayment() {
               </Row>
               <Row justify="space-between">
                 <Form.Item
-                  name="formPayment"
+                  name="payments"
                   label="Hình thức thanh toán"
                   rules={[
                     {
@@ -168,19 +199,57 @@ export default function ReceiptsAndPayment() {
                     },
                   ]}
                 >
+                   
                   <Select placeholder="Chọn hình thức thanh toán" style={{ width: 280 }}>
-                    <Select.Option value="">Quẹt thẻ</Select.Option>
-                    <Select.Option value="">Tiền mặt</Select.Option>
-                    <Select.Option value="">Thẻ ngân hàng</Select.Option>
+                    <Select.Option value="SWIPE">Quẹt thẻ</Select.Option>
+                    <Select.Option value="CASH">Tiền mặt</Select.Option>
+                    <Select.Option value="BANKING">Thẻ ngân hàng</Select.Option>
                   </Select>
+
+               
                 </Form.Item>
-                <Form.Item name="description" label="Mô tả">
+                 <Form.Item
+                  name="values"
+                  label="Nhập giá trị thanh toán"
+                  rules={[
+                    {
+                      required: true,
+                      message: 'Vui lòng giá trị',
+                    },
+                  ]}
+                >
+                   
+                   <InputNumber value="" min={0} placeholder="Nhập giá trị ghi nhận" style={{ width: 280 }} />
+
+
+               
+                </Form.Item>
+                <Form.Item name="note" label="Mô tả">
                   <Input.TextArea rows={4} placeholder="Nhập Mô tả" style={{ width: 280 }} />
                 </Form.Item>
               </Row>
             </Space>
+           
+            <Row justify="end">
+              <Button
+                style={{
+                  backgroundColor: type === 'payment' ? '#DE7C08' : '#0877DE',
+                  borderColor: type === 'payment' ? '#DE7C08' : '#0877DE',
+                  borderRadius: 5,
+                  color: 'white',
+                  fontWeight: 600,
+                  
+                  
+                }}
+                type="primary" htmlType="submit" size="large"
+              >
+                {type === 'payment' ? 'Tạo phiếu chiiii' : 'Tạo phiếu thu'}
+              </Button>
+            </Row>
           </Form>
         </Modal>
+     
+        
       </>
     )
   }
@@ -377,27 +446,23 @@ export default function ReceiptsAndPayment() {
           if (column.key === 'money')
             return {
               ...column,
-              render: (text, record) => record.money && formatCash(record.money || 0),
+              render: (text, record) => record.value && formatCash(record.value || 0),
             }
-          if (column.key === 'money')
-            return {
-              ...column,
-              render: (text, record) => record.money && formatCash(record.money || 0),
-            }
+        
           if (column.key === 'creator')
             return {
               ...column,
-              render: (text, record) => record._creator && record._creator.name,
+              // render: (text, record) => record.creator && record.reator,
             }
           if (column.key === 'receiver')
             return {
               ...column,
-              render: (text, record) => record._receiver && record._receiver.name,
+              render: (text, record) => record.receiver && record.receiver,
             }
           if (column.key === '_payer')
             return {
               ...column,
-              render: (text, record) => record.__payer && record.__payer.name,
+              render: (text, record) => record.payer && record.payer,
             }
           if (column.key === 'create_date')
             return {
