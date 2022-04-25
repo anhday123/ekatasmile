@@ -55,7 +55,7 @@ export default function ShippingProduct() {
   const [transportOrders, setTransportOrders] = useState([])
   const [loading, setLoading] = useState(false)
   const [isOpenSelect, setIsOpenSelect] = useState(false)
-  const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 ,export_location_id:0})
+  const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
   const toggleOpenSelect = () => setIsOpenSelect(!isOpenSelect)
   const [valueSearch, setValueSearch] = useState('')
   const [valueDateSearch, setValueDateSearch] = useState(null) //dùng để hiện thị date trong filter by date
@@ -68,11 +68,11 @@ export default function ShippingProduct() {
       setLoading(true)
       const res = await getTransportOrders({ branch_id: branchIdApp })
       if (res.status === 200)
-        res.data.data.map((e ,index) => {
+        res.data.data.map((e, index) => {
           console.log("product", e.products)
-          e.products.map((product, ) =>
+          e.products.map((product,) =>
             dataExport.push({
-              "STT": index+1,
+              "STT": index + 1,
               'Mã phiếu chuyển': e.code || '',
               'Mã sản phẩm (*)': product.product_info && (product.product_info.name || ''),
               'Mã phiên bản (*)': product.variant_info && (product.variant_info.sku || ''),
@@ -163,7 +163,7 @@ export default function ShippingProduct() {
   }
 
   const _onFilters = (attribute = '', value = '') => {
-  
+
     if (value) paramsFilter[attribute] = value
     else delete paramsFilter[attribute]
 

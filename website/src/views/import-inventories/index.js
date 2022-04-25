@@ -492,7 +492,7 @@ export default function ImportInventories() {
                       'Nhà cung cấp': record.supplier || '',
                       'Đơn vị': record.unit || '',
                       'Đơn giá nhập': record.import_price_default ? record.import_price_default : 0,
-                      'Số lượng nhập': record.total_quantity || '',
+                      'Số lượng nhập': record.total_quantity || 0,
                     }))
                     exportToCSV(dataExport, 'Danh sách sản phẩm')
                   }}

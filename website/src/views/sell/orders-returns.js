@@ -2,13 +2,13 @@ import React, { useEffect, useState, useRef } from 'react'
 import { formatCash } from 'utils'
 
 //antd
-import { Modal, Space, Input, Select, Table, Button, Radio, DatePicker } from 'antd'
+import { Modal, Space, Input, Select, Table, Button, Radio, DatePicker, Popconfirm } from 'antd'
 
 //icons
 import { SearchOutlined } from '@ant-design/icons'
 
 //apis
-import { getOrders } from 'apis/order'
+import { getOrders, updateOrder } from 'apis/order'
 
 export default function OrdersReturn() {
   const typingTimeoutRef = useRef(null)
@@ -47,12 +47,12 @@ export default function OrdersReturn() {
   const _getOrdersRefund = async () => {
     try {
       setLoading(true)
-      const res = await getOrders({ ...paramsFilter, bill_status: 'REFUND' })
+      const res = await getOrders({ ...paramsFilter })
       console.log(res)
       if (res.status === 200) {
         setOrdersRefund(res.data.data)
         setCountOrdersRefund(res.data.count)
-        console.log("đơn hàng trả",res.data)
+        console.log("đơn hàng trả", res.data)
         let finalCost = 0
         let discount = 0
         let cost = 0
@@ -73,6 +73,19 @@ export default function OrdersReturn() {
     } catch (error) {
       setLoading(false)
       console.log(error)
+    }
+  }
+
+  const _updateOrder = async (id) => {
+    try {
+      const res = await updateOrder({ bill_status: 'REFUND' }, id)
+      console.log(res)
+      if (res.status === 200) {
+        _getOrdersRefund()
+      }
+    }
+    catch (e) {
+      console.log(e)
     }
   }
 
@@ -102,22 +115,35 @@ export default function OrdersReturn() {
       title: 'Khách đã trả',
       render: (text, record) => formatCash(record.customer_paid || 0),
     },
-    // {
-    //   title: 'Hành động',
-    //   render: () => (
-    //     <Button
-    //       style={{
-    //         backgroundColor: '#0877DE',
-    //         borderColor: '#0877DE',
-    //         borderRadius: '3px',
-    //         color: 'white',
-    //         width: 110,
-    //       }}
-    //     >
-    //       Chọn
-    //     </Button>
-    //   ),
-    // },
+    {
+      title: 'Hành động',
+      render: (text, record) => (
+        record.bill_status === 'REFUND' ?
+          <p style={{
+            textAlign: 'center',
+            width: 110,
+          }}>Đã Refund</p>
+          :
+          <Popconfirm
+            title="Bạn có muốn Refund đơn hàng này?"
+            onConfirm={() => _updateOrder(record.order_id)}
+            okText="Đồng ý"
+            cancelText="Không"
+          >
+            <Button
+              style={{
+                backgroundColor: '#5B6BE8',
+                borderColor: '#5B6BE8',
+                borderRadius: '3px',
+                color: 'white',
+                width: 110,
+              }}
+            >
+              Refund
+            </Button>
+          </Popconfirm>
+      ),
+    },
   ]
 
   useEffect(() => {

@@ -271,14 +271,12 @@ export default function Product() {
   const _getProductsToExport = async (query) => {
     try {
       const res = await getProducts({ branch: true, ...query })
-      console.log(res)
 
       if (res.status === 200) {
         let dataExport = []
 
         res.data.data.map((e) => {
           const findCategory = categories.find((c) => e.category_id.includes(c.category_id))
-          // console.log(findCategory)
           const findSupplier = suppliers.find((s) => s.supplier_id === e.supplier_id)
 
           let objProduct = {
@@ -307,7 +305,6 @@ export default function Product() {
           )
 
           e.variants.map((v) => {
-            console.log(v)
             let locationImport = {}
             v.locations.map((k) => {
               locationImport['Nơi nhập'] = k.type
