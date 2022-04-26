@@ -79,38 +79,6 @@ export default function Product() {
 
   const [countProduct, setCountProduct] = useState(0)
 
-  // const fileType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8'
-  // const fileExtension = '.xlsx'
-
-  // const _createFileHistory = async (body) => {
-  //   try {
-  //     const res = await createFileHistory(body)
-  //   }
-  //   catch (e) {
-  //     console.log(e)
-  //   }
-  // }
-
-  // const exportToCSVLink = (csvData, fileName) => {
-  //   const ws = XLSX.utils.json_to_sheet(csvData)
-  //   const wb = { Sheets: { data: ws }, SheetNames: ['data'] }
-  //   const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
-  //   const data = new Blob([excelBuffer], { type: fileType })
-
-  //   if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
-  //   typingTimeoutRef.current = setTimeout(async () => {
-  //     const urls = await uploadFileToExport(data, fileName + fileExtension)
-  //     _createFileHistory({
-  //       action_name: 'Xuất file excel',
-  //       file_name: fileName + fileExtension,
-  //       type: 'EXPORT',
-  //       property: '',
-  //       links: [urls]
-  //     })
-  //   }, 400)
-  //   // FileSaver.saveAs(data, fileName + fileExtension)
-  // }
-
   const _getCategories = async () => {
     try {
       const res = await getCategories()
@@ -330,7 +298,6 @@ export default function Product() {
           })
         })
 
-        // exportToCSVLink(dataExport, 'Danh sách sản phẩm')
         exportToCSV(dataExport, 'Danh sách sản phẩm')
       }
     } catch (error) {

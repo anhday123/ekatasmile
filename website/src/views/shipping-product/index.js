@@ -68,9 +68,9 @@ export default function ShippingProduct() {
       setLoading(true)
       const res = await getTransportOrders({ branch_id: branchIdApp })
       if (res.status === 200)
-        res.data.data.map((e ,index) => {
-          e.products.map((product, ) =>
-          {
+        res.data.data.map((e, index) => {
+          console.log(index)
+          e.products.map((product,) => {
             dataExport.push({
               "STT": index + 1,
               'Mã phiếu chuyển': e.code || '',
@@ -91,8 +91,6 @@ export default function ShippingProduct() {
               'Ghi chú': e.note || '',
             })
           }
-     
-         
           )
         })
       setLoading(false)

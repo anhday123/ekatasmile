@@ -10,7 +10,6 @@ const fileExtension = '.xlsx'
 const _createFileHistory = async (body) => {
   try {
     const res = await createFileHistory(body)
-    console.log(res)
   }
   catch (e) {
     console.log(e)

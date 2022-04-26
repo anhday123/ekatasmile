@@ -224,7 +224,7 @@ export default function Promotion() {
       sorter: (a, b) => compare(a, b, 'end_date'),
     },
     {
-      title: 'Kích hoạt',
+      title: 'Hành động',
       dataIndex: 'is_active',
       sorter: (a, b) => compare(a, b, 'is_active'),
       render: (text, record) => (
@@ -233,7 +233,15 @@ export default function Promotion() {
             checked={text}
             onChange={(checked) => _updatePromotion(record.promotion_id, checked)}
           />
-        </Space>
+          <Popconfirm
+            onConfirm={() => _deletePromotion(record.promotion_id)}
+            title='Bạn muốn xoá khuyến mãi này?'
+            okText='Đồng ý'
+            cancelText='Không'
+          >
+            <Button type="primary" danger icon={<DeleteOutlined />} />
+          </Popconfirm>
+        </Space >
       ),
     },
   ]
@@ -267,6 +275,7 @@ export default function Promotion() {
 
   const _deletePromotion = async (value) => {
     try {
+      console.log(value)
       const res = await deletePromotion({ promotion_id: value })
       console.log(res)
       if (res.status === 200) {
@@ -554,44 +563,44 @@ export default function Promotion() {
                 })
               },
             }}
-            // summary={(pageData) => {
-            //   return (
-            //     <Table.Summary fixed>
-            //       <Table.Summary.Row>
-            //         <Table.Summary.Cell>
-            //           <Text>{t('promotion.total')}:</Text>
-            //         </Table.Summary.Cell>
-            //         <Table.Summary.Cell>
-            //           <Text></Text>
-            //         </Table.Summary.Cell>
-            //         <Table.Summary.Cell>
-            //           <Text>
-            //             {t('promotion.percent')}:{' '}
-            //             {pageData.reduce(
-            //               (total, current) =>
-            //                 total + (current.type === 'PERCENT' ? current.value : 0),
-            //               0
-            //             )}{' '}
-            //             %
-            //             <br />
-            //             {t('promotion.value')}:{' '}
-            //             {formatCash(
-            //               pageData.reduce(
-            //                 (total, current) =>
-            //                   total + (current.type !== 'PERCENT' ? current.value : 0),
-            //                 0
-            //               )
-            //             )}{' '}
-            //             VND
-            //           </Text>
-            //         </Table.Summary.Cell>
-            //         <Table.Summary.Cell>
-            //           <Text>{formatCash(tableSum(pageData, 'limit.amount'))}</Text>
-            //         </Table.Summary.Cell>
-            //       </Table.Summary.Row>
-            //     </Table.Summary>
-            //   )
-            // }}
+          // summary={(pageData) => {
+          //   return (
+          //     <Table.Summary fixed>
+          //       <Table.Summary.Row>
+          //         <Table.Summary.Cell>
+          //           <Text>{t('promotion.total')}:</Text>
+          //         </Table.Summary.Cell>
+          //         <Table.Summary.Cell>
+          //           <Text></Text>
+          //         </Table.Summary.Cell>
+          //         <Table.Summary.Cell>
+          //           <Text>
+          //             {t('promotion.percent')}:{' '}
+          //             {pageData.reduce(
+          //               (total, current) =>
+          //                 total + (current.type === 'PERCENT' ? current.value : 0),
+          //               0
+          //             )}{' '}
+          //             %
+          //             <br />
+          //             {t('promotion.value')}:{' '}
+          //             {formatCash(
+          //               pageData.reduce(
+          //                 (total, current) =>
+          //                   total + (current.type !== 'PERCENT' ? current.value : 0),
+          //                 0
+          //               )
+          //             )}{' '}
+          //             VND
+          //           </Text>
+          //         </Table.Summary.Cell>
+          //         <Table.Summary.Cell>
+          //           <Text>{formatCash(tableSum(pageData, 'limit.amount'))}</Text>
+          //         </Table.Summary.Cell>
+          //       </Table.Summary.Row>
+          //     </Table.Summary>
+          //   )
+          // }}
           />
         </div>
         {/* {selectedRowKeys && selectedRowKeys.length > 0 ? ( */}

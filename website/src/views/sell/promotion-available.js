@@ -8,6 +8,7 @@ import { formatCash } from 'utils'
 import { getPromotions, checkVoucher } from 'apis/promotion'
 
 export default function PromotionAvailable({ invoiceCurrent, editInvoice }) {
+  console.log(invoiceCurrent)
   const [loading, setLoading] = useState(false)
   const [voucherCheck, setVoucherCheck] = useState('')
 
@@ -20,6 +21,7 @@ export default function PromotionAvailable({ invoiceCurrent, editInvoice }) {
 
   const PromotionItem = ({ promotion }) => (
     <Row>
+      {console.log(promotion)}
       <Col xs={8} sm={8}>
         <Checkbox
           disabled={
@@ -30,7 +32,7 @@ export default function PromotionAvailable({ invoiceCurrent, editInvoice }) {
           onClick={(e) => {
             const checked = e.target.checked
             if (checked) {
-              if (invoiceCurrent.moneyToBePaidByCustomer >= promotion.max_discount) {
+              if (invoiceCurrent.moneyToBePaidByCustomer >= promotion.max_discount_value) {
                 if (invoiceCurrent.order_details.length !== 0) setPromotionCheck(promotion)
                 else
                   notification.warning({
@@ -53,7 +55,7 @@ export default function PromotionAvailable({ invoiceCurrent, editInvoice }) {
         </p>
       </Col>
       <Col xs={8} sm={8}>
-        <p style={{ textAlign: 'center' }}>{formatCash(promotion.max_discount)}</p>
+        <p style={{ textAlign: 'center' }}>{formatCash(promotion.max_discount_value)}</p>
       </Col>
     </Row>
   )
