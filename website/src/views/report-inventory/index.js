@@ -105,7 +105,7 @@ export default function ReportInventory() {
         res.data.data.map((e) => {
           let report = {
             code: e.product ? e.product.code : '',
-            name: e.product ? e.product.title : '',
+            name: e.product ? e.product.name : '',
             unit: e.product ? e.product.unit : '',
             categories: e.product ? e.product._categories : [],
           }

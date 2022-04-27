@@ -233,3 +233,28 @@
     }
   }
 }
+@media screen and (max-width: 1300px) {
+  .sell-container{
+    .sell-content{
+      .sell-left{
+        .sell-products-related{
+          .list-product-related{
+            .product-item-wrap{
+              .product-item{
+                .product-item__price {
+                  font-size: 10px;
+                  font-weight: 600;
+                  padding-left: 5px;
+                  padding-right: 5px;
+                  margin-bottom: 0px;
+                }
+              }
+            }
+          }
+        }
+      }
+    
+    }
+  }
+ 
+}

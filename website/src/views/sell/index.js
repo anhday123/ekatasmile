@@ -1742,11 +1742,11 @@ export default function Sell() {
                           <p className={styles['product-item__price']}>
                             {formatCash(product.price)} VNĐ
                           </p>
-                          <p style={{ fontSize: 12 }} className={styles['product-item__price']}>
+                          <p  className={styles['product-item__price']}>
                             {product.active ? (
                               'Mở bán'
                             ) : (
-                              <div style={{ color: '#FF6666' }}>Tắt bán</div>
+                              <div style={{ color: '#FF6666' }} className={styles['product-item__price']}>Tắt bán</div>
                             )}
                           </p>
                         </Row>

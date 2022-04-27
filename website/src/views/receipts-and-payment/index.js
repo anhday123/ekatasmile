@@ -171,8 +171,8 @@ export default function ReceiptsAndPayment() {
                   rules={[{ required: true, message: 'Vui lòng chọn loại phiếu chi' }]}
                 >
                   <Select placeholder="Chọn loại phiếu chi" style={{ width: 280 }}>
-                    <Select.Option value="REVENUE">REVENUE</Select.Option>
-                    <Select.Option value="REVENUE">REVENUE</Select.Option>
+                    <Select.Option value="RECEIPT">Phiếu thu</Select.Option>
+                    <Select.Option value="PAYMENT">Phiếu chi</Select.Option>
                   </Select>
                 </Form.Item>
                 <Form.Item
@@ -441,7 +441,7 @@ export default function ReceiptsAndPayment() {
             return {
               ...column,
               render: (text, record) =>
-                record.payments && record.payments.map((e) => e.method).join(', '),
+                record.payments && record.payments.map((e) => e.name).join(', '),
             }
           if (column.key === 'money')
             return {
@@ -452,17 +452,19 @@ export default function ReceiptsAndPayment() {
           if (column.key === 'creator')
             return {
               ...column,
-              // render: (text, record) => record.creator && record.reator,
+              render: (text, record) => record.creator_id && record.creator_id,
             }
           if (column.key === 'receiver')
             return {
               ...column,
-              render: (text, record) => record.receiver && record.receiver,
+              render: (text, record) =>
+              record.receiver_id ?(`${record.receiver_id}`):"",
             }
-          if (column.key === '_payer')
+          if (column.key === 'payer')
             return {
               ...column,
-              render: (text, record) => record.payer && record.payer,
+              render: (text, record) => 
+              record.payer_id ?(`${record.payer_id}`):"",
             }
           if (column.key === 'create_date')
             return {

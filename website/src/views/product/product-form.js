@@ -286,10 +286,10 @@ export default function ProductAdd() {
 
     if (!isValidated) return
 
-    if (variants.length === 0) {
-      notification.error({ message: 'Vui lòng nhập ít nhất một thuộc tính' })
-      return
-    }
+    // if (variants.length === 0) {
+    //   notification.error({ message: 'Vui lòng nhập ít nhất một thuộc tính' })
+    //   return
+    // }
 
     //validated, prices
     for (let i = 0; i < variants.length; ++i)

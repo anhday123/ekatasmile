@@ -5,7 +5,7 @@ import delay from 'delay'
 import moment from 'moment'
 
 //antd
-import { Table, Row, DatePicker, Col, Button } from 'antd'
+import { Table, Row, DatePicker, Col, Button, Tag } from 'antd'
 
 //icons
 import { ArrowLeftOutlined, VerticalAlignTopOutlined } from '@ant-design/icons'
@@ -61,21 +61,24 @@ export default function ReportImportExportInventoryProduct() {
     },
     {
       title: 'ĐVT',
-      dataIndex: 'unit',
+      render: (text, record) =>
+      record.product.unit ?(`${record.product.unit}`):"",
     },
     {
       title: 'Nhóm',
+      render: (text, record) =>
+      record.product._categories ? record.product._categories.map((category) => <Tag>{category.name}</Tag>) : '',
     },
     {
       title: 'Đầu kỳ',
       children: [
         {
           title: 'Số lượng',
-          render: (text, record) => (record.begin_quantity ? formatCash(record.begin_quantity) : 0),
+          render: (text, record) => (record.variant.begin_quantity ? formatCash(record.variant.begin_quantity) : 0),
         },
         {
           title: 'Thành tiền',
-          render: (text, record) => (record.begin_price ? formatCash(record.begin_price) : 0),
+          render: (text, record) => (record.variant.begin_price ? formatCash(record.variant.begin_price) : 0),
         },
       ],
     },
@@ -85,11 +88,11 @@ export default function ReportImportExportInventoryProduct() {
         {
           title: 'Số lượng',
           render: (text, record) =>
-            record.import_quantity ? formatCash(record.import_quantity) : 0,
+            record.variant.import_quantity ? formatCash(record.variant.import_quantity) : 0,
         },
         {
           title: 'Thành tiền',
-          render: (text, record) => (record.import_price ? formatCash(record.import_price) : 0),
+          render: (text, record) => (record.variant.import_price ? formatCash(record.variant.import_price) : 0),
         },
       ],
     },
@@ -99,11 +102,11 @@ export default function ReportImportExportInventoryProduct() {
         {
           title: 'Số lượng',
           render: (text, record) =>
-            record.export_quantity ? formatCash(record.export_quantity) : 0,
+            record.variant.export_quantity ? formatCash(record.variant.export_quantity) : 0,
         },
         {
           title: 'Thành tiền',
-          render: (text, record) => (record.export_price ? formatCash(record.export_price) : 0),
+          render: (text, record) => (record.variant.export_price ? formatCash(record.variant.export_price) : 0),
         },
       ],
     },
@@ -112,11 +115,11 @@ export default function ReportImportExportInventoryProduct() {
       children: [
         {
           title: 'Số lượng',
-          render: (text, record) => (record.end_quantity ? formatCash(record.end_quantity) : 0),
+          render: (text, record) => (record.variant.end_quantity ? formatCash(record.variant.end_quantity) : 0),
         },
         {
           title: 'Thành tiền',
-          render: (text, record) => (record.end_price ? formatCash(record.end_price) : 0),
+          render: (text, record) => (record.variant.end_price ? formatCash(record.variant.end_price) : 0),
         },
       ],
     },
@@ -132,7 +135,9 @@ export default function ReportImportExportInventoryProduct() {
       const res = await getReportImportExportInventory({ type: 'variant', ...query })
       console.log(res)
       if (res.status === 200) {
-        setReports(res.data.data.map((e) => ({ ...e.variant, ...e })))
+
+        setReports(res.data.data.map((e) => ({ ...e, ...e.variant })))
+        console.log("variant",res.data.data)
         setCountReport(res.data.count)
       }
       setLoading(false)
