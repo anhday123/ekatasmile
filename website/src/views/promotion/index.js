@@ -276,7 +276,8 @@ export default function Promotion() {
   const _deletePromotion = async (value) => {
     try {
       console.log(value)
-      const res = await deletePromotion({ promotion_id: value })
+      const body = { promotion_id: [value] }
+      const res = await deletePromotion(body)
       console.log(res)
       if (res.status === 200) {
         if (res.data.success) {

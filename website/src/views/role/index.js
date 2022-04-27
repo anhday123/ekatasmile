@@ -21,7 +21,7 @@ import {
 import { ArrowLeftOutlined } from '@ant-design/icons'
 
 //apis
-import { addRole, getRoles, updateRole } from 'apis/role'
+import { createRole, getRoles, updateRole } from 'apis/role'
 
 //components
 import { rolesTranslate } from 'components/ExportCSV/fieldConvert'
@@ -98,8 +98,16 @@ export default function Role() {
       pChildren: ['them_khuyen_mai'],
     },
     {
+      pParent: 'nhap_hang',
+      pChildren: ['them_phieu_nhap_hang'],
+    },
+    {
       pParent: 'kiem_hang_cuoi_ngay',
       pChildren: ['them_phieu_kiem_hang'],
+    },
+    {
+      pParent: 'phieu_chuyen_hang',
+      pChildren: ['tao_phieu_chuyen_hang', 'cap_nhat_trang_thai_phieu_chuyen_hang'],
     },
     {
       pParent: 'tich_diem',
@@ -272,7 +280,7 @@ export default function Role() {
   const _addRole = async (object) => {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
-      const res = await addRole(object)
+      const res = await createRole(object)
       console.log(res)
       if (res.status === 200) {
         await _getRoles()

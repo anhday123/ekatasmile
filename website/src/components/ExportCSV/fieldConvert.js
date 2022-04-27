@@ -63,11 +63,16 @@ export const rolesTranslate = (key) => {
     // Khuyến mãi
     khuyen_mai: 'Khuyến mãi',
     them_khuyen_mai: 'Thêm khuyến mãi',
-    // kiểm hàng cuối ngày
+    // Nhập hàng
     kiem_hang_cuoi_ngay: 'Kiểm hàng cuối ngày',
     them_phieu_kiem_hang: 'Thêm phiếu kiểm hàng',
+    // kiểm hàng cuối ngày
+    nhap_hang: 'Nhập hàng',
+    them_phieu_nhap_hang: 'Thêm phiếu nhập hàng',
     //tích điểm
     tich_diem: 'Tích điểm',
+    //Phiếu chuyển hàng
+    phieu_chuyen_hang: 'Phiếu chuyển hàng',
     //Quản lý khách  hàng
     quan_li_khach_hang: 'Quản lý khách hàng',
     them_khach_hang: 'Thêm khách hàng',

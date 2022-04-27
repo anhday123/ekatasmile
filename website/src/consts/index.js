@@ -117,6 +117,7 @@ export const PERMISSIONS = {
   quan_li_nha_cung_cap: 'quan_li_nha_cung_cap',
   quan_li_bao_hanh: 'quan_li_bao_hanh',
   khuyen_mai: 'khuyen_mai',
+  nhap_hang: 'nhap_hang',
   kiem_hang_cuoi_ngay: 'kiem_hang_cuoi_ngay',
   quan_li_khach_hang: 'quan_li_khach_hang',
   bao_cao_don_hang: 'bao_cao_don_hang',
@@ -131,7 +132,6 @@ export const PERMISSIONS = {
   tich_diem: 'tich_diem',
   quan_li_uu_dai: 'quan_li_uu_dai',
   chi_nhanh: 'chi_nhanh',
-  nhap_hang: 'nhap_hang',
   kiem_hang: 'kiem_hang',
   phieu_chuyen_hang: 'phieu_chuyen_hang',
   tong_hop_bao_cao: 'tong_hop_bao_cao',
@@ -153,6 +153,7 @@ export const PERMISSIONS = {
   cap_nhat_nha_cung_cap: 'cap_nhat_nha_cung_cap',
   them_phieu_bao_hanh: 'them_phieu_bao_hanh',
   them_khuyen_mai: 'them_khuyen_mai',
+  them_phieu_nhap_hang: 'them_phieu_nhap_hang',
   them_phieu_kiem_hang: 'them_phieu_kiem_hang',
   them_khach_hang: 'them_khach_hang',
   cap_nhat_khach_hang: 'cap_nhat_khach_hang',
@@ -181,7 +182,7 @@ export const PERMISSIONS = {
   tao_kenh_ban_hang: 'tao_kenh_ban_hang',
 }
 
-export const VERSION_APP = '1.4.5.10'
+export const VERSION_APP = '1.4.5.11'
 
 export const regexPhone = /\(?([0-9]{3})\)?([ .-]?)([0-9]{3})\2([0-9]{4})/
 

@@ -54,6 +54,7 @@ export default function EmployeeForm({ children, reloadData, record }) {
         province: dataForm.province || '',
         role_id: +dataForm.role_id,
       }
+      console.log(body)
 
       let res
       if (record) res = await updateEmployee(body, record.user_id)
@@ -302,7 +303,7 @@ export default function EmployeeForm({ children, reloadData, record }) {
                 rules={[{ required: true, message: 'Vui lòng chọn vai trò' }]}
               >
                 <Space wrap={true}>
-                  <Radio.Group>
+                  <Radio.Group onChange={e => console.log(e.target.value)}>
                     {roles.map((role, index) => (
                       <Radio value={role.role_id} key={index}>
                         {role.name}
