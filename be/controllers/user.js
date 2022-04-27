@@ -123,6 +123,7 @@ module.exports._update = async (req, res, next) => {
             code: _user.code,
             username: _user.username,
             password: _user.password,
+            role_id: _user.role_id,
             email: _user.email,
             phone: _user.phone,
             avatar: _user.avatar,
