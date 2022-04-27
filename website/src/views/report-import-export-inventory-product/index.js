@@ -5,7 +5,7 @@ import delay from 'delay'
 import moment from 'moment'
 
 //antd
-import { Table, Row, Input, DatePicker, Col, Button } from 'antd'
+import { Table, Row, Input, DatePicker, Col, Button, Tag } from 'antd'
 
 //icons
 import { ArrowLeftOutlined, VerticalAlignTopOutlined } from '@ant-design/icons'
@@ -65,6 +65,8 @@ export default function ReportImportExportInventoryProduct() {
     },
     {
       title: 'Nhóm',
+      render: (text, record) =>
+      record._categories ? record._categories.map((category) => <Tag >{category.name}</Tag>) : '',
     },
     {
       title: 'Đầu kỳ',
@@ -192,7 +194,7 @@ export default function ReportImportExportInventoryProduct() {
             style={{ width: '100%' }}
             columns={columns}
             dataSource={reports}
-            size="small"
+            size="middle "
             bordered
             pagination={false}
             summary={(pageData) => (

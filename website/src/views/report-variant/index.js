@@ -99,12 +99,11 @@ export default function ReportInventory() {
         const columnsNew = [...columnsDefault]
         let reportNew = []
         let warehousesNameNew = []
-
         res.data.data.map((e) => {
           let report = {
             code: e.variant ? e.variant.code : '',
             name: e.variant ? e.variant.title : '',
-            unit: e.variant ? e.variant.unit : '',
+            unit: e.product ? e.product.unit : '',
             categories: e.product ? e.product._categories : [],
           }
 
