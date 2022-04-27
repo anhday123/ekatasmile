@@ -1124,7 +1124,6 @@ module.exports._createTransportOrder = async (req, res, next) => {
 
 module.exports._createTransportOrderFile = async (req, res, next) => {
     try {
-        console.log(req.body);
         if (req.file == undefined) {
             throw new Error('400: Vui lòng truyền file!');
         }
@@ -1209,7 +1208,7 @@ module.exports._createTransportOrderFile = async (req, res, next) => {
             _variants[eVariant.sku] = eVariant;
             _variantIds.push(eVariant.variant_id);
         });
-        let orderMaxId = await client.db(DB).collection('AppSetting').findOne({ name: 'TransportOrders' });
+        let orderMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'TransportOrders' });
         let orderId = (orderMaxId && orderMaxId.value) || 0;
         let _orders = {};
         rows.map((eRow) => {
