@@ -16,28 +16,6 @@ const { _menus } = require('../templates/menus');
 const { _createUniqueKey } = require('../templates/unique-key');
 const { stringHandle } = require('../utils/string-handle');
 
-let removeUnicode = (text, removeSpace) => {
-    /*
-        string là chuỗi cần remove unicode
-        trả về chuỗi ko dấu tiếng việt ko khoảng trắng
-    */
-    if (typeof text != 'string') {
-        return '';
-    }
-    if (removeSpace && typeof removeSpace != 'boolean') {
-        throw new Error('Type of removeSpace input must be boolean!');
-    }
-    text = text
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/đ/g, 'd')
-        .replace(/Đ/g, 'D');
-    if (removeSpace) {
-        text = text.replace(/\s/g, '');
-    }
-    return text;
-};
-
 module.exports._checkBusiness = async (req, res, next) => {
     try {
         if (req.body.username == undefined) throw new Error('400: Vui lòng truyền username');
@@ -330,7 +308,7 @@ module.exports._register = async (req, res, next) => {
             creator_id: -1,
             last_update: moment().tz(TIMEZONE).format(),
             updater_id: -1,
-            slug_name: 'thuong',
+            slug_name: 'mac-dinh',
         };
         let _paymentMethods = [
             {
@@ -437,11 +415,7 @@ module.exports._register = async (req, res, next) => {
         await client
             .db(DB)
             .collection('AppSetting')
-            .updateOne(
-                { name: 'ShippingCompanies' },
-                { $set: { name: 'ShippingCompanies', value: 1 } },
-                { upsert: true }
-            );
+            .updateOne({ name: 'ShippingCompanies' }, { $set: { name: 'ShippingCompanies', value: 1 } }, { upsert: true });
 
         // Những model mặc định
         await Promise.all([
@@ -457,10 +431,7 @@ module.exports._register = async (req, res, next) => {
             client.db(DB).collection('ShippingCompanies').insertOne(_shippingCompany),
             _createUniqueKey(client, DB),
         ]).catch(async (err) => {
-            await Promise.all([
-                client.db(SDB).collection('Business').deleteMany({ business_id: businessId }),
-                client.db(DB).dropDatabase(),
-            ]);
+            await Promise.all([client.db(SDB).collection('Business').deleteMany({ business_id: businessId }), client.db(DB).dropDatabase()]);
             console.log(err.message);
             throw new Error('Tạo tài khoản không thành công!');
         });
@@ -718,10 +689,7 @@ module.exports._verifyOTP = async (req, res, next) => {
                     { $unwind: { path: '$_store', preserveNullAndEmptyArrays: true } },
                 ])
                 .toArray();
-            let accessToken = await jwt.createToken(
-                { ...userData, database: DB, _business: business },
-                30 * 24 * 60 * 60
-            );
+            let accessToken = await jwt.createToken({ ...userData, database: DB, _business: business }, 30 * 24 * 60 * 60);
             res.send({
                 success: true,
                 message: 'Kích hoạt tài khoản thành công!',
@@ -767,10 +735,7 @@ module.exports._verifyOTP = async (req, res, next) => {
                     { $unwind: { path: '$_store', preserveNullAndEmptyArrays: true } },
                 ])
                 .toArray();
-            let accessToken = await jwt.createToken(
-                { ...userData, database: DB, _business: business },
-                30 * 24 * 60 * 60
-            );
+            let accessToken = await jwt.createToken({ ...userData, database: DB, _business: business }, 30 * 24 * 60 * 60);
             res.send({
                 success: true,
                 message: `Mã OTP chính xác, xác thực thành công!`,

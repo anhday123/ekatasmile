@@ -49,10 +49,7 @@ module.exports._create = async (req, res, next) => {
 
         let productMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Products' });
         let productId = (productMaxId && productMaxId.value) || 0;
-        let attributeMaxId = await client
-            .db(req.user.database)
-            .collection('AppSetting')
-            .findOne({ name: 'Attributes' });
+        let attributeMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Attributes' });
         let attributeId = (attributeMaxId && attributeMaxId.value) || 0;
         let variantMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Variants' });
         let variantId = (variantMaxId && variantMaxId.value) || 0;
@@ -105,68 +102,76 @@ module.exports._create = async (req, res, next) => {
             })(),
         };
         req['_attributes'] = [];
-        req.body.attributes.map((eAttribute) => {
-            if (eAttribute) {
-                req._attributes.push({
-                    attribute_id: ++attributeId,
-                    code: String(attributeId).padStart(6, '0'),
-                    product_id: productId,
-                    option: eAttribute.option,
-                    values: eAttribute.values,
-                    create_date: moment().tz(TIMEZONE).format(),
-                    creator_id: req.user.user_id,
-                    last_update: moment().tz(TIMEZONE).format(),
-                    updater_id: req.user.user_id,
-                    active: true,
-                    slug_option: stringHandle(eAttribute.option, { createSlug: true }),
-                    slug_values: (() => {
-                        return eAttribute.values.map((eValue) => {
-                            return stringHandle(eValue, { createSlug: true });
-                        });
-                    })(),
-                });
-            }
-        });
+        if (Array.isArray(req.body.attributes) && req.body.attributes.length > 0) {
+            req.body.attributes.map((eAttribute) => {
+                if (eAttribute) {
+                    req._attributes.push({
+                        attribute_id: ++attributeId,
+                        code: String(attributeId).padStart(6, '0'),
+                        product_id: productId,
+                        option: eAttribute.option,
+                        values: eAttribute.values,
+                        create_date: moment().tz(TIMEZONE).format(),
+                        creator_id: req.user.user_id,
+                        last_update: moment().tz(TIMEZONE).format(),
+                        updater_id: req.user.user_id,
+                        active: true,
+                        slug_option: stringHandle(eAttribute.option, { createSlug: true }),
+                        slug_values: (() => {
+                            return eAttribute.values.map((eValue) => {
+                                return stringHandle(eValue, { createSlug: true });
+                            });
+                        })(),
+                    });
+                }
+            });
+        } else {
+            throw new Error('400: Sản phẩm chưa có thuộc tính!');
+        }
         req['_variants'] = [];
-        req.body.variants.map((eVariant) => {
-            if (eVariant) {
-                req._variants.push({
-                    variant_id: ++variantId,
-                    code: String(variantId).padStart(6, '0'),
-                    product_id: productId,
-                    title: eVariant.title,
-                    sku: eVariant.sku,
-                    image: eVariant.image || [],
-                    options: eVariant.options || [],
-                    ...(() => {
-                        if (eVariant.options && eVariant.options > 0) {
-                            let options = {};
-                            for (let i = 0; i <= eVariant.options; i++) {
-                                options[`option${i + 1}`] = eVariant.options[i];
+        if (Array.isArray(req.body.variants) && req.body.variants.length > 0) {
+            req.body.variants.map((eVariant) => {
+                if (eVariant) {
+                    req._variants.push({
+                        variant_id: ++variantId,
+                        code: String(variantId).padStart(6, '0'),
+                        product_id: productId,
+                        title: eVariant.title,
+                        sku: eVariant.sku,
+                        image: eVariant.image || [],
+                        options: eVariant.options || [],
+                        ...(() => {
+                            if (eVariant.options && eVariant.options > 0) {
+                                let options = {};
+                                for (let i = 0; i <= eVariant.options; i++) {
+                                    options[`option${i + 1}`] = eVariant.options[i];
+                                }
+                                return options;
                             }
-                            return options;
-                        }
-                        return {};
-                    })(),
-                    supplier: (() => {
-                        if (supplier && supplier.name) {
-                            return supplier.name;
-                        }
-                        return '';
-                    })(),
-                    import_price_default: eVariant.import_price || 0,
-                    price: eVariant.price,
-                    enable_bulk_price: eVariant.enable_bulk_price || false,
-                    bulk_prices: eVariant.bulk_prices,
-                    create_date: moment().tz(TIMEZONE).format(),
-                    creator_id: req.user.user_id,
-                    last_update: moment().tz(TIMEZONE).format(),
-                    updater_id: req.user.user_id,
-                    active: true,
-                    slug_title: stringHandle(eVariant.title, { createSlug: true }),
-                });
-            }
-        });
+                            return {};
+                        })(),
+                        supplier: (() => {
+                            if (supplier && supplier.name) {
+                                return supplier.name;
+                            }
+                            return '';
+                        })(),
+                        import_price_default: eVariant.import_price || 0,
+                        price: eVariant.price,
+                        enable_bulk_price: eVariant.enable_bulk_price || false,
+                        bulk_prices: eVariant.bulk_prices,
+                        create_date: moment().tz(TIMEZONE).format(),
+                        creator_id: req.user.user_id,
+                        last_update: moment().tz(TIMEZONE).format(),
+                        updater_id: req.user.user_id,
+                        active: true,
+                        slug_title: stringHandle(eVariant.title, { createSlug: true }),
+                    });
+                }
+            });
+        } else {
+            throw new Error('400: Sản phẩm chưa có phiên bản!');
+        }
         await client
             .db(req.user.database)
             .collection('AppSetting')
@@ -214,17 +219,11 @@ module.exports._update = async (req, res, next) => {
         if (!product) {
             throw new Error('400: Sản phẩm không tồn tại!');
         }
-        let supplier = await client
-            .db(req.user.database)
-            .collection('Suppliers')
-            .findOne({ supplier_id: product.supplier_id });
+        let supplier = await client.db(req.user.database).collection('Suppliers').findOne({ supplier_id: product.supplier_id });
         if (!supplier) {
             throw new Error(`400: Nhà sản xuất không tồn tại!`);
         }
-        let attributeMaxId = await client
-            .db(req.user.database)
-            .collection('AppSetting')
-            .findOne({ name: 'Attributes' });
+        let attributeMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Attributes' });
         let attributeId = (attributeMaxId && attributeMaxId.value) || 0;
         let variantMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Variants' });
         let variantId = (variantMaxId && variantMaxId.value) || 0;
@@ -294,8 +293,7 @@ module.exports._update = async (req, res, next) => {
                         updater_id: req.user.updater_id,
                         active: true,
                         slug_option: stringHandle(_attribute.option, { createSlug: true }),
-                        slug_values: (() =>
-                            _attribute.values.map((eValue) => stringHandle(eValue, { createSlug: true })))(),
+                        slug_values: (() => _attribute.values.map((eValue) => stringHandle(eValue, { createSlug: true })))(),
                     });
                 } else {
                     updateAttributes.push({
@@ -310,8 +308,7 @@ module.exports._update = async (req, res, next) => {
                         updater_id: req.user.updater_id,
                         active: true,
                         slug_option: stringHandle(_attribute.option, { createSlug: true }),
-                        slug_values: (() =>
-                            _attribute.values.map((eValue) => stringHandle(eValue, { createSlug: true })))(),
+                        slug_values: (() => _attribute.values.map((eValue) => stringHandle(eValue, { createSlug: true })))(),
                     });
                 }
             }
@@ -405,10 +402,7 @@ module.exports._update = async (req, res, next) => {
             .collection('AppSetting')
             .updateOne({ name: 'Variants' }, { $set: { name: 'Variants', value: variantId } }, { upsert: true });
 
-        await client
-            .db(req.user.database)
-            .collection('Products')
-            .updateOne({ product_id: _product.product_id }, { $set: _product });
+        await client.db(req.user.database).collection('Products').updateOne({ product_id: _product.product_id }, { $set: _product });
         if (insertAttributes.length > 0) {
             await client.db(req.user.database).collection('Attributes').insertMany(insertAttributes);
         }
@@ -809,14 +803,8 @@ module.exports.importFileC = async (req, res, next) => {
                                 return [];
                             })(),
                             slug: eRow['_ten-san-pham'] + `-${productId}`,
-                            supplier_id:
-                                (_suppliers[eRow['_nha-cung-cap']] && _suppliers[eRow['_nha-cung-cap']].supplier_id) ||
-                                0,
-                            category_id: [
-                                (_categories[eRow['_ten-danh-muc']] &&
-                                    _categories[eRow['_ten-danh-muc']].category_id) ||
-                                    0,
-                            ],
+                            supplier_id: (_suppliers[eRow['_nha-cung-cap']] && _suppliers[eRow['_nha-cung-cap']].supplier_id) || 0,
+                            category_id: [(_categories[eRow['_ten-danh-muc']] && _categories[eRow['_ten-danh-muc']].category_id) || 0],
                             tax_id: (() => {
                                 let result = [];
                                 if (eRow['_thue-ap-dung']) {
@@ -831,9 +819,7 @@ module.exports.importFileC = async (req, res, next) => {
                                 let result = [];
                                 if (eRow['_chuong-trinh-bao-hanh']) {
                                     eRow['_chuong-trinh-bao-hanh'].map((warrantySlug) => {
-                                        result.push(
-                                            (_warranties[warrantySlug] && _warranties[warrantySlug].warranty_id) || 0
-                                        );
+                                        result.push((_warranties[warrantySlug] && _warranties[warrantySlug].warranty_id) || 0);
                                     });
                                 }
                                 result = [...new Set(result)];
@@ -864,10 +850,8 @@ module.exports.importFileC = async (req, res, next) => {
                                     throw new Error('400: Khối lượng không hợp lệ');
                                 })(),
                             unit: eRow['don-vi'] || '',
-                            brand_id:
-                                (_brands[eRow['_ten-thuong-hieu']] && _brands[eRow['_ten-thuong-hieu']].brand_id) || 0,
-                            origin_code:
-                                (_origins[eRow['_noi-xuat-xu']] && _origins[eRow['_noi-xuat-xu']].origin_code) || '',
+                            brand_id: (_brands[eRow['_ten-thuong-hieu']] && _brands[eRow['_ten-thuong-hieu']].brand_id) || 0,
+                            origin_code: (_origins[eRow['_noi-xuat-xu']] && _origins[eRow['_noi-xuat-xu']].origin_code) || '',
                             status: eRow['tinh-trang'] || '',
                             description: eRow['mo-ta'] || '',
                             tags: (() => {
@@ -928,10 +912,7 @@ module.exports.importFileC = async (req, res, next) => {
                                     active: true,
                                     slug_option: _insertAttributes[key].slug_option,
                                     slug_values: [
-                                        ...new Set([
-                                            ..._insertAttributes[key].slug_values,
-                                            stringHandle(eRow[`gia-tri-${i}`], { createSlug: true }),
-                                        ]),
+                                        ...new Set([..._insertAttributes[key].slug_values, stringHandle(eRow[`gia-tri-${i}`], { createSlug: true })]),
                                     ],
                                 };
                             }
@@ -995,10 +976,7 @@ module.exports.importFileC = async (req, res, next) => {
                                 throw new Error('400: Giá bán không hợp lệ');
                             })(),
                         enable_bulk_price: (() => {
-                            if (
-                                eRow['ap-dung-gia-ban-si'] &&
-                                /^(co)$/.test(stringHandle(eRow['ap-dung-gia-ban-si'], { createSlug: true }))
-                            ) {
+                            if (eRow['ap-dung-gia-ban-si'] && /^(co)$/.test(stringHandle(eRow['ap-dung-gia-ban-si'], { createSlug: true }))) {
                                 return true;
                             }
                             return false;
@@ -1023,8 +1001,7 @@ module.exports.importFileC = async (req, res, next) => {
                                                 throw new Error('400: Số lượng sỉ áp dụng phải là số!');
                                             })();
                                         bulkPrice['price'] =
-                                            (!isNaN(Number(eRow['gia-ban-si-ap-dung'])) &&
-                                                Number(eRow['gia-ban-si-ap-dung'])) ||
+                                            (!isNaN(Number(eRow['gia-ban-si-ap-dung'])) && Number(eRow['gia-ban-si-ap-dung'])) ||
                                             (() => {
                                                 throw new Error('400: Giá bán sỉ áp dụng phải là số');
                                             })();
@@ -1046,8 +1023,7 @@ module.exports.importFileC = async (req, res, next) => {
                                                 throw new Error('400: Số lượng sỉ áp dụng phải là số!');
                                             })();
                                         bulkPrice['price'] =
-                                            (!isNaN(Number(eRow[`gia-ban-si-ap-dung-${i}`])) &&
-                                                Number(eRow[`gia-ban-si-ap-dung-${i}`])) ||
+                                            (!isNaN(Number(eRow[`gia-ban-si-ap-dung-${i}`])) && Number(eRow[`gia-ban-si-ap-dung-${i}`])) ||
                                             (() => {
                                                 throw new Error('400: Giá bán sỉ áp dụng phải là số');
                                             })();
@@ -1070,28 +1046,19 @@ module.exports.importFileC = async (req, res, next) => {
             }
         });
         if (Object.values(_insertProducts).length > 0) {
-            let insert = await client
-                .db(req.user.database)
-                .collection('Products')
-                .insertMany(Object.values(_insertProducts));
+            let insert = await client.db(req.user.database).collection('Products').insertMany(Object.values(_insertProducts));
             if (!insert.insertedIds) {
                 throw new Error(`500: Tạo sản phẩm thất bại!`);
             }
         }
         if (Object.values(_insertAttributes).length > 0) {
-            let insert = await client
-                .db(req.user.database)
-                .collection('Attributes')
-                .insertMany(Object.values(_insertAttributes));
+            let insert = await client.db(req.user.database).collection('Attributes').insertMany(Object.values(_insertAttributes));
             if (!insert.insertedIds) {
                 throw new Error(`500: Tạo thuộc tính sản phẩm thất bại!`);
             }
         }
         if (Object.values(_insertVariants).length > 0) {
-            let insert = await client
-                .db(req.user.database)
-                .collection('Variants')
-                .insertMany(Object.values(_insertVariants));
+            let insert = await client.db(req.user.database).collection('Variants').insertMany(Object.values(_insertVariants));
             if (!insert.insertedIds) {
                 throw new Error(`500: Tạo phiên bản sản phẩm thất bại!`);
             }
@@ -1122,11 +1089,7 @@ module.exports.importFileC = async (req, res, next) => {
             client
                 .db(req.user.database)
                 .collection('AppSetting')
-                .updateOne(
-                    { name: 'Attributes' },
-                    { $set: { name: 'Attributes', value: attributeId } },
-                    { upsert: true }
-                ),
+                .updateOne({ name: 'Attributes' }, { $set: { name: 'Attributes', value: attributeId } }, { upsert: true }),
             client
                 .db(req.user.database)
                 .collection('AppSetting')
@@ -1138,11 +1101,7 @@ module.exports.importFileC = async (req, res, next) => {
             client
                 .db(req.user.database)
                 .collection('AppSetting')
-                .updateOne(
-                    { name: 'Categories' },
-                    { $set: { name: 'Categories', value: categoryId } },
-                    { upsert: true }
-                ),
+                .updateOne({ name: 'Categories' }, { $set: { name: 'Categories', value: categoryId } }, { upsert: true }),
             client
                 .db(req.user.database)
                 .collection('AppSetting')
