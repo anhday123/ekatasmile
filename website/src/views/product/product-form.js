@@ -327,7 +327,7 @@ export default function ProductAdd() {
         weight: formProduct.weight || '',
         unit: formProduct.unit || '',
         files: files || [],
-        warranties: idsWarranty,
+        warranties: warranties,
         description: description || '',
         images: imagesProduct || [],
       }
@@ -336,6 +336,8 @@ export default function ProductAdd() {
 
       const variantsNew = variants.map((v) => ({ ...v, supplier: supplier || '' }))
       body.variants = variantsNew
+      
+      console.log(body)
 
       let res
       //case update product

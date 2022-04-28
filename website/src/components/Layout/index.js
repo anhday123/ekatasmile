@@ -367,6 +367,7 @@ const BaseLayout = (props) => {
           }}
           key={_menu.path}
           // onTitleClick={() => history.push(_menu.path)}
+          onClick={_menu.path === ROUTES.SELL && toggle}
           title={
             <Link
               style={{
@@ -423,6 +424,7 @@ const BaseLayout = (props) => {
               '#e7e9fb',
           }}
           icon={_menu.icon}
+          onClick={_menu.path === ROUTES.SELL && toggle}
         >
           <Link to={_menu.path}>{_menu.title}</Link>
         </Menu.Item>
@@ -586,7 +588,7 @@ const BaseLayout = (props) => {
               <Row align="middle">
                 <div style={{ color: 'white', marginRight: 8 }}>Chi nhánh:</div>
                 <Select
-                  disabled={user && user.role_id === 1 ? false : true}
+                  // disabled={user && user.role_id === 1 ? false : true}
                   placeholder="Chi nhánh"
                   style={{ width: isMobile ? '90%' : 250 }}
                   onChange={(value) => dispatch({ type: 'SET_BRANCH_ID', data: value })}

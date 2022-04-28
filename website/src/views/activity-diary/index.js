@@ -26,6 +26,7 @@ export default function ActivityDiary() {
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
   const [countAction, setCountAction] = useState(0)
   const [valueFilter, setValueFilter] = useState()
+  const [valueDate, setValueDate] = useState(null)
 
   const onSearch = (e) => {
     setValueSearch(e.target.value)
@@ -37,7 +38,7 @@ export default function ActivityDiary() {
       if (value) paramsFilter.search = value
       else delete paramsFilter.search
 
-      setParamsFilter({ ...paramsFilter, page: 1 })
+      setParamsFilter({ ...paramsFilter, page: 1, page_size: 20 })
     }, 650)
   }
 
@@ -71,44 +72,33 @@ export default function ActivityDiary() {
       title: 'Thời gian thao tác',
       dataIndex: 'date',
       defaultSortOrder: 'descend',
-     
+
       render: (text, record) => (text ? moment(text).format('YYYY-MM-DD H:mm:ss') : ''),
       // sorter: (a, b) => moment(a.date).unix() - moment(b.date).unix(),
       sorter: (a, b) => new Date(a.date) - new Date(b.date),
     },
   ]
 
-  const apiSearchDateData = async (start, end) => {
-    try {
-      setLoading(true)
-
-      const res = await getActions({
-        from_date: start,
-        to_date: end,
-      })
-      console.log(res)
-      if (res.status === 200) setActivityDiary(res.data.data)
-      setLoading(false)
-    } catch (error) {
-      setLoading(false)
+  function onChangeDate(date, dateStrings) {
+    if (date) {
+      setValueDate(date)
+      paramsFilter.from_date = dateStrings[0]
+      paramsFilter.to_date = dateStrings[1]
+    } else {
+      setValueDate(null)
+      delete paramsFilter.from_date
+      delete paramsFilter.to_date
     }
-  }
-  function onChangeDate(dates, dateStrings) {
-    apiSearchDateData(
-      dateStrings && dateStrings.length > 0 ? dateStrings[0] : '',
-      dateStrings && dateStrings.length > 0 ? dateStrings[1] : ''
-    )
+    setParamsFilter({ ...paramsFilter, page: 1 })
   }
 
   const _getActionsHistory = async () => {
     try {
       setLoading(true)
       const res = await getActions(paramsFilter)
-      console.log(res)
       if (res.status === 200) {
         setCountAction(res.data.count)
         setActivityDiary(res.data.data)
-        console.log("nhật ký hoaatj động",res.data)
       }
       setLoading(false)
     } catch (error) {
@@ -183,6 +173,7 @@ export default function ActivityDiary() {
               Today: [moment(), moment()],
               'This Month': [moment().startOf('month'), moment().endOf('month')],
             }}
+            value={valueDate}
             onChange={onChangeDate}
             bordered={false}
           />

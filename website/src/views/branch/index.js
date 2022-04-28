@@ -138,6 +138,7 @@ export default function Branch() {
         if (res.data.success) {
           notification.success({ message: 'Xóa chi nhánh thành công!' })
           _getBranches()
+          dispatch({ type: 'TRIGGER_RELOAD_BRANCH' })
         } else
           notification.error({
             message: res.data.message || 'Xóa chi nhánh thất bại, vui lòng thử lại!',

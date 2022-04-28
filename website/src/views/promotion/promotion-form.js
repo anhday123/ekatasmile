@@ -231,7 +231,7 @@ export default function PromotionAdd(props) {
                 <Option value="customer-3">Tiềm năng</Option>
                 <Option value="customer-4">Trung thành</Option>
               </Select>
-              <Checkbox
+              {/* <Checkbox
                 onChange={() => setCheckedCustom(!checkedCustom)}
                 checked={checkedCustom}
                 style={{
@@ -241,7 +241,7 @@ export default function PromotionAdd(props) {
                 }}
               >
                 Thêm voucher tự động cho khách hàng
-              </Checkbox>
+              </Checkbox> */}
               <Checkbox
                 onChange={() => setCheckedVoucher(!checkedVoucher)}
                 checked={checkedVoucher}
