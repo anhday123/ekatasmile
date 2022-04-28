@@ -194,6 +194,7 @@ module.exports._create = async (req, res, next) => {
             ship_status: req.body.ship_status,
             note: req.body.note,
             tags: req.body.tags,
+            create_day: moment().tz(TIMEZONE).format('YYYY-MM-DD'),
             create_date: moment().tz(TIMEZONE).format(),
             creator_id: req.user.user_id,
             verify_date: '',

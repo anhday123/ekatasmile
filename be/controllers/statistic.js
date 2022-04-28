@@ -20,6 +20,12 @@ let _getOrderOverview = async (req, res, next) => {
         if (req.query.to_date) {
             queries.push({ $match: { create_date: { $lte: req.query.to_date } } });
         }
+        let dataForm = {
+            total_order: 0,
+            total_base_price: 0,
+            total_revenue: 0,
+            total_profit: 0,
+        };
         let [orders] = await client
             .db(req.user.database)
             .collection('Orders')
@@ -36,6 +42,7 @@ let _getOrderOverview = async (req, res, next) => {
                 },
             ])
             .toArray();
+        orders = { ...dataForm, ...orders };
         orders.total_profit = orders.total_revenue - orders.total_base_price;
         res.send({ success: true, data: orders });
     } catch (err) {
@@ -61,11 +68,13 @@ let _getChartOverview = async (req, res, next) => {
             .collection('Orders')
             .aggregate([
                 ...queries,
-                {
-                    $group: { _id: '$create_day' },
-                    create_day: { $first: '$create_day' },
-                    total_cost: { $sum: '$total_cost' },
-                },
+                [
+                    ...{
+                        $group: { _id: '$create_day' },
+                        create_day: { $first: '$create_day' },
+                        total_cost: { $sum: '$total_cost' },
+                    },
+                ],
             ])
             .toArray();
         let _charts = {};
@@ -108,7 +117,7 @@ let _getProductOverview = async (req, res, next) => {
                 {
                     $group: {
                         _id: { product_id: '$product_id' },
-                        product_id: { $first: product_id },
+                        product_id: { $first: '$product_id' },
                         sale_quantity: { $sum: '$export_quantity' },
                     },
                 },
@@ -123,6 +132,20 @@ let _getProductOverview = async (req, res, next) => {
                 { $unwind: { path: '$product_info', preserveNullAndEmptyArrays: true } },
             ])
             .toArray();
+        let productIds = [];
+        products.map((eProduct) => {
+            productIds.push(eProduct.product_id);
+        });
+        let dataForm = await client
+            .db(req.user.database)
+            .collection('Products')
+            .aggregate([{ $match: { product_id: { $nin: productIds } } }, { $limit: 10 }])
+            .toArray();
+        dataForm = dataForm.map((eProduct) => {
+            return { product_id: eProduct.product_id, sale_quantity: 0, product_info: eProduct };
+        });
+        products = [...products, ...dataForm];
+        products = [...products].slice(0, products.length >= 10 ? 10 : products.length);
         res.send({ success: true, data: products });
     } catch (err) {
         next(err);
