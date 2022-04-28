@@ -195,6 +195,8 @@ module.exports._create = async (req, res, next) => {
             note: req.body.note,
             tags: req.body.tags,
             create_day: moment().tz(TIMEZONE).format('YYYY-MM-DD'),
+            create_month: moment().tz(TIMEZONE).format('YYYY-MM'),
+            create_year: moment().tz(TIMEZONE).format('YYYY'),
             create_date: moment().tz(TIMEZONE).format(),
             creator_id: req.user.user_id,
             verify_date: '',

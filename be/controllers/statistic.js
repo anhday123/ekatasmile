@@ -63,31 +63,31 @@ let _getChartOverview = async (req, res, next) => {
         if (req.query.to_date) {
             queries.push({ $match: { create_date: { $lte: req.query.to_date } } });
         }
-        let charts = await client
-            .db(req.user.database)
-            .collection('Orders')
-            .aggregate([
-                ...queries,
-                [
-                    ...{
-                        $group: { _id: '$create_day' },
-                        create_day: { $first: '$create_day' },
-                        total_cost: { $sum: '$total_cost' },
-                    },
-                ],
-            ])
-            .toArray();
+        queries.push({
+            $group: {
+                ...(() => {
+                    if (req.query.monthly_statistics == 'true') {
+                        return { _id: { create_month: '$create_month' }, create_month: { $first: '$create_month' } };
+                    }
+                    if (req.query.year_statistics == 'true') {
+                        return { _id: { create_year: '$create_year' }, create_year: { $first: '$create_year' } };
+                    }
+                    return { _id: { create_day: '$create_day' }, create_day: { $first: '$create_day' } };
+                })(),
+                total_cost: { $sum: '$total_cost' },
+            },
+        });
+        let charts = await client.db(req.user.database).collection('Orders').aggregate(queries).toArray();
         let _charts = {};
         charts.map((eChart) => {
             _charts[eChart.create_day] = eChart;
         });
-        let result = {};
-        // let timeStart = moment(req.query.from_date).tz(TIMEZONE).format('YYYY-MM-DD');
-        let timeEnd = moment(req.query.from_date).tz(TIMEZONE).format('YYYY-MM-DD');
+        let result = [];
+        let timeEnd = moment(req.query.to_date).tz(TIMEZONE).format('YYYY-MM-DD');
         let key = moment(req.query.from_date).tz(TIMEZONE).add(-1, 'days').format('YYYY-MM-DD');
         do {
             key = moment(key).tz(TIMEZONE).add(1, 'days').format('YYYY-MM-DD');
-            result[key] = (_charts[key] && _charts[key].total_cost) || 0;
+            result.push({ [key]: (_charts[key] && _charts[key].total_cost) || 0 });
         } while (key != timeEnd);
         res.send({ success: true, data: result });
     } catch (err) {
