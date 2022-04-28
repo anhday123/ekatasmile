@@ -18,12 +18,16 @@ import {
 import { PlusOutlined, LoadingOutlined, InboxOutlined } from '@ant-design/icons'
 import React, { useEffect, useState } from 'react'
 import styles from './add.module.scss'
-import { addPromotion, updatePromotion } from 'apis/promotion'
+
+// Apis
+import { addPromotion, updatePromotion, getPromotions } from 'apis/promotion'
 import { getAllStore } from 'apis/store'
 import { getAllBranch } from 'apis/branch'
 import { removeAccents } from 'utils'
-// Apis
 import { uploadFile } from 'apis/upload'
+
+//components
+import exportToCSV from 'components/ExportCSV/export'
 
 //language
 import { useTranslation } from 'react-i18next'
@@ -47,6 +51,29 @@ export default function PromotionAdd(props) {
       message: 'Thêm khuyến mãi thành công',
     })
   }
+
+  const _getPromotionsToExport = async () => {
+    try {
+      const res = await getPromotions()
+      if (res.status === 200) {
+        res.data.data.map((e) => {
+          let dataExport = [{
+            'Mã khuyến mãi': e.promotion_code || '',
+            'Tên khuyến mãi': e.name || '',
+            'Điều kiện áp dụng': e.order_value_require || '',
+            'Loại khuyến mãi': e.type === 'VALUE' ? 'Giá trị' : 'Phần trăm',
+            'Giá trị khuyến mãi': e.value,
+            'Số lượng khuyến mãi': e.limit_quantity === 0 ? 'Không giới hạn số lượng' : e.limit_quantity,
+            'Thời hạn khuyến mãi': e.end_date,
+          }]
+          exportToCSV(dataExport, 'Danh sách khuyến mãi')
+        })
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   const onFinish = async (values) => {
     try {
       const obj = {
@@ -76,6 +103,9 @@ export default function PromotionAdd(props) {
         props.close()
         form.resetFields()
         setIsChooseAllStore(false)
+        if (checkedVoucher === true) {
+          _getPromotionsToExport()
+        }
       } else throw res
     } catch (e) {
       console.log(e)
@@ -96,10 +126,10 @@ export default function PromotionAdd(props) {
     setIsChooseAllStore(value)
     value
       ? form.setFieldsValue({
-          store: storeList.map((e) => {
-            return e.branch_id
-          }),
-        })
+        store: storeList.map((e) => {
+          return e.branch_id
+        }),
+      })
       : form.setFieldsValue({ store: [] })
   }
   const _uploadImage = async (file) => {
@@ -282,7 +312,7 @@ export default function PromotionAdd(props) {
                   </Form.Item>
                 </Col>
               </Row>
-              <Row  gutter={20}>
+              <Row gutter={20}>
                 <Col span={12}>
                   <Form.Item name="discount_condition" label='Hạn mức áp dụng'>
                     <InputNumber
