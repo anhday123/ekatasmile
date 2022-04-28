@@ -86,7 +86,7 @@ module.exports._update = async (req, res, next) => {
         let checkExists = await client
             .db(req.user.database)
             .collection('Promotions')
-            .findOne({ promotion_id: { $ne: _promotion.promotion_id }, phone: _promotion.phone });
+            .findOne({ promotion_id: { $ne: _promotion.promotion_id }, name: _promotion.name });
         if (checkExists) {
             throw new Error(`400: Promotion already exists!`);
         }
