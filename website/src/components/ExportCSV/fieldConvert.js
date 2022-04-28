@@ -49,10 +49,10 @@ export const rolesTranslate = (key) => {
     them_kho: 'Thêm kho',
     cap_nhat_kho: 'Cập nhật kho',
     //quản lý chuyển hàng
-    quan_li_chuyen_hang: 'Quản lý chuyển hàng',
-    tao_phieu_chuyen_hang: 'Tạo phiếu chuyển hàng',
+    quan_li_chuyen_hang: 'Quản lý giao hàng',
+    tao_phieu_chuyen_hang: 'Tạo phiếu giao hàng',
     cap_nhat_trang_thai_phieu_chuyen_hang:
-      'Cập nhật trạng thái phiếu chuyển hàng',
+      'Cập nhật trạng thái phiếu giao hàng',
     //Nhà cung cấp
     quan_li_nha_cung_cap: 'Quản lý nhà cung cấp',
     them_nha_cung_cap: 'Thêm nhà cung cáp',

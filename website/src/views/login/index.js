@@ -26,8 +26,8 @@ export default function Login() {
       subDomain = subDomain[0].split('//')
 
       // Khi code comment lại, code xong để lại như cũ
-      // const res = await login({ ...body, username: body.username }, { shop: 'testadd' })
-      const res = await login({ ...body, username: body.username }, { shop: subDomain[1] })
+      const res = await login({ ...body, username: body.username }, { shop: 'testadd' })
+      // const res = await login({ ...body, username: body.username }, { shop: subDomain[1] })
 
       dispatch({ type: ACTION.LOADING, data: false })
       console.log(res)
@@ -49,7 +49,7 @@ export default function Login() {
           //luu branch id len redux
           const dataUser = jwt_decode(res.data.data.accessToken)
 
-          dispatch({ type: 'SET_BRANCH_ID', data: dataUser.data.branch_id })
+          dispatch({ type: 'SET_BRANCH_ID', data: dataUser.data.store_id })
 
           history.push(ROUTES.OVERVIEW)
         } else

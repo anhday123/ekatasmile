@@ -12,7 +12,7 @@ import { Row, Col, Skeleton } from 'antd'
 import { ShoppingCartOutlined, InfoCircleOutlined } from '@ant-design/icons'
 
 //apis
-import { getStatisticalToday, getStatisticalChart, getStatisticalProduct } from 'apis/statis'
+import { getStatistical, getStatisticalChart, getStatisticalProduct } from 'apis/statis'
 import moment from 'moment'
 import { IMAGE_DEFAULT } from 'consts'
 
@@ -38,9 +38,11 @@ const Overview = () => {
   const _getStatistical = async () => {
     try {
       setLoadingSkeleton(true)
-      const resToday = await getStatisticalToday({ branch_id: branchIdApp })
+      const resToday = await getStatistical({ branch_id: branchIdApp })
+      console.log(resToday)
       if (resToday.status === 200) setStatisticalToday(resToday.data.data)
       const resChart = await getStatisticalChart({ branch_id: branchIdApp })
+      console.log(resChart)
       if (resChart.status === 200) {
         let data = {}
         resChart.data.data.map((value) => (data[value.name] = value.data))
@@ -150,36 +152,36 @@ const Overview = () => {
                 {
                   statisticalProduct.length ? (
                     statisticalProduct.map((e, index) => {
-                    return (
-                      <Row
-                        align="middle"
-                        style={
-                          index % 2
-                            ? { marginBottom: 8, background: '#F7F8FA' }
-                            : { marginBottom: 8 }
-                        }
-                      >
-                        <Col span={5}>
-                          <img
-                            alt=""
-                            src={e.image && e.image.length ? e.image : IMAGE_DEFAULT}
-                            width="50px"
-                          />
-                        </Col>
-                        <Col span={12}>
-                          <Row>{e.name || e.title}</Row>
-                          <Row style={{ fontWeight: 500 }}>Đã bán {e.sale_quantity} sản phẩm</Row>
-                        </Col>
-                      </Row>
-                    )
-                  })
-                  ) 
-                  : (
-                    <div style={{ textAlign: 'center' }}>
-                      <img src={noData} alt="" style={{ width: 90, height: 90 }} />
-                      <h4 style={{ fontSize: 15, color: '#555' }}>Chưa có sản phẩm bán chạy</h4>
-                    </div>
+                      return (
+                        <Row
+                          align="middle"
+                          style={
+                            index % 2
+                              ? { marginBottom: 8, background: '#F7F8FA' }
+                              : { marginBottom: 8 }
+                          }
+                        >
+                          <Col span={5}>
+                            <img
+                              alt=""
+                              src={e.image && e.image.length ? e.image : IMAGE_DEFAULT}
+                              width="50px"
+                            />
+                          </Col>
+                          <Col span={12}>
+                            <Row>{e.name || e.title}</Row>
+                            <Row style={{ fontWeight: 500 }}>Đã bán {e.sale_quantity} sản phẩm</Row>
+                          </Col>
+                        </Row>
+                      )
+                    })
                   )
+                    : (
+                      <div style={{ textAlign: 'center' }}>
+                        <img src={noData} alt="" style={{ width: 90, height: 90 }} />
+                        <h4 style={{ fontSize: 15, color: '#555' }}>Chưa có sản phẩm bán chạy</h4>
+                      </div>
+                    )
                 }
               </div>
             </div>

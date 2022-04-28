@@ -205,7 +205,7 @@ export default function Promotion() {
       title: 'Loại khuyến mãi',
       dataIndex: 'type',
       sorter: (a, b) => compare(a, b, 'type'),
-      // render: (text,record) => data.promotionType,
+      render: (text,record) => <span>{record.type === 'VALUE' ? 'Giá trị' : 'Phần trăm'}</span>,
     },
     {
       title: 'Giá trị khuyến mãi',
@@ -216,7 +216,7 @@ export default function Promotion() {
     {
       title: 'Số lượng khuyến mãi',
       sorter: (a, b) => compare(a, b, 'limit.amount'),
-      render: (text, record) => (record.limit ? record.limit.amount : ''),
+      render: (text, record) => (record.limit_quantity !== 0 ? record.limit_quantity : 'Không giới hạn số lượng'),
     },
     {
       title: 'Thời hạn khuyến mãi',
