@@ -7,28 +7,6 @@ const XLSX = require('xlsx');
 const { stringHandle } = require('../utils/string-handle');
 const { createTimeline } = require('../utils/date-handle');
 
-let removeUnicode = (text, removeSpace) => {
-    /*
-        string là chuỗi cần remove unicode
-        trả về chuỗi ko dấu tiếng việt ko khoảng trắng
-    */
-    if (typeof text != 'string') {
-        throw new Error('Type of text input must be string!');
-    }
-    if (removeSpace && typeof removeSpace != 'boolean') {
-        throw new Error('Type of removeSpace input must be boolean!');
-    }
-    text = text
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/đ/g, 'd')
-        .replace(/Đ/g, 'D');
-    if (removeSpace) {
-        text = text.replace(/\s/g, '');
-    }
-    return text;
-};
-
 module.exports._getImportOrder = async (req, res, next) => {
     try {
         let aggregateQuery = [];
@@ -1770,13 +1748,7 @@ module.exports._getInventoryNote = async (req, res, next) => {
 module.exports._createInventoryNote = async (req, res, next) => {
     try {
         let inventoryNoteMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'InventoryNotes' });
-        let inventoryNoteId = (() => {
-            if (inventoryNoteMaxId && inventoryNoteMaxId.value) {
-                return inventoryNoteMaxId.value;
-            }
-            return 0;
-        })();
-        inventoryNoteId++;
+        let inventoryNoteId = (inventoryNoteMaxId && inventoryNoteMaxId.value) || 0;
         let branch = await client.db(req.user.database).collection('Branchs').findOne({ branch_id: req.body.branch_id });
         if (!branch) {
             throw new Error('400: Chi nhánh không tồn tại!');
@@ -1789,19 +1761,18 @@ module.exports._createInventoryNote = async (req, res, next) => {
         });
         productIds = [...new Set(productIds)];
         variantIds = [...new Set(variantIds)];
-        let [products, variants] = await Promise.all([
-            client
-                .db(req.user.database)
-                .collection('Products')
-                .find({ product_id: { $in: productIds } }),
-            client
-                .db(req.user.database)
-                .collection('Variants')
-                .find({ variant_id: { $in: variantIds } }),
-        ]);
-
+        let products = await client
+            .db(req.user.database)
+            .collection('Products')
+            .aggregate([{ $match: { product_id: { $in: productIds } } }])
+            .toArray();
+        let variants = await client
+            .db(req.user.database)
+            .collection('Variants')
+            .aggregate([{ $match: { variant_id: { $in: variantIds } } }])
+            .toArray();
         let _inventoryNote = {
-            inventory_note_id: inventoryNoteId,
+            inventory_note_id: ++inventoryNoteId,
             code: String(inventoryNoteId).padStart(6, '0'),
             branch_id: req.body.branch_id,
             products: req.body.products,
