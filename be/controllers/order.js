@@ -222,10 +222,10 @@ module.exports._create = async (req, res, next) => {
             .updateOne({ name: 'Orders' }, { $set: { name: 'Orders', value: orderId } }, { upsert: true });
         if (!/^(draft)|(pre-order)$/gi.test(_order.bill_status)) {
             let sortQuery = (() => {
-                if (req.user._business.price_recipe == 'FIFO') {
-                    return { create_date: 1 };
+                if (req.user._business.price_recipe == 'LIFO') {
+                    return { create_date: -1 };
                 }
-                return { create_date: -1 };
+                return { create_date: 1 };
             })();
             let locations = await client
                 .db(req.user.database)
@@ -248,7 +248,6 @@ module.exports._create = async (req, res, next) => {
             });
             let inventoryMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Inventories' });
             let inventoryId = (inventoryMaxId && inventoryMaxId.value) || 0;
-            console.log(inventoryId);
             let pointSetting = await client
                 .db(req.user.database)
                 .collection('PointSettings')
