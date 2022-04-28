@@ -26,10 +26,13 @@ import {
 import SettingColumns from 'components/setting-columns'
 import TitlePage from 'components/title-page'
 import FilterDate from 'components/filter-date'
+import { useSelector } from 'react-redux'
 
 export default function ReceiptsAndPayment() {
   const history = useHistory()
-
+  const dataUser = useSelector((state) => state.login.dataUser)
+  const {username}=dataUser.data
+  
   const [customers, setCustomers] = useState([])
 
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
@@ -44,7 +47,6 @@ export default function ReceiptsAndPayment() {
     const [form] = Form.useForm()
     const onFinish = async (values) => {
       const body = {
-        ...values,
         source: "CUSTOMER_PAY",
         note: values.note,
         payer: values.payer,
@@ -59,6 +61,7 @@ export default function ReceiptsAndPayment() {
           }
         ],
         status: "COMPLETE",
+        username:username,
       }
       console.log("body", body)
       let res
@@ -66,7 +69,6 @@ export default function ReceiptsAndPayment() {
       if (res.status === 200) {
         if (res.data.success){
           _getFinances()
-          console.log("res.data.data", res.data.data)
           notification.success({ message: 'Tạo phiếu thành công !' })
         }
         else
@@ -199,14 +201,11 @@ export default function ReceiptsAndPayment() {
                     },
                   ]}
                 >
-                   
                   <Select placeholder="Chọn hình thức thanh toán" style={{ width: 280 }}>
                     <Select.Option value="SWIPE">Quẹt thẻ</Select.Option>
                     <Select.Option value="CASH">Tiền mặt</Select.Option>
                     <Select.Option value="BANKING">Thẻ ngân hàng</Select.Option>
                   </Select>
-
-               
                 </Form.Item>
                  <Form.Item
                   name="values"
@@ -218,11 +217,7 @@ export default function ReceiptsAndPayment() {
                     },
                   ]}
                 >
-                   
                    <InputNumber value="" min={0} placeholder="Nhập giá trị ghi nhận" style={{ width: 280 }} />
-
-
-               
                 </Form.Item>
                 <Form.Item name="note" label="Mô tả">
                   <Input.TextArea rows={4} placeholder="Nhập Mô tả" style={{ width: 280 }} />
@@ -452,7 +447,7 @@ export default function ReceiptsAndPayment() {
           if (column.key === 'creator')
             return {
               ...column,
-              render: (text, record) => record.creator_id && record.creator_id,
+              render: (text, record) => record.username && record.username,
             }
           if (column.key === 'receiver')
             return {

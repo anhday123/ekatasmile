@@ -12,7 +12,7 @@ export const convertFields = (data, template, reverse = false) => {
 }
 
 export const guarantee = {
-  code: 'Mã phiế (*)',
+  code: 'Mã phiếu (*)',
   name: 'Tên bảo hành (*)',
   type: 'Loại bảo hành (*)',
   time: 'Thời hạn bảo hành (*)',
