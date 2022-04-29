@@ -541,16 +541,7 @@ module.exports.importFileC = async (req, res, next) => {
         rows = rows.map((eRow) => {
             let _row = {};
             let count = 0;
-            let optionRequire = [
-                'ma-san-pham',
-                'ten-san-pham',
-                'nha-cung-cap',
-                'thuoc-tinh-1',
-                'gia-tri-1',
-                'ma-phien-ban',
-                'ten-phien-ban',
-                'gia-ban',
-            ];
+            let optionRequire = ['ma-san-pham', 'ten-san-pham', 'nha-cung-cap', 'ma-phien-ban', 'ten-phien-ban', 'gia-ban'];
             for (let i in eRow) {
                 let field = stringHandle(i, { removeStringInBrackets: 'round', createSlug: true });
                 if (optionRequire.includes(field)) {
@@ -564,6 +555,9 @@ module.exports.importFileC = async (req, res, next) => {
             if (_row['ten-san-pham']) {
                 _row['_ten-san-pham'] = stringHandle(_row['ten-san-pham'], { createSlug: true });
                 productSkus.push(_row['ma-san-pham']);
+                if (_row['ten-phien-ban']) {
+                    _row['_ten-phien-ban'] = stringHandle(_row['ten-phien-ban'], { createSlug: true });
+                }
             }
             if (_row['ten-danh-muc']) {
                 _row['_ten-danh-muc'] = stringHandle(_row['ten-danh-muc'], { createSlug: true });
@@ -604,117 +598,85 @@ module.exports.importFileC = async (req, res, next) => {
         warrantySlugs = [...new Set(warrantySlugs)];
         brandSlugs = [...new Set(brandSlugs)];
         originSlugs = [...new Set(originSlugs)];
-        let [products, categories, suppliers, taxes, warranties, brands, origins] = await Promise.all([
-            client
-                .db(req.user.database)
-                .collection('Products')
-                .find({
-                    sku: { $in: productSkus },
-                })
-                .toArray(),
-            client
-                .db(req.user.database)
-                .collection('Categories')
-                .find({
-                    slug_name: { $in: categorySlugs },
-                })
-                .toArray(),
-            client
-                .db(req.user.database)
-                .collection('Suppliers')
-                .find({
-                    slug_name: { $in: supplierSlugs },
-                })
-                .toArray(),
-            client
-                .db(req.user.database)
-                .collection('Taxes')
-                .find({
-                    slug_name: { $in: taxSlugs },
-                })
-                .toArray(),
-            client
-                .db(req.user.database)
-                .collection('Warranties')
-                .find({
-                    slug_name: { $in: warrantySlugs },
-                })
-                .toArray(),
-            client
-                .db(req.user.database)
-                .collection('Brands')
-                .find({
-                    slug_name: { $in: brandSlugs },
-                })
-                .toArray(),
-            client
-                .db(req.user.database)
-                .collection('Origins')
-                .find({
-                    slug_name: { $in: originSlugs },
-                })
-                .toArray(),
-        ]);
-        let _products = {};
-        products.map((eProduct) => {
-            _products[eProduct.sku] = eProduct;
-        });
-        let _categories = {};
-        categories.map((eCategory) => {
-            _categories[eCategory.slug_name] = eCategory;
-        });
-        let _suppliers = {};
-        suppliers.map((eSupplier) => {
-            _suppliers[eSupplier.slug_name] = eSupplier;
-        });
-        let _taxes = {};
-        taxes.map((eTax) => {
-            _taxes[eTax.slug_name] = eTax;
-        });
-        let _warranties = {};
-        warranties.map((eWarranty) => {
-            _warranties[eWarranty.slug_name] = eWarranty;
-        });
-        let _brands = {};
-        brands.map((eBrand) => {
-            _brands[eBrand.slug_name] = eBrand;
-        });
-        let _origins = {};
-        origins.map((eOrigin) => {
-            _origins[eOrigin.slug_name] = eOrigin;
-        });
-        let [productId, attributeId, variantId, supplierId, categoryId, brandId] = await Promise.all([
-            client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .findOne({ name: 'Products' })
-                .then((doc) => (doc && doc.value) || 0),
-            client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .findOne({ name: 'Attributes' })
-                .then((doc) => (doc && doc.value) || 0),
-            client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .findOne({ name: 'Variants' })
-                .then((doc) => (doc && doc.value) || 0),
-            client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .findOne({ name: 'Suppliers' })
-                .then((doc) => (doc && doc.value) || 0),
-            client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .findOne({ name: 'Categories' })
-                .then((doc) => (doc && doc.value) || 0),
-            client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .findOne({ name: 'Brands' })
-                .then((doc) => (doc && doc.value) || 0),
-        ]);
+        let _products = await client
+            .db(req.user.database)
+            .collection('Products')
+            .find({
+                sku: { $in: productSkus },
+            })
+            .toArray((docs) => docs.reduce((pre, cur) => ({ ...pre, ...(cur && cur.sku && { [cur.sku]: cur }) }), {}));
+        let _categories = await client
+            .db(req.user.database)
+            .collection('Categories')
+            .find({
+                slug_name: { $in: categorySlugs },
+            })
+            .toArray((docs) => docs.reduce((pre, cur) => ({ ...pre, ...(cur && cur.slug_name && { [cur.slug_name]: cur }) }), {}));
+        let _suppliers = await client
+            .db(req.user.database)
+            .collection('Suppliers')
+            .find({
+                slug_name: { $in: supplierSlugs },
+            })
+            .toArray((docs) => docs.reduce((pre, cur) => ({ ...pre, ...(cur && cur.slug_name && { [cur.slug_name]: cur }) }), {}));
+        let _taxes = await client
+            .db(req.user.database)
+            .collection('Taxes')
+            .find({
+                slug_name: { $in: taxSlugs },
+            })
+            .toArray((docs) => docs.reduce((pre, cur) => ({ ...pre, ...(cur && cur.slug_name && { [cur.slug_name]: cur }) }), {}));
+        let _warranties = await client
+            .db(req.user.database)
+            .collection('Warranties')
+            .find({
+                slug_name: { $in: warrantySlugs },
+            })
+            .toArray((docs) => docs.reduce((pre, cur) => ({ ...pre, ...(cur && cur.slug_name && { [cur.slug_name]: cur }) }), {}));
+        let _brands = await client
+            .db(req.user.database)
+            .collection('Brands')
+            .find({
+                slug_name: { $in: brandSlugs },
+            })
+            .toArray((docs) => docs.reduce((pre, cur) => ({ ...pre, ...(cur && cur.slug_name && { [cur.slug_name]: cur }) }), {}));
+        let _origins = await client
+            .db(req.user.database)
+            .collection('Origins')
+            .find({
+                slug_name: { $in: originSlugs },
+            })
+            .toArray((docs) => docs.reduce((pre, cur) => ({ ...pre, ...(cur && cur.slug_name && { [cur.slug_name]: cur }) }), {}));
+        let productId = await client
+            .db(req.user.database)
+            .collection('AppSetting')
+            .findOne({ name: 'Products' })
+            .then((doc) => (doc && doc.value) || 0);
+        let attributeId = await client
+            .db(req.user.database)
+            .collection('AppSetting')
+            .findOne({ name: 'Attributes' })
+            .then((doc) => (doc && doc.value) || 0);
+        let variantId = await client
+            .db(req.user.database)
+            .collection('AppSetting')
+            .findOne({ name: 'Variants' })
+            .then((doc) => (doc && doc.value) || 0);
+        let supplierId = await client
+            .db(req.user.database)
+            .collection('AppSetting')
+            .findOne({ name: 'Suppliers' })
+            .then((doc) => (doc && doc.value) || 0);
+        let categoryId = await client
+            .db(req.user.database)
+            .collection('AppSetting')
+            .findOne({ name: 'Categories' })
+            .then((doc) => (doc && doc.value) || 0);
+        let brandId = await client
+            .db(req.user.database)
+            .collection('AppSetting')
+            .findOne({ name: 'Brands' })
+            .then((doc) => (doc && doc.value) || 0);
         let insertSuppliers = [];
         let insertCategories = [];
         let insertBrands = [];
@@ -877,6 +839,11 @@ module.exports.importFileC = async (req, res, next) => {
                             })(),
                         };
                     }
+                    if (!eRow['thuoc-tinh-1']) {
+                        eRow['thuoc-tinh-1'] = 'phiên bản';
+                        eRow['gia-tri-1'] = 'chuẩn';
+                        eRow['thuoc-tinh-2'] = undefined;
+                    }
                     for (let i = 1; ; i++) {
                         if (eRow[`thuoc-tinh-${i}`] && eRow[`gia-tri-${i}`]) {
                             let key =
@@ -925,8 +892,8 @@ module.exports.importFileC = async (req, res, next) => {
                         product_id: _insertProducts[eRow['ma-san-pham']].product_id,
                         code: String(variantId).padStart(6, '0'),
                         title: eRow['ten-phien-ban'] || '',
-                        slug_title: stringHandle(eRow['_ten-phien-ban'], { createSlug: true }),
-                        sku: String(eRow['ma-phien-ban']),
+                        slug_title: eRow['_ten-phien-ban'],
+                        sku: eRow['ma-phien-ban'],
                         image: (() => {
                             if (eRow['hinh-anh']) {
                                 return eRow['hinh-anh'].split(',');
@@ -1081,32 +1048,30 @@ module.exports.importFileC = async (req, res, next) => {
                 throw new Error(`500: Tạo thương hiệu sản phẩm thất bại!`);
             }
         }
-        await Promise.all([
-            client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .updateOne({ name: 'Products' }, { $set: { name: 'Products', value: productId } }, { upsert: true }),
-            client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .updateOne({ name: 'Attributes' }, { $set: { name: 'Attributes', value: attributeId } }, { upsert: true }),
-            client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .updateOne({ name: 'Variants' }, { $set: { name: 'Variants', value: variantId } }, { upsert: true }),
-            client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .updateOne({ name: 'Suppliers' }, { $set: { name: 'Suppliers', value: supplierId } }, { upsert: true }),
-            client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .updateOne({ name: 'Categories' }, { $set: { name: 'Categories', value: categoryId } }, { upsert: true }),
-            client
-                .db(req.user.database)
-                .collection('AppSetting')
-                .updateOne({ name: 'Brands' }, { $set: { name: 'Brands', value: brandId } }, { upsert: true }),
-        ]);
+        await client
+            .db(req.user.database)
+            .collection('AppSetting')
+            .updateOne({ name: 'Products' }, { $set: { name: 'Products', value: productId } }, { upsert: true });
+        await client
+            .db(req.user.database)
+            .collection('AppSetting')
+            .updateOne({ name: 'Attributes' }, { $set: { name: 'Attributes', value: attributeId } }, { upsert: true });
+        await client
+            .db(req.user.database)
+            .collection('AppSetting')
+            .updateOne({ name: 'Variants' }, { $set: { name: 'Variants', value: variantId } }, { upsert: true });
+        await client
+            .db(req.user.database)
+            .collection('AppSetting')
+            .updateOne({ name: 'Suppliers' }, { $set: { name: 'Suppliers', value: supplierId } }, { upsert: true });
+        await client
+            .db(req.user.database)
+            .collection('AppSetting')
+            .updateOne({ name: 'Categories' }, { $set: { name: 'Categories', value: categoryId } }, { upsert: true });
+        await client
+            .db(req.user.database)
+            .collection('AppSetting')
+            .updateOne({ name: 'Brands' }, { $set: { name: 'Brands', value: brandId } }, { upsert: true });
         res.send({ success: true, message: 'Tạo sản phẩm thành công!' });
     } catch (err) {
         next(err);
