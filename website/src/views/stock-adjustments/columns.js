@@ -34,6 +34,7 @@ const columns = [
   },
   {
     title: 'Ghi chú',
+    key: 'note',
     dataIndex: 'note',
   },
 ]

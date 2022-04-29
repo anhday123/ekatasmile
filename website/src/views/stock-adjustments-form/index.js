@@ -60,7 +60,7 @@ export default function CreateReport() {
   }
 
   const getDataToCreate = async (data, variant) => {
-    console.log(data)
+    console.log("data",data)
     await form.validateFields()
     const dataForm = form.getFieldsValue()
     data.variants.map(item => {
@@ -75,14 +75,21 @@ export default function CreateReport() {
           //   real_quantity: 1,
           // }
           // console.log(body)
-          setListProduct([...listProduct, {
+          setListProduct(
+            [...listProduct,{
+            product_id: data.product_id,
             variant_id: variant.variant_id,
             sku: variant.sku,
             title: variant.title,
             unit: data.unit,
             total_quantity: dataForm.branch_id === location.branch_id ? location.quantity : location.quantity,
             real_quantity: 1,
-          }])
+            diff_reason: ""
+            
+          }]
+          
+
+          )
       })
     }
     )
@@ -101,11 +108,53 @@ export default function CreateReport() {
         notification.warning({ message: 'Vui lòng thêm sản phẩm vào phiếu kiểm' })
         return
       }
-
+      
       dispatch({ type: 'LOADING', data: true })
       await form.validateFields()
       const dataForm = form.getFieldsValue()
-      const body = { ...dataForm, products: listProduct }
+      const body = { ...dataForm, products: listProduct, status: "DRAFT",balance: false,}
+      console.log(body)
+      let res
+      if (!location.state) res = await createCheckInventoryNote(body)
+      else res = await updateCheckInventoryNote(body, location.state.inventory_note_id)
+      console.log(res)
+
+      if (res.status === 200) {
+        if (res.data.success) {
+          notification.success({
+            message: `${location.state ? 'Cập nhật' : 'Thêm'} phiếu kiểm hàng thành công`,
+          })
+          history.push({ pathname: ROUTES.STOCK_ADJUSTMENTS })
+        } else
+          notification.error({
+            message:
+              res.data.message ||
+              `${location.state ? 'Cập nhật' : 'Thêm'} phiếu kiểm hàng thất bại, vui lòng thử lại!`,
+          })
+      } else
+        notification.error({
+          message:
+            res.data.message ||
+            `${location.state ? 'Cập nhật' : 'Thêm'} phiếu kiểm hàng thất bại, vui lòng thử lại!`,
+        })
+
+      dispatch({ type: 'LOADING', data: false })
+    } catch (err) {
+      console.log(err)
+      dispatch({ type: 'LOADING', data: false })
+    }
+  }
+  const _createOrUpdateCheckInventoryNoteBalance = async () => {
+    try {
+      if (listProduct.length === 0) {
+        notification.warning({ message: 'Vui lòng thêm sản phẩm vào phiếu kiểm' })
+        return
+      }
+      
+      dispatch({ type: 'LOADING', data: true })
+      await form.validateFields()
+      const dataForm = form.getFieldsValue()
+      const body = { ...dataForm, products: listProduct, status: "BALANCED",balance: true,}
       console.log(body)
       let res
       if (!location.state) res = await createCheckInventoryNote(body)
@@ -239,7 +288,7 @@ export default function CreateReport() {
       dataIndex: 'unit',
     },
     {
-      title: 'Tồn chi nhánh',
+      title: 'Số lượng hệ thống',
       // render: (text, record) => console.log(record.total_quantity),
       render: (text, record) => formatCash(record.total_quantity || 0),
     },
@@ -255,6 +304,21 @@ export default function CreateReport() {
           onChange={(value) => {
             const listProductNew = [...listProduct]
             listProductNew[index].real_quantity = value
+            setListProduct([...listProductNew])
+          }}
+        />
+      ),
+    },
+    {
+      title: 'Lý do chênh lệt',
+      
+      render: (text, record, index) => (
+        <Input
+          style={{ width: 150 }}
+          value={record.diff_reason}
+          onChange={(value) => {
+            const listProductNew = [...listProduct]
+            listProductNew[index].diff_reason = value.target.value
             setListProduct([...listProductNew])
           }}
         />
@@ -301,7 +365,7 @@ export default function CreateReport() {
 
   return (
     <div className="card">
-      <Form layout="vertical" form={form} onFinish={_createOrUpdateCheckInventoryNote}>
+      <Form layout="vertical" form={form} >
         <TitlePage
           isAffix={true}
           title={
@@ -321,9 +385,20 @@ export default function CreateReport() {
             </Link>
           }
         >
-          <Button style={{ minWidth: 100 }} size="large" type="primary" htmlType="submit">
-            {location.state ? 'Lưu' : 'Tạo phiếu kiểm hàng'}
+          <div>
+          <Button
+            type="primary"
+            size="large" 
+            htmlType="submit"
+            onClick={_createOrUpdateCheckInventoryNote}
+          >
+           Tạo 
           </Button>
+          <Button style={{ minWidth: 100 ,marginLeft:5}} size="large" type="primary" htmlType="submit" onClick={_createOrUpdateCheckInventoryNoteBalance}>
+            {location.state ? 'Lưu' : 'Tạo và cân bằng'}
+          </Button>
+          </div>
+        
         </TitlePage>
 
         <Row>

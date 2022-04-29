@@ -11,9 +11,9 @@ import exportToCSV from 'components/ExportCSV/export'
 import ImportCSV from 'components/ImportCSV'
 import TitlePage from 'components/title-page'
 import FilterDate from 'components/filter-date'
-
+import { createCheckInventoryNote } from 'apis/inventory'
 //antd
-import { Row, Col, Input, Button, Space, Table, Select, Affix } from 'antd'
+import { Row, Col, Input, Button, Space, Table, Select, Affix, notification } from 'antd'
 
 //icons
 import { SearchOutlined, VerticalAlignTopOutlined } from '@ant-design/icons'
@@ -38,7 +38,7 @@ export default function Reports() {
     try {
       dispatch({ type: 'LOADING', data: true })
       const res = await getCheckInventoryNote({ ...paramsFilter })
-      console.log(res)
+      console.log("ress",res)
       if (res.status === 200) setInventoryNote(res.data.data)
       dispatch({ type: 'LOADING', data: false })
     } catch (err) {
@@ -91,7 +91,47 @@ export default function Reports() {
     else delete paramsFilterNew[attribute]
     setParamsFilter({ ...paramsFilterNew })
   }
+  const _balance =async (value)=>
+    {
+      console.log("value",value)
+     try{ 
+      const body = { 
+        branch_id:value.branch_id,
+        products:[{
+          product_id:value.product_id,
+          variant_id:value.variant_id,
+          system_quantity:value.total_quantity,
+          real_quantity:value.real_quantity,
+          diff_reason:value.diff_reason
+        }] ,
+        note: "",
+         status: "BALANCED",
+         balance: true,
+        }
+      console.log(body)
+      let res
+      res = await createCheckInventoryNote(body)
+      if (res.status === 200) {
+        if (res.data.success) {
+          console.log("res",res)
+          _getCheckInventoryNote()
+          notification.success({
+            message: `Cân bằng thành công`,
+          })
+        } else
+          notification.error({
+            message:
+              res.data.message ||
+              `Cân bằng thất bại!`,
+          })
+      }
 
+     } 
+      catch (err) {
+        console.log(err)
+     }
+  }
+  
   const _getStockAdjustmentToExport = async () => {
     let dataExport = []
     try {
@@ -241,7 +281,7 @@ export default function Reports() {
         size="small"
         scroll={{ y: 400 }}
         dataSource={inventoryNote}
-        columns={columns.map((column) => {
+        columns={columnsStock.map((column) => {
           if (column.key === 'stt')
             return {
               ...column,
@@ -277,6 +317,20 @@ export default function Reports() {
                   // ? moment(record.inventory_date).format('DD/MM/YYYY, hh:mm')
                   : 'Chưa kiểm',
             }
+            if (column.key === 'note')
+            return {
+              ...column,
+              render: (text, record) =>
+            
+                {
+                  if (record.status!=="BALANCED")
+                  {
+                    return <Button type="primary" onClick={()=>_balance(record)}>Cân bằng</Button>
+                  }
+                }
+                  
+             
+          }
           if (column.key === 'creator_info')
             return {
               ...column,
@@ -285,6 +339,8 @@ export default function Reports() {
                   ? record.creator_info.first_name + ' ' + record.creator_info.last_name
                   : '',
             }
+          
+
 
           return column
         })}
