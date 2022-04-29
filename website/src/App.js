@@ -103,7 +103,7 @@ function App() {
     if (localStorage.getItem('accessToken')) {
       dispatch({ type: ACTION.LOGIN, data: { accessToken: localStorage.getItem('accessToken') } })
       const dataUser = jwt_decode(localStorage.getItem('accessToken'))
-      if (dataUser) dispatch({ type: 'SET_BRANCH_ID', data: dataUser.data.branch_id })
+      if (dataUser) dispatch({ type: 'SET_BRANCH_ID', data: dataUser.data.store_id })
     }
   }
 

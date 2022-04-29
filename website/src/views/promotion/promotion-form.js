@@ -56,8 +56,9 @@ export default function PromotionAdd(props) {
     try {
       const res = await getPromotions()
       if (res.status === 200) {
+        let dataExport = []
         res.data.data.map((e) => {
-          let dataExport = [{
+          dataExport.push({
             'Mã khuyến mãi': e.promotion_code || '',
             'Tên khuyến mãi': e.name || '',
             'Điều kiện áp dụng': e.order_value_require || '',
@@ -65,9 +66,9 @@ export default function PromotionAdd(props) {
             'Giá trị khuyến mãi': e.value,
             'Số lượng khuyến mãi': e.limit_quantity === 0 ? 'Không giới hạn số lượng' : e.limit_quantity,
             'Thời hạn khuyến mãi': e.end_date,
-          }]
-          exportToCSV(dataExport, 'Danh sách khuyến mãi')
+          })
         })
+        exportToCSV(dataExport, 'Danh sách khuyến mãi')
       }
     } catch (error) {
       console.log(error)
