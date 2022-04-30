@@ -37,7 +37,6 @@ export default function Employee() {
   const history = useHistory()
   const dispatch = useDispatch()
   const branchIdApp = useSelector((state) => state.branch.branchId)
-  console.log(branchIdApp)
 
   const [columns, setColumns] = useState([])
   const [users, setUsers] = useState([])
@@ -113,8 +112,7 @@ export default function Employee() {
         // const employees = res.data.data.filter((employee) => employee.role_id !== 1)
         setUsers(res.data.data)
         setCountUser(res.data.count)
-        console.log("res.data.data",res.data.data)
-        
+        console.log('res.data.data', res.data.data)
       }
       setLoading(false)
     } catch (e) {
@@ -388,7 +386,8 @@ export default function Employee() {
             return {
               ...column,
               render: (text, record) =>
-                `${record.address && record.address + ', '}${record.district && record.district + ', '
+                `${record.address && record.address + ', '}${
+                  record.district && record.district + ', '
                 }${record.province && record.province}`,
             }
           if (column.key === 'birth_day')
