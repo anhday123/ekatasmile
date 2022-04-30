@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { ACTION, ROUTES } from './consts'
 import { clearBrowserCache } from 'utils'
 import jwt_decode from 'jwt-decode'
+import { socket } from 'socket'
 
 //components
 import Views from 'views'
@@ -18,6 +19,7 @@ function App() {
   const dataUser = useSelector((state) => state.login.dataUser)
   const domain = window.location.href
   let subDomain = domain.split(`.${process.env.REACT_APP_HOST}`)
+  const token = localStorage.getItem('accessToken')
 
   const [loadingCheckDomain, setLoadingCheckDomain] = useState(false)
 
@@ -100,12 +102,25 @@ function App() {
   }
 
   const checkLogin = () => {
-    if (localStorage.getItem('accessToken')) {
-      dispatch({ type: ACTION.LOGIN, data: { accessToken: localStorage.getItem('accessToken') } })
-      const dataUser = jwt_decode(localStorage.getItem('accessToken'))
+    if (token) {
+      dispatch({ type: ACTION.LOGIN, data: { accessToken: token } })
+      const dataUser = jwt_decode(token)
       if (dataUser) dispatch({ type: 'SET_BRANCH_ID', data: dataUser.data.store_id })
     }
   }
+
+  useEffect(() => {
+    if (token) {
+      socket.on(
+        `${dataUser.data && dataUser.data._business.prefix}#${
+          dataUser && dataUser.data && dataUser.data.user_id
+        }`,
+        (data) => {
+          console.log('socket', data)
+        }
+      )
+    }
+  }, [dataUser])
 
   useEffect(() => {
     getBusiness()

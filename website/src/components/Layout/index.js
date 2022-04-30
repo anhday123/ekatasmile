@@ -61,7 +61,7 @@ const BaseLayout = (props) => {
   const location = useLocation()
   const routeMatch = useRouteMatch()
   const dispatch = useDispatch()
-  const WIDTH_MENU_OPEN = 195
+  const WIDTH_MENU_OPEN = 205
   const WIDTH_MENU_CLOSE = 60
   const HEIGHT_HEADER = 56
 
