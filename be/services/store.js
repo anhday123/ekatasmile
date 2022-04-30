@@ -99,40 +99,28 @@ module.exports._get = async (req, res, next) => {
         if (req.query.name) {
             aggregateQuery.push({
                 $match: {
-                    slug_name: new RegExp(
-                        `${removeUnicode(req.query.name, false).replace(/(\s){1,}/g, '(.*?)')}`,
-                        'ig'
-                    ),
+                    slug_name: new RegExp(`${removeUnicode(req.query.name, false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig'),
                 },
             });
         }
         if (req.query.address) {
             aggregateQuery.push({
                 $match: {
-                    slug_address: new RegExp(
-                        `${removeUnicode(req.query.address, false).replace(/(\s){1,}/g, '(.*?)')}`,
-                        'ig'
-                    ),
+                    slug_address: new RegExp(`${removeUnicode(req.query.address, false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig'),
                 },
             });
         }
         if (req.query.district) {
             aggregateQuery.push({
                 $match: {
-                    slug_district: new RegExp(
-                        `${removeUnicode(req.query.district, false).replace(/(\s){1,}/g, '(.*?)')}`,
-                        'ig'
-                    ),
+                    slug_district: new RegExp(`${removeUnicode(req.query.district, false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig'),
                 },
             });
         }
         if (req.query.province) {
             aggregateQuery.push({
                 $match: {
-                    slug_province: new RegExp(
-                        `${removeUnicode(req.query.province, false).replace(/(\s){1,}/g, '(.*?)')}`,
-                        'ig'
-                    ),
+                    slug_province: new RegExp(`${removeUnicode(req.query.province, false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig'),
                 },
             });
         }
@@ -141,16 +129,10 @@ module.exports._get = async (req, res, next) => {
                 $match: {
                     $or: [
                         {
-                            code: new RegExp(
-                                `${removeUnicode(req.query.search, false).replace(/(\s){1,}/g, '(.*?)')}`,
-                                'ig'
-                            ),
+                            code: new RegExp(`${removeUnicode(req.query.search, false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig'),
                         },
                         {
-                            slug_name: new RegExp(
-                                `${removeUnicode(req.query.search, false).replace(/(\s){1,}/g, '(.*?)')}`,
-                                'ig'
-                            ),
+                            slug_name: new RegExp(`${removeUnicode(req.query.search, false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig'),
                         },
                     ],
                 },
@@ -349,10 +331,7 @@ module.exports._create = async (req, res, next) => {
             ])
             .toArray();
         delete user.password;
-        let [accessToken, refreshToken] = await Promise.all([
-            jwt.createToken(user, 24 * 60 * 60),
-            jwt.createToken(user, 30 * 24 * 60 * 60),
-        ]);
+        let [accessToken, refreshToken] = await Promise.all([jwt.createToken(user, 24 * 60 * 60), jwt.createToken(user, 30 * 24 * 60 * 60)]);
         res.send({ success: true, data: req._insert, accessToken, refreshToken });
     } catch (err) {
         next(err);
