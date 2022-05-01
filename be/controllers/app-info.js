@@ -48,6 +48,28 @@ module.exports._updateAppInfo = async (req, res, next) => {
     }
 };
 
+module.exports.setupMenuC = async (req, res, next) => {
+    try {
+        await client
+            .db(SDB)
+            .collection('AppSetting')
+            .updateOne(
+                {
+                    name: 'Menus',
+                },
+                {
+                    $set: {
+                        lists: req.body,
+                    },
+                }
+            );
+
+        return res.send({ success: true, message: 'Setup done' });
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports._addGHNToken = async (req, res, next) => {
     try {
         if (!req.body.ghn_token) {

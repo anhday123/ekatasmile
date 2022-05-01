@@ -6,6 +6,7 @@ const SDB = process.env.DATABASE; // System Database
 const userService = require(`../services/user`);
 
 const bcrypt = require(`../libs/bcrypt`);
+const { io } = require('../config/socket');
 
 let removeUnicode = (text, removeSpace) => {
     /*
@@ -159,6 +160,12 @@ module.exports._delete = async (req, res, next) => {
             .db(req.user.database)
             .collection(`Users`)
             .deleteMany({ user_id: { $in: req.body.user_id } });
+        io.emit('delete_staff', req.user._business.prefix + '#' + req.body.user_id[0]);
+
+        //Resend
+        setTimeout(() => {
+            io.emit('delete_staff', req.user._business.prefix + '#' + req.body.user_id[0]);
+        }, 2000);
         res.send({
             success: true,
             message: 'Xóa người dùng thành công!',
