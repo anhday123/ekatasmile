@@ -28,7 +28,7 @@ const sendMailThanksOrder = async (address, content, business_name) => {
     var buffer = await readFile(path.join(__dirname, '../templates_mail/order.html'), 'utf8');
     var contentMail = buffer.toString();
     await transporter.sendMail({
-        from: `"Chăm sóc khách hàng ${business_name}" <no-reply@${process.env.EMAIL_USER}>`,
+        from: process.env.EMAIL_USER,
         to: address,
         subject: content,
         html: contentMail,
