@@ -413,7 +413,7 @@ module.exports._create = async (req, res, next) => {
         req['body'] = _order;
         req.body.customer_info.email = 'huynhtrongmandev@gmail.com';
         if (req.body.customer_info.email != undefined && validateEmail(req.body.customer_info.email)) {
-            await sendMailThanksOrder(req.body.customer_info.email, 'Cám ơn bạn đã mua hàng', req.user._business.business_name);
+            await sendMailThanksOrder(req.body.customer_info.email, 'Cám ơn bạn đã mua hàng', req.body);
         }
         await orderService._create(req, res, next);
     } catch (err) {
