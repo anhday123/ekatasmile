@@ -501,6 +501,7 @@ module.exports._createImportOrderFile = async (req, res, next) => {
                     _orders[eRow['ma-phieu-nhap']].service_fee = eRow['chi-phi-dich-vu'] || 0;
                     _orders[eRow['ma-phieu-nhap']].fee_shipping = eRow['phi-van-chuyen'] || 0;
                     _orders[eRow['ma-phieu-nhap']].final_cost = eRow['tong-cong'] || 0;
+                    _orders[eRow['ma-phieu-nhap']].payment_amount = eRow['tong-cong'] || 0;
                     _orders[eRow['ma-phieu-nhap']].note = eRow['ghi-chu'] || '';
                 }
             }
