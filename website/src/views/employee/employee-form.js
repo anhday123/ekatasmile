@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import moment from 'moment'
 import { useSelector } from 'react-redux'
+import { validatePhone } from 'utils'
 
 //antd
 import {
@@ -19,19 +20,20 @@ import {
 
 //apis
 import { updateEmployee, addEmployee } from 'apis/employee'
-import { getDistricts, getProvinces } from 'apis/address'
-import { getAllBranch } from 'apis/branch'
-import { getRoles } from 'apis/role'
 
-export default function EmployeeForm({ children, reloadData, record }) {
+export default function EmployeeForm({
+  children,
+  reloadData,
+  record,
+  provinces = [],
+  roles = [],
+  districts = [],
+  branches = [],
+}) {
   const [form] = Form.useForm()
   const branchIdApp = useSelector((state) => state.branch.branchId)
 
-  const [roles, setRoles] = useState([])
   const [province, setProvince] = useState('')
-  const [districts, setDistricts] = useState([])
-  const [branches, setBranches] = useState([])
-  const [provinces, setProvinces] = useState([])
   const [loading, setLoading] = useState(false)
   const [visible, setVisible] = useState(false)
   const toggle = () => setVisible(!visible)
@@ -40,6 +42,11 @@ export default function EmployeeForm({ children, reloadData, record }) {
     try {
       await form.validateFields()
       const dataForm = form.getFieldsValue()
+
+      if (!validatePhone(dataForm.username)) {
+        notification.error({ message: 'Số điện thoại không đúng định dạng!' })
+        return
+      }
 
       setLoading(true)
       const body = {
@@ -87,54 +94,12 @@ export default function EmployeeForm({ children, reloadData, record }) {
     }
   }
 
-  const _getDistricts = async () => {
-    try {
-      const res = await getDistricts()
-      if (res.status === 200) setDistricts(res.data.data)
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  const _getProvinces = async () => {
-    try {
-      const res = await getProvinces()
-      if (res.status === 200) setProvinces(res.data.data)
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  const _getBranches = async () => {
-    try {
-      const res = await getAllBranch()
-      if (res.status === 200) setBranches(res.data.data)
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  const _getRoles = async () => {
-    try {
-      const res = await getRoles()
-      if (res.status === 200) setRoles(res.data.data.filter((e) => e.role_id !== 1))
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  useEffect(() => {
-    _getBranches()
-    _getRoles()
-    _getProvinces()
-    _getDistricts()
-  }, [])
-
   useEffect(() => {
     if (visible) {
       if (!record) {
         form.resetFields()
         form.setFieldsValue({
+          branch_id: +branchIdApp,
           province: provinces.length ? provinces[0].province_name : '',
           district: districts.length ? districts[0].district_name : '',
         })
@@ -217,7 +182,6 @@ export default function EmployeeForm({ children, reloadData, record }) {
                 <Select
                   showSearch
                   optionFilterProp="children"
-                  value={branchIdApp}
                   placeholder="Chọn chi nhánh làm việc"
                 >
                   {branches.map((branch, index) => (
@@ -231,11 +195,6 @@ export default function EmployeeForm({ children, reloadData, record }) {
             <Col xs={24} sm={24} md={11} lg={11} xl={11}>
               <Form.Item label="Email" name="email">
                 <Input placeholder="Nhập email" />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={24} md={11} lg={11} xl={11}>
-              <Form.Item label="Số điện thoại" name="phone">
-                <Input placeholder="Nhập liên hệ" />
               </Form.Item>
             </Col>
             <Col xs={24} sm={24} md={11} lg={11} xl={11}>
@@ -298,19 +257,18 @@ export default function EmployeeForm({ children, reloadData, record }) {
             </Col>
             <Col xs={24} sm={24} md={11} lg={11} xl={11}>
               <Form.Item
+                initialValue={2}
                 name="role_id"
                 label="Vai trò"
                 rules={[{ required: true, message: 'Vui lòng chọn vai trò' }]}
               >
-                <Space wrap={true}>
-                  <Radio.Group onChange={e => console.log(e.target.value)}>
-                    {roles.map((role, index) => (
-                      <Radio value={role.role_id} key={index}>
-                        {role.name}
-                      </Radio>
-                    ))}
-                  </Radio.Group>
-                </Space>
+                <Radio.Group defaultValue={2}>
+                  {roles.map((role, index) => (
+                    <Radio value={role.role_id} key={index}>
+                      {role.name}
+                    </Radio>
+                  ))}
+                </Radio.Group>
               </Form.Item>
             </Col>
           </Row>
