@@ -6,6 +6,8 @@ const DB = process.env.DATABASE;
 const customerService = require(`../services/customer`);
 
 const XLSX = require('xlsx');
+const { createTimeline } = require('../utils/date-handle');
+const { hardValidate } = require('../utils/validate');
 
 let convertToSlug = (text) => {
     /*
@@ -502,52 +504,7 @@ module.exports._getPointHistory = async (req, res, next) => {
                 $match: { type: String(req.query.type).toUpperCase() },
             });
         }
-        if (req.query['today']) {
-            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('days').format();
-            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('days').format();
-            delete req.query.today;
-        }
-        if (req.query['yesterday']) {
-            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, `days`).startOf('days').format();
-            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, `days`).endOf('days').format();
-            delete req.query.yesterday;
-        }
-        if (req.query['this_week']) {
-            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('weeks').format();
-            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('weeks').format();
-            delete req.query.this_week;
-        }
-        if (req.query['last_week']) {
-            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').startOf('weeks').format();
-            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'weeks').endOf('weeks').format();
-            delete req.query.last_week;
-        }
-        if (req.query['this_month']) {
-            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('months').format();
-            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('months').format();
-            delete req.query.this_month;
-        }
-        if (req.query['last_month']) {
-            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'months').startOf('months').format();
-            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'months').endOf('months').format();
-            delete req.query.last_month;
-        }
-        if (req.query['this_year']) {
-            req.query[`from_date`] = moment().tz(TIMEZONE).startOf('years').format();
-            req.query[`to_date`] = moment().tz(TIMEZONE).endOf('years').format();
-            delete req.query.this_year;
-        }
-        if (req.query['last_year']) {
-            req.query[`from_date`] = moment().tz(TIMEZONE).add(-1, 'years').startOf('years').format();
-            req.query[`to_date`] = moment().tz(TIMEZONE).add(-1, 'years').endOf('years').format();
-            delete req.query.last_year;
-        }
-        if (req.query['from_date']) {
-            req.query[`from_date`] = moment(req.query[`from_date`]).tz(TIMEZONE).startOf('days').format();
-        }
-        if (req.query['to_date']) {
-            req.query[`to_date`] = moment(req.query[`to_date`]).tz(TIMEZONE).endOf('days').format();
-        }
+        req.query = createTimeline(req.query);
         if (req.query.from_date) {
             aggregateQuery.push({
                 $match: { create_date: { $gte: req.query.from_date } },
@@ -580,5 +537,106 @@ module.exports._getPointHistory = async (req, res, next) => {
         });
     } catch (err) {
         next(err);
+    }
+};
+
+class ChangePointOption {
+    /**
+     *
+     * @param {ChangePointOption} option
+     * @returns
+     */
+    constructor(option) {
+        this.database = option.database;
+        this.customer = option.customer;
+        this.order = option.order;
+        this.increasePoint = option.increasePoint || 0;
+        this.decreasePoint = option.decreasePoint || 0;
+        this.isExists = option.isExists || false;
+        this.writeLog = option.writeLog || false;
+        hardValidate(this, this.dataForm());
+    }
+}
+ChangePointOption.prototype.dataForm = function () {
+    return {
+        database: { types: ['string'], require: true },
+        customer: { types: ['object'], require: true },
+        order: { types: ['object'], require: true },
+        isExists: { types: ['boolean'], require: true },
+        increasePoint: { types: ['number'], require: true },
+        decreasePoint: { types: ['number'], require: true },
+        writeLog: { types: ['boolean'], require: true },
+    };
+};
+
+/**
+ *
+ * @param {ChangePointOption} option
+ * @returns
+ */
+module.exports._changePoint = async (option) => {
+    try {
+        if (!option.isExists) {
+            let customer = await client.db(option.database).collection('Customers').findOne({ customer_id: option.customerId });
+            if (!customer) {
+                throw new Error(`400: Khách hàng không khả dụng!`);
+            }
+        }
+        if (customer.point + option.increasePoint - option.decreasePoint < 0) {
+            throw new Error(`400: Khách hàng không đủ điểm để thực hiện thao tác này!`);
+        }
+        await client
+            .db(option.database)
+            .collection('Customers')
+            .updateOne(
+                { customer_id: option.customer.customer_id },
+                {
+                    $inc: {
+                        point: option.increasePoint - option.decreasePoint,
+                        used_point: option.decreasePoint,
+                        order_quantity: 1,
+                        order_total_cost: order.final_cost || 0,
+                    },
+                }
+            );
+        if (option.writeLog) {
+            let logId = await client
+                .db(option.database)
+                .collection('AppSetting')
+                .findOne({ name: 'PointLogs' })
+                .then((doc) => (doc && doc.value) || 0);
+            let insertLogs = [];
+            if (option.increasePoint > 0) {
+                insertLogs.push({
+                    log_id: ++logId,
+                    customer_id: option.customer.customer_id,
+                    order_id: option.order.order_id,
+                    type: 'increase-point',
+                    value: option.increasePoint,
+                    create_date: moment().tz(TIMEZONE).format(),
+                    creator_id: req.user.user_id,
+                    last_update: moment().tz(TIMEZONE).format(),
+                    updater_id: req.user.user_id,
+                });
+            }
+            if (option.decreasePoint > 0) {
+                insertLogs.push({
+                    log_id: ++logId,
+                    customer_id: option.customer.customer_id,
+                    order_id: option.order.order_id,
+                    type: 'decrease-point',
+                    value: option.decreasePoint,
+                    create_date: moment().tz(TIMEZONE).format(),
+                    creator_id: req.user.user_id,
+                    last_update: moment().tz(TIMEZONE).format(),
+                    updater_id: req.user.user_id,
+                });
+            }
+            if (insertLogs.length > 0) {
+                await client.db(option.database).collection('PointLogs').insertMany(insertLogs);
+            }
+        }
+    } catch (err) {
+        throw err;
     }
 };
