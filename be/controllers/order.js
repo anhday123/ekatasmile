@@ -411,7 +411,6 @@ module.exports._create = async (req, res, next) => {
         _order.trackings = enumTrackings;
         _order.customer_info = customer;
         req['body'] = _order;
-        req.body.customer_info.email = 'huynhtrongmandev@gmail.com';
         if (req.body.customer_info.email != undefined && validateEmail(req.body.customer_info.email)) {
             await sendMailThanksOrder(req.body.customer_info.email, 'Cám ơn bạn đã mua hàng', req.body);
         }

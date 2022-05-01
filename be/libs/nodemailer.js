@@ -36,6 +36,7 @@ const sendMailThanksOrder = async (address, content, order) => {
     contentMail = contentMail.replace('My account', 'Tài khoản của tôi');
     contentMail = contentMail.replace('ORDER CODE:', 'Mã đơn hàng: ');
     contentMail = contentMail.replace('#09090909', '#' + order.code);
+    contentMail = contentMail.replace('Items ordered:', 'Danh sách sản phẩm: ');
 
     var total_cost = new String(order.total_cost).toLocaleString('it-IT', { style: 'currency', currency: 'VND' });
     contentMail = contentMail.replace('VALUE_TOTAL_COST', total_cost);
