@@ -514,14 +514,15 @@ module.exports._login = async (req, res, next) => {
             return;
         }
         delete user.password;
-        let [accessToken, _update] = await Promise.all([
+        let [accessToken, refreshToken, _update] = await Promise.all([
             jwt.createToken({ ...user, database: DB, _business: business }, 30 * 24 * 60 * 60),
+            jwt.createToken({ ...user, database: DB, _business: business }, 30 * 24 * 60 * 60 * 10),
             client
                 .db(DB)
                 .collection(`Users`)
                 .updateOne({ user_id: Number(user.user_id) }, { $set: { last_login: moment().tz(TIMEZONE).format() } }),
         ]);
-        res.send({ success: true, data: { accessToken } });
+        res.send({ success: true, data: { accessToken, refreshToken } });
     } catch (err) {
         next(err);
     }
@@ -529,17 +530,51 @@ module.exports._login = async (req, res, next) => {
 
 module.exports._refreshToken = async (req, res, next) => {
     try {
-        ['refreshToken'].map((e) => {
-            if (!req.body[e]) {
-                throw new Error(`400: Thiếu thuộc tính ${e}!`);
-            }
-        });
+        if (req.body.refreshToken == undefined) throw new Error('400: Vui lòng truyền refreshToken');
         try {
             let decoded = await jwt.verifyToken(req.body.refreshToken);
             let user = decoded.data;
-            let accessToken = await jwt.createToken(user);
-            res.send({ success: true, accessToken });
+
+            let [userNew] = await client
+                .db(user.database)
+                .collection(`Users`)
+                .aggregate([
+                    { $match: { username: user.username } },
+                    {
+                        $lookup: {
+                            from: 'Roles',
+                            localField: 'role_id',
+                            foreignField: 'role_id',
+                            as: '_role',
+                        },
+                    },
+                    { $unwind: { path: '$_role', preserveNullAndEmptyArrays: true } },
+                    {
+                        $lookup: {
+                            from: 'Branchs',
+                            localField: 'branch_id',
+                            foreignField: 'branch_id',
+                            as: '_branch',
+                        },
+                    },
+                    { $unwind: { path: '$_branch', preserveNullAndEmptyArrays: true } },
+                    {
+                        $lookup: {
+                            from: 'Stores',
+                            localField: 'store_id',
+                            foreignField: 'store_id',
+                            as: '_store',
+                        },
+                    },
+                    { $unwind: { path: '$_store', preserveNullAndEmptyArrays: true } },
+                ])
+                .toArray();
+            if (userNew == undefined) return res.status(404).send({ success: false, message: 'Không tìm thấy người dùng này' });
+            let accessToken = await jwt.createToken(userNew, 30 * 24 * 60 * 60);
+            let refreshToken = await jwt.createToken(userNew, 30 * 24 * 60 * 60 * 10);
+            res.send({ success: true, accessToken, refreshToken });
         } catch (error) {
+            console.log(error);
             throw new Error(`400: Refresh token không chính xác!`);
         }
     } catch (err) {
