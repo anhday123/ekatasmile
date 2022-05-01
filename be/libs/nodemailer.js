@@ -1,19 +1,17 @@
-let nodemail = require(`nodemailer`);
-
-let transporter = nodemail.createTransport({    
-    host: "smtpout.secureserver.net",  
-    secure: true,
-    secureConnection: false, // TLS requires secureConnection to be false
-    tls: {
-        ciphers:'SSLv3'
-    },
-    requireTLS:true,
-    port: 465,
-    debug: true,
+const fs = require('fs');
+const { promisify } = require('util');
+const readFile = promisify(fs.readFile);
+var path = require('path');
+let nodemailer = require(`nodemailer`);
+require('dotenv').config();
+let transporter = nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
+    port: process.env.EMAIL_PORT,
+    secure: false, // upgrade later with STARTTLS
     auth: {
-        user: "support@networkdemo.site",
-        pass: "u$65lxw0d8" 
-    }
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD,
+    },
 });
 
 const sendMail = (address, subject, content) => {
@@ -26,4 +24,15 @@ const sendMail = (address, subject, content) => {
     return transporter.sendMail(mailOptions);
 };
 
-module.exports = { sendMail };
+const sendMailThanksOrder = async (address, content, business_name) => {
+    var buffer = await readFile(path.join(__dirname, '../templates_mail/order.html'), 'utf8');
+    var contentMail = buffer.toString();
+    await transporter.sendMail({
+        from: `"Chăm sóc khách hàng ${business_name}" <no-reply@${process.env.EMAIL_USER}>`,
+        to: address,
+        subject: content,
+        html: contentMail,
+    });
+};
+
+module.exports = { sendMail, sendMailThanksOrder };

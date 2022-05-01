@@ -11,6 +11,8 @@ module.exports = {
                 DOMAIN: 'upsale.com.vn',
                 END_POINT: 'api',
                 TIMEZONE: 'Asia/Ho_Chi_Minh',
+                EMAIL_HOST: '',
+                EMAIL_PORT: '',
                 EMAIL_USER: 'support@networkdemo.site',
                 EMAIL_PASSWORD: 'u$65lxw0d8',
                 MONGO_DATABASE_URI: 'mongodb://dangluu%40:%40Luu123456@103.81.87.65:27017/',
@@ -28,8 +30,7 @@ module.exports = {
             ref: 'origin/master',
             repo: 'git@github.com:viesoftware/System_Admin_Order.git',
             path: '/root/AO-Production',
-            'post-deploy':
-                'cd /root/AO-Production/source/be && npm install && pm2 reload production.config.js --env production',
+            'post-deploy': 'cd /root/AO-Production/source/be && npm install && pm2 reload production.config.js --env production',
         },
     },
 };

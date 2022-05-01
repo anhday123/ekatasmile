@@ -2,10 +2,10 @@ const moment = require(`moment-timezone`);
 const TIMEZONE = process.env.TIMEZONE;
 const DB = process.env.DATABASE;
 const client = require(`../config/mongodb`);
-
 const orderService = require(`../services/order`);
-
 var CryptoJS = require('crypto-js');
+const { validateEmail } = require('../utils/regex');
+const { sendMailThanksOrder } = require('../libs/nodemailer');
 
 module.exports.enumStatusOrder = async (req, res, next) => {
     try {
@@ -439,7 +439,12 @@ module.exports._create = async (req, res, next) => {
             enumTrackings[i].time_update = 'Chưa cập nhật';
         }
         _order.trackings = enumTrackings;
+        _order.customer_info = customer;
         req['body'] = _order;
+        req.body.customer_info.email = 'huynhtrongmandev@gmail.com';
+        if (req.body.customer_info.email != undefined && validateEmail(req.body.customer_info.email)) {
+            await sendMailThanksOrder(req.body.customer_info.email, 'Cám ơn bạn đã mua hàng', req.user._business.business_name);
+        }
         await orderService._create(req, res, next);
     } catch (err) {
         next(err);
