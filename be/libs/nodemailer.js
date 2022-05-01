@@ -24,9 +24,23 @@ const sendMail = (address, subject, content) => {
     return transporter.sendMail(mailOptions);
 };
 
-const sendMailThanksOrder = async (address, content, business_name) => {
+const sendMailThanksOrder = async (address, content, order) => {
     var buffer = await readFile(path.join(__dirname, '../templates_mail/order.html'), 'utf8');
     var contentMail = buffer.toString();
+    contentMail = contentMail.replace('Thanks for your order', 'Cám ơn bạn đã mua hàng');
+    contentMail = contentMail.replace(`You'll receive an email when your items are shipped`, 'Bạn sẽ nhận được 1 email khi đơn hàng bắt đầu giao');
+    contentMail = contentMail.replace('SUMMARY', 'Thông tin đơn hàng');
+    contentMail = contentMail.replace('SHIPPING ADDRESS', 'Địa chỉ giao hàng');
+    contentMail = contentMail.replace('VIEW ORDER STATUS', 'Xem trạng thái đơn hàng');
+    contentMail = contentMail.replace('Troubles?', 'Bạn cần hỗ trợ?');
+    contentMail = contentMail.replace('My account', 'Tài khoản của tôi');
+
+    var total_cost = order.total_cost.toLocaleString('it-IT', { style: 'currency', currency: 'VND' });
+    contentMail = contentMail.replace('VALUE_TOTAL_COST', total_cost);
+
+    var final_cost = order.final_cost.toLocaleString('it-IT', { style: 'currency', currency: 'VND' });
+    contentMail = contentMail.replace('VALUE_FINAL_COST', final_cost);
+
     await transporter.sendMail({
         from: process.env.EMAIL_USER,
         to: address,
