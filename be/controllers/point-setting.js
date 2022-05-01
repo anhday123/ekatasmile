@@ -4,6 +4,7 @@ const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
 
 const pointService = require(`../services/point-setting`);
+const { stringHandle } = require('../utils/string-handle');
 
 let removeUnicode = (text, removeSpace) => {
     /*
@@ -42,10 +43,7 @@ module.exports._create = async (req, res, next) => {
                 throw new Error(`400: Thiếu thuộc tính ${e}!`);
             }
         });
-        let settingMaxId = await client
-            .db(req.user.database)
-            .collection('AppSetting')
-            .findOne({ name: 'PointSettings' });
+        let settingMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'PointSettings' });
         let settingId = (() => {
             if (settingMaxId && settingId.value) {
                 return settingId.value;
@@ -86,16 +84,12 @@ module.exports._create = async (req, res, next) => {
             last_update: moment().tz(TIMEZONE).format(),
             updater_id: req.user.user_id,
             active: true,
-            slug_name: removeUnicode(String(req.body.name || ''), true).toLowerCase(),
+            slug_name: stringHandle(req.body.name, { createSlug: true }),
         };
         await client
             .db(req.user.database)
             .collection('AppSetting')
-            .updateOne(
-                { name: 'PointSettings' },
-                { $set: { name: 'PointSettings', value: settingId } },
-                { $upsert: true }
-            );
+            .updateOne({ name: 'PointSettings' }, { $set: { name: 'PointSettings', value: settingId } }, { $upsert: true });
         req['body'] = _setting;
         await pointService._create(req, res, next);
     } catch (err) {
@@ -106,8 +100,7 @@ module.exports._create = async (req, res, next) => {
 module.exports._update = async (req, res, next) => {
     try {
         if (req.body.active == undefined) throw new Error('400: missing param active');
-        if (req.body.accumulate_for_promotion_product == undefined)
-            throw new Error('400: missing param accumulate_for_promotion_product');
+        if (req.body.accumulate_for_promotion_product == undefined) throw new Error('400: missing param accumulate_for_promotion_product');
         if (req.body.stack_point == undefined) throw new Error('400: missing param stack_point');
         if (req.body.exchange_point_rate == undefined) throw new Error('400: missing param exchange_point_rate');
         if (req.body.order_require == undefined) throw new Error('400: missing param order_require');

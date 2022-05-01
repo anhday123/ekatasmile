@@ -465,16 +465,6 @@ module.exports._createImportOrderFile = async (req, res, next) => {
                 };
             }
             if (_orders[eRow['ma-phieu-nhap']]) {
-                // if (isNaN(eRow['gia-nhap'])) throw new Error('400: Giá nhập không hợp lệ');
-
-                // if (isNaN(eRow['chi-phi-dich-vu'])) throw new Error('400: Cột Phí dịch vụ không hợp lệ');
-
-                // if (isNaN(eRow['phi-van-chuyen'])) throw new Error('400: Cột Phí vận chuyển không hợp lệ');
-
-                // if (isNaN(eRow['tong-cong'])) throw new Error('400: Cột Tổng cộng không hợp lệ');
-
-                // if (isNaN(eRow['so-luong-nhap'])) throw new Error('400: Cột Số lượng nhập không hợp lệ');
-
                 if (eRow['ma-san-pham'] && eRow['ma-phien-ban']) {
                     _orders[eRow['ma-phieu-nhap']].products.push({
                         product_id: (() => {
@@ -636,8 +626,8 @@ module.exports._updateImportOrder = async (req, res, next) => {
             _order['verify_date'] = moment().tz(TIMEZONE).format();
         }
         if (_order.status == 'COMPLETE' && order.status != 'COMPLETE') {
-            _order['verifier_id'] = Number(req.user.user_id);
-            _order['verify_date'] = moment().tz(TIMEZONE).format();
+            _order['verifier_id'] = _order['verifier_id'] || Number(req.user.user_id);
+            _order['verify_date'] = _order['verify_date'] || moment().tz(TIMEZONE).format();
             _order['completer_id'] = Number(req.user.user_id);
             _order['complete_date'] = moment().tz(TIMEZONE).format();
             let locationMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Locations' });

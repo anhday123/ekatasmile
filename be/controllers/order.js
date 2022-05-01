@@ -6,6 +6,7 @@ const orderService = require(`../services/order`);
 var CryptoJS = require('crypto-js');
 const { validateEmail } = require('../utils/regex');
 const { sendMailThanksOrder } = require('../libs/nodemailer');
+const { _changePoint } = require('./customer');
 
 module.exports.enumStatusOrder = async (req, res, next) => {
     try {
@@ -329,7 +330,6 @@ module.exports._create = async (req, res, next) => {
                         last_update: moment().tz(TIMEZONE).format(),
                         updater_id: req.user.user_id,
                     });
-                    console.log(inventoryId);
                 }
                 if (detailQuantity > 0) {
                     throw new Error('400: Sản phẩm tại địa điểm bán không đủ số lượng cung cấp!');
@@ -343,45 +343,15 @@ module.exports._create = async (req, res, next) => {
                         decreasePoint = _order.payments[i].value / pointSetting.exchange_money_rate;
                     }
                 }
-                if (decreasePoint > customer.point) {
-                    throw new Error(`400: Khách hàng không đủ điểm tích lũy!`);
-                }
-                await client
-                    .db(req.user.database)
-                    .collection('Users')
-                    .updateOne(
-                        { user_id: customer.user_id },
-                        {
-                            $inc: {
-                                point: -decreasePoint,
-                                used_point: decreasePoint,
-                                order_quantity: 1,
-                                order_total_cost: _order.final_cost,
-                            },
-                        }
-                    );
-                await client
-                    .db(req.user.database)
-                    .collection('Customers')
-                    .updateOne(
-                        { customer_id: customer.customer_id },
-                        {
-                            $inc: {
-                                point: -decreasePoint,
-                                used_point: decreasePoint,
-                                order_quantity: 1,
-                                order_total_cost: _order.final_cost,
-                            },
-                        }
-                    );
-                await client
-                    .db(req.user.database)
-                    .collection('Users')
-                    .updateOne({ user_id: customer.user_id }, { $inc: { point: increasePoint } });
-                await client
-                    .db(req.user.database)
-                    .collection('Customers')
-                    .updateOne({ customer_id: customer.customer_id }, { $inc: { point: increasePoint } });
+                await _changePoint({
+                    database: req.user.database,
+                    customer: customer,
+                    order: _order,
+                    increasePoint: increasePoint,
+                    decreasePoint: decreasePoint,
+                    isExists: true,
+                    writeLog: true,
+                });
             }
             if (updateLocations.length > 0) {
                 for (let i in updateLocations) {

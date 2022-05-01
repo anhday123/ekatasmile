@@ -53,6 +53,10 @@ module.exports._create = async (req, res, next) => {
         let attributeId = (attributeMaxId && attributeMaxId.value) || 0;
         let variantMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Variants' });
         let variantId = (variantMaxId && variantMaxId.value) || 0;
+        let locationMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Locations' });
+        let locationId = (locationMaxId && locationMaxId.value) || 0;
+        let inventoryMaxId = await client.db(req.user.database).collection('AppSetting').findOne({ name: 'Inventories' });
+        let inventoryId = (inventoryMaxId && inventoryMaxId.value) || 0;
         let supplier = await client
             .db(req.user.database)
             .collection('Suppliers')
@@ -129,6 +133,7 @@ module.exports._create = async (req, res, next) => {
             throw new Error('400: Sản phẩm chưa có thuộc tính!');
         }
         req['_variants'] = [];
+        req['_locations'] = [];
         if (Array.isArray(req.body.variants) && req.body.variants.length > 0) {
             req.body.variants.map((eVariant) => {
                 if (eVariant) {
@@ -167,6 +172,9 @@ module.exports._create = async (req, res, next) => {
                         active: true,
                         slug_title: stringHandle(eVariant.title, { createSlug: true }),
                     });
+                    if (eVariant.locations) {
+                        eVariant.locations.map((eLocation) => {});
+                    }
                 }
             });
         } else {
@@ -598,55 +606,62 @@ module.exports.importFileC = async (req, res, next) => {
         warrantySlugs = [...new Set(warrantySlugs)];
         brandSlugs = [...new Set(brandSlugs)];
         originSlugs = [...new Set(originSlugs)];
-        let _products = await client
+        let products = await client
             .db(req.user.database)
             .collection('Products')
             .find({
                 sku: { $in: productSkus },
             })
-            .toArray((docs) => docs.reduce((pre, cur) => ({ ...pre, ...(cur && cur.sku && { [cur.sku]: cur }) }), {}));
-        let _categories = await client
+            .toArray();
+        let _products = products.reduce((pre, cur) => ({ ...pre, ...(cur && cur.sku && { [cur.sku]: cur }) }), {});
+        let categories = await client
             .db(req.user.database)
             .collection('Categories')
             .find({
                 slug_name: { $in: categorySlugs },
             })
-            .toArray((docs) => docs.reduce((pre, cur) => ({ ...pre, ...(cur && cur.slug_name && { [cur.slug_name]: cur }) }), {}));
-        let _suppliers = await client
+            .toArray();
+        let _categories = categories.reduce((pre, cur) => ({ ...pre, ...(cur && cur.slug_name && { [cur.slug_name]: cur }) }), {});
+        let suppliers = await client
             .db(req.user.database)
             .collection('Suppliers')
             .find({
                 slug_name: { $in: supplierSlugs },
             })
-            .toArray((docs) => docs.reduce((pre, cur) => ({ ...pre, ...(cur && cur.slug_name && { [cur.slug_name]: cur }) }), {}));
-        let _taxes = await client
+            .toArray();
+        let _suppliers = suppliers.reduce((pre, cur) => ({ ...pre, ...(cur && cur.slug_name && { [cur.slug_name]: cur }) }), {});
+        let taxes = await client
             .db(req.user.database)
             .collection('Taxes')
             .find({
                 slug_name: { $in: taxSlugs },
             })
-            .toArray((docs) => docs.reduce((pre, cur) => ({ ...pre, ...(cur && cur.slug_name && { [cur.slug_name]: cur }) }), {}));
-        let _warranties = await client
+            .toArray();
+        let _taxes = taxes.reduce((pre, cur) => ({ ...pre, ...(cur && cur.slug_name && { [cur.slug_name]: cur }) }), {});
+        let warranties = await client
             .db(req.user.database)
             .collection('Warranties')
             .find({
                 slug_name: { $in: warrantySlugs },
             })
-            .toArray((docs) => docs.reduce((pre, cur) => ({ ...pre, ...(cur && cur.slug_name && { [cur.slug_name]: cur }) }), {}));
-        let _brands = await client
+            .toArray();
+        let _warranties = warranties.reduce((pre, cur) => ({ ...pre, ...(cur && cur.slug_name && { [cur.slug_name]: cur }) }), {});
+        let brands = await client
             .db(req.user.database)
             .collection('Brands')
             .find({
                 slug_name: { $in: brandSlugs },
             })
-            .toArray((docs) => docs.reduce((pre, cur) => ({ ...pre, ...(cur && cur.slug_name && { [cur.slug_name]: cur }) }), {}));
-        let _origins = await client
+            .toArray();
+        let _brands = brands.reduce((pre, cur) => ({ ...pre, ...(cur && cur.slug_name && { [cur.slug_name]: cur }) }), {});
+        let origins = await client
             .db(req.user.database)
             .collection('Origins')
             .find({
                 slug_name: { $in: originSlugs },
             })
-            .toArray((docs) => docs.reduce((pre, cur) => ({ ...pre, ...(cur && cur.slug_name && { [cur.slug_name]: cur }) }), {}));
+            .toArray();
+        let _origins = origins.reduce((pre, cur) => ({ ...pre, ...(cur && cur.slug_name && { [cur.slug_name]: cur }) }), {});
         let productId = await client
             .db(req.user.database)
             .collection('AppSetting')
