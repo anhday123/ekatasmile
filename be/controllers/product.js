@@ -613,7 +613,7 @@ module.exports.importFileC = async (req, res, next) => {
                 sku: { $in: productSkus },
             })
             .toArray();
-        let _products = product.reduce((pre, cur) => ({ ...pre, ...(cur && cur.sku && { [cur.sku]: cur }) }), {});
+        let _products = products.reduce((pre, cur) => ({ ...pre, ...(cur && cur.sku && { [cur.sku]: cur }) }), {});
         let categories = await client
             .db(req.user.database)
             .collection('Categories')
