@@ -4,6 +4,7 @@ import { ACTION, ROUTES } from './consts'
 import { clearBrowserCache } from 'utils'
 import jwt_decode from 'jwt-decode'
 import { socket } from 'socket'
+import { useHistory } from 'react-router-dom'
 
 //components
 import Views from 'views'
@@ -13,8 +14,10 @@ import LoadingCheckDomain from 'views/loading'
 //apis
 import { checkDomain } from 'apis/app'
 import { getBusinesses } from 'apis/business'
+import { refresh } from 'apis/auth'
 
 function App() {
+  const history = useHistory()
   const dispatch = useDispatch()
   const dataUser = useSelector((state) => state.login.dataUser)
   const domain = window.location.href
@@ -109,17 +112,20 @@ function App() {
     }
   }
 
-  useEffect(() => {
+  const checkToken = async () => {
     if (token) {
-      socket.on(
-        `${dataUser.data && dataUser.data._business.prefix}#${
-          dataUser && dataUser.data && dataUser.data.user_id
-        }`,
-        (data) => {
-          console.log('socket', data)
-        }
-      )
+      const res = await refresh({ refreshToken: token })
+      if (res.status === 404) {
+        dispatch({ type: ACTION.LOGOUT })
+        history.push('/login')
+      } else {
+        if (res.data.success) dispatch({ type: ACTION.LOGIN, data: res.data })
+      }
     }
+  }
+
+  useEffect(() => {
+    if (token) socket.on(`delete_staff`, (data) => checkToken())
   }, [dataUser])
 
   useEffect(() => {
@@ -128,6 +134,7 @@ function App() {
 
   useEffect(() => {
     checkLogin()
+    checkToken()
     checkSubdomain()
     clearBrowserCache()
   }, [])

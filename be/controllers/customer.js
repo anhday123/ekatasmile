@@ -98,6 +98,7 @@ module.exports._create = async (req, res, next) => {
             code: String(customer_id).padStart(6, '0'),
             phone: String(req.body.phone),
             type_id: req.body.type_id || 1,
+            email: req.body.email || '',
             first_name: req.body.first_name.trim(),
             last_name: req.body.last_name.trim(),
             gender: req.body.gender || '',
@@ -260,10 +261,7 @@ module.exports._importFile = async (req, res, next) => {
                     last_update: moment().tz(TIMEZONE).format(),
                     updater_id: req.user.user_id,
                     active: true,
-                    slug_name: removeUnicode(
-                        String(eRow['hokhachhang'] || '' + eRow['tenkhachhang'] || ''),
-                        true
-                    ).toLowerCase(),
+                    slug_name: removeUnicode(String(eRow['hokhachhang'] || '' + eRow['tenkhachhang'] || ''), true).toLowerCase(),
                     slug_type: removeUnicode(String(eRow['_nhomkhachhang'] || ''), true).toLowerCase(),
                     slug_gender: removeUnicode(String(eRow['gioitinh'] || ''), true).toLowerCase(),
                     slug_address: removeUnicode(String(eRow['diachi'] || ''), true).toLowerCase(),
@@ -461,11 +459,7 @@ module.exports._createType = async (req, res, next) => {
         await client
             .db(req.user.database)
             .collection('AppSetting')
-            .updateOne(
-                { name: 'CustomerTypes' },
-                { $set: { name: 'CustomerTypes', value: type_id } },
-                { upsert: true }
-            );
+            .updateOne({ name: 'CustomerTypes' }, { $set: { name: 'CustomerTypes', value: type_id } }, { upsert: true });
         let insert = await client.db(req.user.database).collection('CustomerTypes').insertOne(req.body);
         if (!insert.insertedId) {
             throw new Error(`Thêm nhóm khách hàng thất bại!`);

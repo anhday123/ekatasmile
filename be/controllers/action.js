@@ -1,10 +1,22 @@
 const moment = require(`moment-timezone`);
 const TIMEZONE = process.env.TIMEZONE;
 const client = require(`../config/mongodb`);
+const SDB = process.env.DATABASE;
 
 const actionService = require(`../services/action`);
 const { createTimeline } = require('../utils/date-handle');
 const { stringHandle } = require('../utils/string-handle');
+
+module.exports.getAllMenuSystem = async (req, res, next) => {
+    try {
+        var menuAppSetting = await client.db(SDB).collection('AppSetting').findOne({
+            name: 'Menus',
+        });
+        return res.send({ success: true, data: menuAppSetting.lists });
+    } catch (err) {
+        next(err);
+    }
+};
 
 module.exports._get = async (req, res, next) => {
     try {
@@ -47,20 +59,14 @@ module.exports._getFileHistory = async (req, res, next) => {
         if (req.query.action_name) {
             aggregateQuery.push({
                 $match: {
-                    slug_action_name: new RegExp(
-                        `${stringHandle(req.query.action_name, { createRegexQuery: true })}`,
-                        'ig'
-                    ),
+                    slug_action_name: new RegExp(`${stringHandle(req.query.action_name, { createRegexQuery: true })}`, 'ig'),
                 },
             });
         }
         if (req.query.file_name) {
             aggregateQuery.push({
                 $match: {
-                    slug_file_name: new RegExp(
-                        `${stringHandle(req.query.file_name, { createRegexQuery: true })}`,
-                        'ig'
-                    ),
+                    slug_file_name: new RegExp(`${stringHandle(req.query.file_name, { createRegexQuery: true })}`, 'ig'),
                 },
             });
         }
