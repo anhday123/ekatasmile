@@ -10,8 +10,8 @@ const columns = [
   },
   {
     title: 'Số điện thoại',
+    dataIndex: 'username',
     key: 'phone',
-    dataIndex: 'phone',
   },
   {
     title: 'Địa chỉ',

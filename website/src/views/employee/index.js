@@ -24,6 +24,8 @@ import { SearchOutlined, ArrowLeftOutlined, DeleteOutlined } from '@ant-design/i
 //apis
 import { getEmployees, deleteEmployee } from 'apis/employee'
 import { getDistricts, getProvinces } from 'apis/address'
+import { getAllBranch } from 'apis/branch'
+import { getRoles } from 'apis/role'
 
 //components
 import TitlePage from 'components/title-page'
@@ -38,6 +40,10 @@ export default function Employee() {
   const dispatch = useDispatch()
   const branchIdApp = useSelector((state) => state.branch.branchId)
 
+  const [roles, setRoles] = useState([])
+  const [districts, setDistricts] = useState([])
+  const [branches, setBranches] = useState([])
+  const [provinces, setProvinces] = useState([])
   const [columns, setColumns] = useState([])
   const [users, setUsers] = useState([])
   const [countUser, setCountUser] = useState([])
@@ -133,6 +139,52 @@ export default function Employee() {
     }
   }
 
+  const _getDistricts = async () => {
+    try {
+      const res = await getDistricts()
+      if (res.status === 200) setDistricts(res.data.data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const _getProvinces = async () => {
+    try {
+      const res = await getProvinces()
+      if (res.status === 200) setProvinces(res.data.data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const _getBranches = async () => {
+    try {
+      const res = await getAllBranch()
+      if (res.status === 200) setBranches(res.data.data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const _getRoles = async () => {
+    try {
+      const res = await getRoles()
+      if (res.status === 200) {
+        const roles = res.data.data.filter((e) => e.role_id !== 1)
+        setRoles([...roles])
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  useEffect(() => {
+    _getBranches()
+    _getRoles()
+    _getProvinces()
+    _getDistricts()
+  }, [])
+
   useEffect(() => {
     getAddress(getProvinces, setAddress, 'province')
     getAddress(getDistricts, setAddress, 'district')
@@ -163,7 +215,13 @@ export default function Employee() {
             columnsDefault={columnsEmployee}
             nameColumn="columnsEmployee"
           />
-          <EmployeeForm reloadData={_getEmployees}>
+          <EmployeeForm
+            reloadData={_getEmployees}
+            roles={roles}
+            provinces={provinces}
+            districts={districts}
+            branches={branches}
+          >
             <Button type="primary" size="large">
               Tạo nhân viên
             </Button>
@@ -376,12 +434,20 @@ export default function Employee() {
             return {
               ...column,
               render: (text, record) => (
-                <EmployeeForm record={record} reloadData={_getEmployees}>
+                <EmployeeForm
+                  record={record}
+                  reloadData={_getEmployees}
+                  roles={roles}
+                  provinces={provinces}
+                  districts={districts}
+                  branches={branches}
+                >
                   <a>{record.first_name + ' ' + record.last_name}</a>
                 </EmployeeForm>
               ),
             }
-          if (column.key === 'phone') return { ...column, sorter: (a, b) => compare(a, b, 'phone') }
+          if (column.key === 'phone')
+            return { ...column, sorter: (a, b) => compare(a, b, 'username') }
           if (column.key === 'address')
             return {
               ...column,

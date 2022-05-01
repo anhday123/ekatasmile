@@ -12,10 +12,11 @@ const initialState = {
 let login = (state = initialState, action) => {
   switch (action.type) {
     case ACTION.LOGIN: {
-      var data = jwt_decode(action.data.accessToken)
-      console.log('data user', data)
-      if (data) {
+      if (action.data.accessToken) {
+        var data = jwt_decode(action.data.accessToken)
+
         localStorage.setItem('accessToken', action.data.accessToken)
+        localStorage.setItem('refreshToken', action.data.refreshToken)
 
         return {
           ...state,
