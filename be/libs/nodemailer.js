@@ -35,10 +35,10 @@ const sendMailThanksOrder = async (address, content, order) => {
     contentMail = contentMail.replace('Troubles?', 'Bạn cần hỗ trợ?');
     contentMail = contentMail.replace('My account', 'Tài khoản của tôi');
 
-    var total_cost = order.total_cost.toLocaleString('it-IT', { style: 'currency', currency: 'VND' });
+    var total_cost = new String(order.total_cost).toLocaleString('it-IT', { style: 'currency', currency: 'VND' });
     contentMail = contentMail.replace('VALUE_TOTAL_COST', total_cost);
 
-    var final_cost = order.final_cost.toLocaleString('it-IT', { style: 'currency', currency: 'VND' });
+    var final_cost = new String(order.final_cost).toLocaleString('it-IT', { style: 'currency', currency: 'VND' });
     contentMail = contentMail.replace('VALUE_FINAL_COST', final_cost);
 
     await transporter.sendMail({
