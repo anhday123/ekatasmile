@@ -24,8 +24,8 @@ io.on('connection', (socket) => {
     io.emit('connection', 'Response From Server, Client Connect Success');
 });
 
-server.listen(8888, () => {
-    console.log(`Socket server runing at http://localhost:${8888}`);
+server.listen(7777, () => {
+    console.log(`Socket server runing at http://localhost:${7777}`);
 });
 
 module.exports = { io };
