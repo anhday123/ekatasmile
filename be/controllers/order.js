@@ -411,9 +411,8 @@ module.exports._create = async (req, res, next) => {
         _order.trackings = enumTrackings;
         _order.customer_info = customer;
         req['body'] = _order;
-        req.body.customer_info.email = 'huynhtrongmandev@gmail.com';
         if (req.body.customer_info.email != undefined && validateEmail(req.body.customer_info.email)) {
-            await sendMailThanksOrder(req.body.customer_info.email, 'Cám ơn bạn đã mua hàng', req.user._business.business_name);
+            await sendMailThanksOrder(req.body.customer_info.email, 'Cám ơn bạn đã mua hàng', req.body);
         }
         await orderService._create(req, res, next);
     } catch (err) {
@@ -450,36 +449,7 @@ module.exports._update = async (req, res, next) => {
             employee_id: _order.employee_id,
             order_details: _order.order_details,
             shipping_company_id: _order.shipping_company_id,
-            shipping_info: ((data) => {
-                if (!data) {
-                    return {};
-                }
-                return {
-                    tracking_number: data.tracking_number,
-                    to_name: data.to_name,
-                    to_phone: data.to_phone,
-                    to_address: data.to_address,
-                    to_ward: data.to_ward,
-                    to_district: data.to_district,
-                    to_province: data.to_province,
-                    to_province_code: data.to_province_code,
-                    to_postcode: data.to_postcode,
-                    to_country_code: data.to_country_code,
-                    return_name: data.return_name,
-                    return_phone: data.return_phone,
-                    return_address: data.return_address,
-                    return_ward: data.return_ward,
-                    return_district: data.return_district,
-                    return_province: data.return_province,
-                    return_province_code: data.return_province_code,
-                    return_postcode: data.return_postcode,
-                    return_country_code: data.return_country_code,
-                    fee_shipping: data.fee_shipping,
-                    cod: data.cod,
-                    delivery_time: data.delivery_time,
-                    complete_time: data.complete_time,
-                };
-            })(_order.shipping_info),
+            shipping_info: _order.shipping_info,
             voucher: _order.voucher,
             promotion: _order.promotion,
             total_cost: _order.total_cost,
@@ -514,6 +484,15 @@ module.exports._update = async (req, res, next) => {
             last_update: moment().tz(TIMEZONE).format(),
             updater_id: req.user.user_id,
         };
+
+        // Cập nhật tracking_number
+        if (req.body.shipping_info.tracking_number) _order.shipping_info.tracking_number = req.body.shipping_info.tracking_number;
+
+        // Cập nhật shipping_name
+        if (req.body.shipping_info.shipping_name) {
+            _order.shipping_info.shipping_name = req.body.shipping_info.shipping_name;
+        }
+
         if (_order.payments) {
             await Promise.all(
                 _order.payments.map((payment, index) => {

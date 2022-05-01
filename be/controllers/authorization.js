@@ -603,6 +603,7 @@ module.exports._refreshToken = async (req, res, next) => {
             if (userNew == undefined) return res.status(404).send({ success: false, message: 'Không tìm thấy người dùng này' });
 
             let business = await client.db(SDB).collection('Business').findOne({ prefix: user._business.prefix });
+            userNew.database = business.database_name;
             userNew['_business'] = business;
             let accessToken = await jwt.createToken(userNew, 30 * 24 * 60 * 60);
             let refreshToken = await jwt.createToken(userNew, 30 * 24 * 60 * 60 * 10);

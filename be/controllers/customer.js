@@ -343,6 +343,7 @@ module.exports._update = async (req, res, next) => {
             customer_id: _customer.customer_id,
             code: _customer.code,
             phone: String(_customer.phone),
+            email: String(_customer.email) || '',
             type_id: _customer.type_id || 1,
             first_name: (_customer.first_name || '').trim(),
             last_name: (_customer.last_name || '').trim(),
