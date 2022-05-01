@@ -2,7 +2,7 @@ const moment = require(`moment-timezone`);
 const TIMEZONE = process.env.TIMEZONE;
 const client = require(`../config/mongodb`);
 const DB = process.env.DATABASE;
-
+const { io } = require('../config/socket');
 const jwt = require(`../libs/jwt`);
 
 let removeUnicode = (text, removeSpace) => {
@@ -105,40 +105,28 @@ module.exports._get = async (req, res, next) => {
         if (req.query.name) {
             aggregateQuery.push({
                 $match: {
-                    slug_name: new RegExp(
-                        `${removeUnicode(req.query.name, false).replace(/(\s){1,}/g, '(.*?)')}`,
-                        'ig'
-                    ),
+                    slug_name: new RegExp(`${removeUnicode(req.query.name, false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig'),
                 },
             });
         }
         if (req.query.address) {
             aggregateQuery.push({
                 $match: {
-                    slug_address: new RegExp(
-                        `${removeUnicode(req.query.address, false).replace(/(\s){1,}/g, '(.*?)')}`,
-                        'ig'
-                    ),
+                    slug_address: new RegExp(`${removeUnicode(req.query.address, false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig'),
                 },
             });
         }
         if (req.query.district) {
             aggregateQuery.push({
                 $match: {
-                    slug_district: new RegExp(
-                        `${removeUnicode(req.query.district, false).replace(/(\s){1,}/g, '(.*?)')}`,
-                        'ig'
-                    ),
+                    slug_district: new RegExp(`${removeUnicode(req.query.district, false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig'),
                 },
             });
         }
         if (req.query.province) {
             aggregateQuery.push({
                 $match: {
-                    slug_province: new RegExp(
-                        `${removeUnicode(req.query.province, false).replace(/(\s){1,}/g, '(.*?)')}`,
-                        'ig'
-                    ),
+                    slug_province: new RegExp(`${removeUnicode(req.query.province, false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig'),
                 },
             });
         }
@@ -147,16 +135,10 @@ module.exports._get = async (req, res, next) => {
                 $match: {
                     $or: [
                         {
-                            username: new RegExp(
-                                `${removeUnicode(req.query.search, false).replace(/(\s){1,}/g, '(.*?)')}`,
-                                'ig'
-                            ),
+                            username: new RegExp(`${removeUnicode(req.query.search, false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig'),
                         },
                         {
-                            slug_name: new RegExp(
-                                `${removeUnicode(req.query.search, false).replace(/(\s){1,}/g, '(.*?)')}`,
-                                'ig'
-                            ),
+                            slug_name: new RegExp(`${removeUnicode(req.query.search, false).replace(/(\s){1,}/g, '(.*?)')}`, 'ig'),
                         },
                     ],
                 },
