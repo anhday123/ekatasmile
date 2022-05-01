@@ -449,7 +449,7 @@ module.exports._update = async (req, res, next) => {
             employee_id: _order.employee_id,
             order_details: _order.order_details,
             shipping_company_id: _order.shipping_company_id,
-            shipping_info: _shipping_info,
+            shipping_info: _order.shipping_info,
             voucher: _order.voucher,
             promotion: _order.promotion,
             total_cost: _order.total_cost,
