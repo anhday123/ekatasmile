@@ -46,7 +46,7 @@ export default function OTP() {
           //luu branch id len redux
           const dataUser = jwt_decode(res.data.data.accessToken)
           localStorage.setItem('accessToken', res.data.data.accessToken)
-          dispatch({ type: 'SET_BRANCH_ID', data: dataUser.data.branch_id })
+          dispatch({ type: 'SET_BRANCH_ID', data: dataUser.data.store_id })
 
           await delay(300)
           window.location.href = `https://${dataUser.data._business.prefix}.${process.env.REACT_APP_HOST}${ROUTES.OVERVIEW}`

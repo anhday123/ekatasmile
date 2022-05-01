@@ -12,6 +12,7 @@ import { ArrowLeftOutlined, SearchOutlined } from '@ant-design/icons'
 
 //components
 import TitlePage from 'components/title-page'
+import FilterDate from 'components/filter-date'
 
 //apis
 import { getActions } from 'apis/action'
@@ -25,7 +26,6 @@ export default function ActivityDiary() {
   const [valueSearch, setValueSearch] = useState('')
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
   const [countAction, setCountAction] = useState(0)
-  const [valueFilter, setValueFilter] = useState()
   const [valueDate, setValueDate] = useState(null)
 
   const onSearch = (e) => {
@@ -35,9 +35,8 @@ export default function ActivityDiary() {
     }
     typingTimeoutRef.current = setTimeout(() => {
       const value = e.target.value
-      if (value) paramsFilter.search = value
-      else delete paramsFilter.search
-
+      if (value) paramsFilter.name = value
+      else delete paramsFilter.name
       setParamsFilter({ ...paramsFilter, page: 1, page_size: 20 })
     }, 650)
   }
@@ -110,7 +109,6 @@ export default function ActivityDiary() {
     await _getActionsHistory()
     setValueSearch('')
     setParamsFilter({ page: 1, page_size: 20 })
-    setValueFilter()
   }
 
   useEffect(() => {
@@ -121,7 +119,7 @@ export default function ActivityDiary() {
     <div className="card">
       <TitlePage
         title={
-          < Row
+          <Row
             align="middle"
             onClick={() => history.push(ROUTES.CONFIGURATION_STORE)}
             style={{ cursor: 'pointer' }}
@@ -139,11 +137,18 @@ export default function ActivityDiary() {
         >
           Xóa tất cả lọc
         </Button>
-      </TitlePage >
+      </TitlePage>
 
       <Row
         gutter={[16, 16]}
-        style={{ marginTop: '1rem', marginBottom: '1rem', marginLeft: '0px', marginRight: '0px', border: '1px solid #d9d9d9', borderRadius: 5 }}
+        style={{
+          marginTop: '1rem',
+          marginBottom: '1rem',
+          marginLeft: '0px',
+          marginRight: '0px',
+          border: '1px solid #d9d9d9',
+          borderRadius: 5,
+        }}
       >
         <Col xs={24} sm={24} md={12} lg={8} xl={8}>
           <Input
@@ -166,37 +171,21 @@ export default function ActivityDiary() {
           xl={8}
           style={{ borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}
         >
-          <RangePicker
-            className="br-15__date-picker"
-            style={{ width: '100%' }}
-            ranges={{
-              Today: [moment(), moment()],
-              'This Month': [moment().startOf('month'), moment().endOf('month')],
-            }}
-            value={valueDate}
-            onChange={onChangeDate}
-            bordered={false}
-          />
+          <FilterDate paramsFilter={paramsFilter} setParamsFilter={setParamsFilter} />
         </Col>
         <Col xs={24} sm={24} md={12} lg={8} xl={8}>
           <Select
-            value={valueFilter}
-            showSearch
+            value={paramsFilter.type}
             style={{ width: '100%' }}
             placeholder="Lọc thao tác"
             optionFilterProp="children"
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
             bordered={false}
             allowClear
-            onChange={e => {
-              setParamsFilter({ ...paramsFilter, type: e })
-              setValueFilter(e)
-            }}
+            onChange={(e) => setParamsFilter({ ...paramsFilter, type: e })}
           >
-            <Select.Option value='Tạo'>Tạo</Select.Option>
-            <Select.Option value='Cập nhật'>Cập nhật</Select.Option>
+            <Select.Option value="CREATE">Tạo</Select.Option>
+            <Select.Option value="UPDATE">Cập nhật</Select.Option>
+            <Select.Option value="DELETE">Xóa</Select.Option>
           </Select>
         </Col>
       </Row>
@@ -218,6 +207,6 @@ export default function ActivityDiary() {
           total: countAction,
         }}
       />
-    </div >
+    </div>
   )
 }

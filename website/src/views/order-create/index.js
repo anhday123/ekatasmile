@@ -68,6 +68,7 @@ export default function OrderCreateShipping() {
   let history = useHistory()
   const [formInfoOrder] = Form.useForm()
   const branchIdApp = useSelector((state) => state.branch.branchId)
+  console.log(branchIdApp)
 
   const [loadingProduct, setLoadingProduct] = useState(false)
   const [productsSearch, setProductsSearch] = useState([])
@@ -101,6 +102,9 @@ export default function OrderCreateShipping() {
     moneyGivenByCustomer: 0, //tiền khách hàng đưa
     excessCash: 0, //tiền thừa
   })
+
+  console.log(orderCreate)
+
 
   const [note, setNote] = useState('')
   const [taxList, setTaxList] = useState([])
@@ -404,6 +408,7 @@ export default function OrderCreateShipping() {
     {
       title: 'Số lượng',
       render: (data, record) => (
+        // console.log(record)
         <InputNumber
           style={{ width: 70 }}
           onBlur={(e) => {
@@ -490,8 +495,8 @@ export default function OrderCreateShipping() {
     // }
     try {
       let totalDiscount =
-        (discount.value / 100) * productData.reduce((a, b) => a + b.quantity * b.price, 0)
-      const dataList = productData.map((product) => {
+        (discount.value / 100) * orderCreate.order_details.reduce((a, b) => a + b.quantity * b.price, 0)
+      const dataList = orderCreate.order_details.map((product) => {
         console.log(product)
         let productDiscount = 0
         if (totalDiscount >= product.price * product.quantity) {
@@ -504,6 +509,7 @@ export default function OrderCreateShipping() {
         const data = {
           product_id: product.product_id,
           sku: product.sku,
+          variant_id: product.variant_id,
           // supplier: product.suppliers.supplier_id,
           options: product.options,
           // has_variable: product.has_variable,
@@ -519,6 +525,8 @@ export default function OrderCreateShipping() {
           : { ...data, promotion: productDiscount ? promotion : ' ' }
       })
 
+      console.log(dataList)
+
       const data = {
         sale_location: { branch_id: branchIdApp },
         channel: 'website',
@@ -532,8 +540,10 @@ export default function OrderCreateShipping() {
         discount: dataList.reduce((a, b) => a + b.discount, 0),
         final_cost:
           dataList.reduce((a, b) => a + b.total_cost, 0) -
-          dataList.reduce((a, b) => a + b.discount, 0) +
-          (dataList.reduce((a, b) => a + b.final_cost, 0) * taxValue) / 100,
+          dataList.reduce((a, b) => a + b.discount, 0)
+        // +
+        // (dataList.reduce((a, b) => a + b.final_cost, 0) * taxValue) / 100
+        ,
         latitude: '50.50',
         longtitude: '50.50',
         note: note,
@@ -550,7 +560,7 @@ export default function OrderCreateShipping() {
       const res = voucher
         ? await apiOrderVoucher(bodyVoucher)
         : await apiOrderVoucher(bodyPromotion)
-      console.log("duy",bodyVoucher, bodyPromotion)
+      console.log("duy", bodyVoucher, bodyPromotion)
       console.log(res)
       if (res.data.success) {
         notification.success({ message: 'Tạo hóa đơn thành công' })
@@ -829,7 +839,7 @@ export default function OrderCreateShipping() {
                         onClick={(e) => {
                           _addProductToOrder(data)
                           e.stopPropagation()
-                          setProductData([data])
+                          setProductData([...productData, data])
                         }}
                       >
                         <img

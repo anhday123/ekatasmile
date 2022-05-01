@@ -236,6 +236,9 @@ export default function Product() {
     }, 750)
   }
 
+  console.log(categories)
+  console.log(suppliers)
+
   const _getProductsToExport = async (query) => {
     try {
       const res = await getProducts({ branch: true, ...query })
@@ -244,6 +247,7 @@ export default function Product() {
         let dataExport = []
 
         res.data.data.map((e) => {
+          console.log(e)
           const findCategory = categories.find((c) => e.category_id.includes(c.category_id))
           const findSupplier = suppliers.find((s) => s.supplier_id === e.supplier_id)
 
@@ -275,6 +279,7 @@ export default function Product() {
           e.variants.map((v) => {
             let locationImport = {}
             v.locations.map((k) => {
+              console.log(k)
               locationImport['Nơi nhập'] = k.type
               locationImport['Tên nơi nhập'] = k.name
               locationImport['Số lượng nhập'] = k.quantity
@@ -286,7 +291,7 @@ export default function Product() {
                 'Tên phiên bản': v.title || '',
                 'Mã phiên bản': v.sku || '',
                 'Hình ảnh': v.image.join(', '),
-                'Giá nhập hàng': v.import_price_default || '',
+                'Giá nhập hàng': v.import_price_default || 0,
                 'Giá vốn': v.base_price || '',
                 'Giá bán lẻ': v.price || '',
                 'Giá bán sỉ': si.price || '',
