@@ -90,6 +90,7 @@ export const ROUTES = {
   CATEGORY: '/category',
   CATEGORIES: '/categories',
   SETTING: '/setting',
+  SETTING_BILL: '/setting-bill',
   OFFER_LIST: '/offer-list',
   OFFER_LIST_CREATE: '/offer-list/create',
   BLOG: '/blog',

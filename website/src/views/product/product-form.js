@@ -101,7 +101,7 @@ export default function ProductAdd() {
   ]) //giá sỉ
 
   const toggleDrawerListProduct = () => {
-    setVisibleListProduct(!visibleListProduct);
+    setVisibleListProduct(!visibleListProduct)
   }
 
   const addAttribute = () => {
@@ -137,8 +137,9 @@ export default function ProductAdd() {
             title: `${(
               dataForm.name || ''
             ).toUpperCase()} ${attributes[0].option.toUpperCase()} ${value.toUpperCase()}`,
-            sku: `${valueGeneratedSku || ''
-              }-${attributes[0].option.toUpperCase()}-${value.toUpperCase()}`,
+            sku: `${
+              valueGeneratedSku || ''
+            }-${attributes[0].option.toUpperCase()}-${value.toUpperCase()}`,
             options: [{ name: attributes[0].option, value: value }],
             ...initVariant,
           })
@@ -151,8 +152,9 @@ export default function ProductAdd() {
               title: `${(
                 dataForm.name || ''
               ).toUpperCase()} ${attributes[1].option.toUpperCase()} ${value.toUpperCase()}`,
-              sku: `${valueGeneratedSku || ''
-                }-${attributes[1].option.toUpperCase()}-${value.toUpperCase()}`,
+              sku: `${
+                valueGeneratedSku || ''
+              }-${attributes[1].option.toUpperCase()}-${value.toUpperCase()}`,
               options: [{ name: attributes[1].option, value: value }],
               ...initVariant,
             })
@@ -164,8 +166,9 @@ export default function ProductAdd() {
               title: `${(
                 dataForm.name || ''
               ).toUpperCase()} ${attributes[0].option.toUpperCase()} ${value.toUpperCase()}`,
-              sku: `${valueGeneratedSku || ''
-                }-${attributes[0].option.toUpperCase()}-${value.toUpperCase()}`,
+              sku: `${
+                valueGeneratedSku || ''
+              }-${attributes[0].option.toUpperCase()}-${value.toUpperCase()}`,
               options: [{ name: attributes[0].option, value: value }],
             })
           })
@@ -177,8 +180,9 @@ export default function ProductAdd() {
                 title: `${(
                   dataForm.name || ''
                 ).toUpperCase()} ${attributes[0].option.toUpperCase()} ${v0} ${attributes[1].option.toUpperCase()} ${v1}`,
-                sku: `${valueGeneratedSku || ''
-                  }-${attributes[0].option.toUpperCase()}-${v0}-${attributes[1].option.toUpperCase()}-${v1}`,
+                sku: `${
+                  valueGeneratedSku || ''
+                }-${attributes[0].option.toUpperCase()}-${v0}-${attributes[1].option.toUpperCase()}-${v1}`,
                 options: [
                   { name: attributes[0].option, value: v0 },
                   { name: attributes[1].option, value: v1 },
@@ -336,7 +340,7 @@ export default function ProductAdd() {
 
       const variantsNew = variants.map((v) => ({ ...v, supplier: supplier || '' }))
       body.variants = variantsNew
-      
+
       console.log(body)
 
       let res
@@ -1127,7 +1131,12 @@ export default function ProductAdd() {
                     </TreeSelect>
                   </Form.Item>
                   <Tooltip title="Tạo nhóm sản phẩm">
-                    <Button size="large" type="primary" icon={<PlusOutlined />} onClick={toggleDrawerListProduct} />
+                    <Button
+                      size="large"
+                      type="primary"
+                      icon={<PlusOutlined />}
+                      onClick={toggleDrawerListProduct}
+                    />
                   </Tooltip>
                 </Row>
               </Col>
@@ -1610,8 +1619,18 @@ export default function ProductAdd() {
           </Tabs.TabPane> */}
         </Tabs>
       </Form>
-      <Drawer width='70%' title="Tạo nhóm sản phẩm" placement="right" onClose={toggleDrawerListProduct} visible={visibleListProduct}>
-        <CreateCategory title='product-form' toggle={toggleDrawerListProduct} reload={_getCategories} />
+      <Drawer
+        width="70%"
+        title="Tạo nhóm sản phẩm"
+        placement="right"
+        onClose={toggleDrawerListProduct}
+        visible={visibleListProduct}
+      >
+        <CreateCategory
+          title="product-form"
+          toggle={toggleDrawerListProduct}
+          reload={_getCategories}
+        />
       </Drawer>
     </div>
   ) : (

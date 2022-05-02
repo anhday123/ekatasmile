@@ -44,6 +44,7 @@ import {
   FileSearchOutlined,
   MedicineBoxOutlined,
   NodeExpandOutlined,
+  PrinterOutlined,
 } from '@ant-design/icons'
 
 //components
@@ -356,6 +357,13 @@ const BaseLayout = (props) => {
       title: 'Cài đặt',
       permissions: [],
       icon: <SettingOutlined />,
+    },
+    {
+      pathsChild: [],
+      path: ROUTES.SETTING_BILL,
+      title: 'Cài đặt máy in bill',
+      permissions: [],
+      icon: <PrinterOutlined />,
     },
   ]
 

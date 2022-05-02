@@ -31,6 +31,7 @@ import {
   Input,
   Tooltip,
   Affix,
+  Tag,
 } from 'antd'
 
 //icons
@@ -611,6 +612,7 @@ export default function ImportInventories() {
               placeholder="Lọc theo trạng thái"
               allowClear
               showSearch
+              optionFilterProp="children"
               size={FILTER_SIZE}
               bordered={false}
               filterOption={(input, option) =>
@@ -620,17 +622,11 @@ export default function ImportInventories() {
               onChange={(value) => _onFilter('status', value)}
               style={{ width: '100%' }}
             >
-              <Select.Option value="DRAFT" index={1}>
-                Lưu nháp
-              </Select.Option>
-              <Select.Option value="COMPLETE" index={2}>
-                Đã nhập hàng
-              </Select.Option>
-              {/* {statusList.map((status, index) => (
+              {statusList.map((status, index) => (
                 <Select.Option value={status.name} index={index}>
                   {status.label}
                 </Select.Option>
-              ))} */}
+              ))}
             </Select>
           </Col>
           <Col xs={24} sm={24} md={5} lg={5} xl={5} style={{ height: FILTER_COL_HEIGHT }}>
@@ -766,10 +762,9 @@ export default function ImportInventories() {
             if (column.key === 'status')
               return {
                 ...column,
-                render: (text, record) => {
-                  const status = statusList.find((s) => s.name === record.status)
-                  return status ? status.label : ''
-                },
+                render: (text, record) => (
+                  <Tag color={record.status === 'COMPLETE' && 'success'}>{record.status}</Tag>
+                ),
               }
             if (column.key === 'action')
               return {

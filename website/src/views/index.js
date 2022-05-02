@@ -67,6 +67,7 @@ import OfferListCreate from './offer-list-create'
 import Blog from './blog'
 import BlogCreate from './blog-create'
 import Brand from './brand'
+import SettingBill from './setting-bill'
 import BrandCreate from './brand-create'
 import Channel from './channel'
 import Contact from './contact'
@@ -471,6 +472,13 @@ const DEFINE_ROUTER = [
     path: ROUTES.SELL,
     Component: () => <Sell />,
     title: 'Bán hàng',
+    permissions: [],
+    exact: true,
+  },
+  {
+    path: ROUTES.SETTING_BILL,
+    Component: () => <SettingBill />,
+    title: 'Cài đặt máy in bill',
     permissions: [],
     exact: true,
   },
