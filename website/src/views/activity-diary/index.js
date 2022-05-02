@@ -5,7 +5,7 @@ import { ROUTES } from 'consts'
 import { compare } from 'utils'
 
 //antd
-import { Input, Row, Col, DatePicker, Select, Table, Button } from 'antd'
+import { Input, Row, Col, Select, Table, Button } from 'antd'
 
 //icons
 import { ArrowLeftOutlined, SearchOutlined } from '@ant-design/icons'
@@ -15,18 +15,24 @@ import TitlePage from 'components/title-page'
 import FilterDate from 'components/filter-date'
 
 //apis
-import { getActions } from 'apis/action'
+import { getActions, getActionLayouts } from 'apis/action'
 
-const { RangePicker } = DatePicker
 export default function ActivityDiary() {
   const history = useHistory()
   const [loading, setLoading] = useState(false)
   const [activityDiary, setActivityDiary] = useState([])
+  const [layouts, setLayouts] = useState([])
   const typingTimeoutRef = useRef(null)
   const [valueSearch, setValueSearch] = useState('')
   const [paramsFilter, setParamsFilter] = useState({ page: 1, page_size: 20 })
   const [countAction, setCountAction] = useState(0)
-  const [valueDate, setValueDate] = useState(null)
+
+  const onFilters = (attribute = '', value = '') => {
+    if (value) paramsFilter[attribute] = value
+    else delete paramsFilter[attribute]
+
+    setParamsFilter({ ...paramsFilter, page: 1 })
+  }
 
   const onSearch = (e) => {
     setValueSearch(e.target.value)
@@ -78,19 +84,6 @@ export default function ActivityDiary() {
     },
   ]
 
-  function onChangeDate(date, dateStrings) {
-    if (date) {
-      setValueDate(date)
-      paramsFilter.from_date = dateStrings[0]
-      paramsFilter.to_date = dateStrings[1]
-    } else {
-      setValueDate(null)
-      delete paramsFilter.from_date
-      delete paramsFilter.to_date
-    }
-    setParamsFilter({ ...paramsFilter, page: 1 })
-  }
-
   const _getActionsHistory = async () => {
     try {
       setLoading(true)
@@ -105,11 +98,23 @@ export default function ActivityDiary() {
     }
   }
 
+  const _getActionLayouts = async () => {
+    try {
+      const res = await getActionLayouts()
+      if (res.status === 200) setLayouts(res.data.data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   const onClickClear = async () => {
-    await _getActionsHistory()
     setValueSearch('')
     setParamsFilter({ page: 1, page_size: 20 })
   }
+
+  useEffect(() => {
+    _getActionLayouts()
+  }, [])
 
   useEffect(() => {
     _getActionsHistory()
@@ -167,25 +172,44 @@ export default function ActivityDiary() {
           xs={24}
           sm={24}
           md={12}
-          lg={8}
-          xl={8}
+          lg={6}
+          xl={6}
           style={{ borderLeft: '1px solid #d9d9d9', borderRight: '1px solid #d9d9d9' }}
         >
           <FilterDate paramsFilter={paramsFilter} setParamsFilter={setParamsFilter} />
         </Col>
-        <Col xs={24} sm={24} md={12} lg={8} xl={8}>
+        <Col xs={24} sm={24} md={12} lg={4} xl={4}>
           <Select
             value={paramsFilter.type}
-            style={{ width: '100%' }}
+            style={{ width: '100%', borderRight: '1px solid #d9d9d9' }}
             placeholder="Lọc thao tác"
             optionFilterProp="children"
             bordered={false}
             allowClear
-            onChange={(e) => setParamsFilter({ ...paramsFilter, type: e })}
+            onChange={(value) => onFilters('type', value)}
           >
             <Select.Option value="CREATE">Tạo</Select.Option>
             <Select.Option value="UPDATE">Cập nhật</Select.Option>
             <Select.Option value="DELETE">Xóa</Select.Option>
+          </Select>
+        </Col>
+        <Col xs={24} sm={24} md={12} lg={6} xl={6}>
+          <Select
+            value={paramsFilter.menu}
+            style={{ width: '100%' }}
+            placeholder="Lọc giao diện"
+            optionFilterProp="children"
+            bordered={false}
+            allowClear
+            showSearch
+            optionLabelProp="children"
+            onChange={(value) => onFilters('menu', value)}
+          >
+            {layouts.map((layout, index) => (
+              <Select.Option value={layout.name} key={index}>
+                {layout.label}
+              </Select.Option>
+            ))}
           </Select>
         </Col>
       </Row>

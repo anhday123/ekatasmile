@@ -105,7 +105,6 @@ export default function OrderCreateShipping() {
 
   console.log(orderCreate)
 
-
   const [note, setNote] = useState('')
   const [taxList, setTaxList] = useState([])
   const [promotionList, setPromotionList] = useState([])
@@ -177,15 +176,15 @@ export default function OrderCreateShipping() {
             //thuế VAT của mỗi sản phẩm
             orderCreateNew.order_details[indexProduct].VAT_Product =
               orderCreateNew.order_details[indexProduct]._taxes &&
-                orderCreateNew.order_details[indexProduct]._taxes.length
+              orderCreateNew.order_details[indexProduct]._taxes.length
                 ? (
-                  (orderCreateNew.order_details[indexProduct]._taxes.reduce(
-                    (total, current) => total + current.value,
-                    0
-                  ) /
-                    100) *
-                  orderCreateNew.order_details[indexProduct].sumCost
-                ).toFixed(0)
+                    (orderCreateNew.order_details[indexProduct]._taxes.reduce(
+                      (total, current) => total + current.value,
+                      0
+                    ) /
+                      100) *
+                    orderCreateNew.order_details[indexProduct].sumCost
+                  ).toFixed(0)
                 : 0
           } else
             notification.warning({
@@ -200,9 +199,9 @@ export default function OrderCreateShipping() {
             VAT_Product:
               product._taxes && product._taxes.length
                 ? (
-                  (product._taxes.reduce((total, current) => total + current.value, 0) / 100) *
-                  product.price
-                ).toFixed(0)
+                    (product._taxes.reduce((total, current) => total + current.value, 0) / 100) *
+                    product.price
+                  ).toFixed(0)
                 : 0,
           })
 
@@ -263,15 +262,15 @@ export default function OrderCreateShipping() {
       //thuế VAT của mỗi sản phẩm
       orderCreateNew.order_details[index].VAT_Product =
         orderCreateNew.order_details[index]._taxes &&
-          orderCreateNew.order_details[index]._taxes.length
+        orderCreateNew.order_details[index]._taxes.length
           ? (
-            (orderCreateNew.order_details[index]._taxes.reduce(
-              (total, current) => total + current.value,
-              0
-            ) /
-              100) *
-            orderCreateNew.order_details[index].sumCost
-          ).toFixed(0)
+              (orderCreateNew.order_details[index]._taxes.reduce(
+                (total, current) => total + current.value,
+                0
+              ) /
+                100) *
+              orderCreateNew.order_details[index].sumCost
+            ).toFixed(0)
           : 0
 
       //tổng thuế VAT của tất cả các sản phẩm
@@ -495,7 +494,8 @@ export default function OrderCreateShipping() {
     // }
     try {
       let totalDiscount =
-        (discount.value / 100) * orderCreate.order_details.reduce((a, b) => a + b.quantity * b.price, 0)
+        (discount.value / 100) *
+        orderCreate.order_details.reduce((a, b) => a + b.quantity * b.price, 0)
       const dataList = orderCreate.order_details.map((product) => {
         console.log(product)
         let productDiscount = 0
@@ -540,10 +540,9 @@ export default function OrderCreateShipping() {
         discount: dataList.reduce((a, b) => a + b.discount, 0),
         final_cost:
           dataList.reduce((a, b) => a + b.total_cost, 0) -
-          dataList.reduce((a, b) => a + b.discount, 0)
+          dataList.reduce((a, b) => a + b.discount, 0),
         // +
         // (dataList.reduce((a, b) => a + b.final_cost, 0) * taxValue) / 100
-        ,
         latitude: '50.50',
         longtitude: '50.50',
         note: note,
@@ -551,16 +550,22 @@ export default function OrderCreateShipping() {
       console.log(data)
 
       const bodyVoucher = {
-        order: CryptoJS.AES.encrypt(JSON.stringify({ ...data, voucher }), 'vierthanhcong').toString(),
+        order: CryptoJS.AES.encrypt(
+          JSON.stringify({ ...data, voucher }),
+          'vierthanhcong'
+        ).toString(),
       }
       const bodyPromotion = {
-        order: CryptoJS.AES.encrypt(JSON.stringify({ ...data, promotion }), 'vierthanhcong').toString(),
+        order: CryptoJS.AES.encrypt(
+          JSON.stringify({ ...data, promotion }),
+          'vierthanhcong'
+        ).toString(),
       }
-      console.log("duyyyy")
+      console.log('duyyyy')
       const res = voucher
         ? await apiOrderVoucher(bodyVoucher)
         : await apiOrderVoucher(bodyPromotion)
-      console.log("duy", bodyVoucher, bodyPromotion)
+      console.log('duy', bodyVoucher, bodyPromotion)
       console.log(res)
       if (res.data.success) {
         notification.success({ message: 'Tạo hóa đơn thành công' })
@@ -651,11 +656,7 @@ export default function OrderCreateShipping() {
       <TitlePage
         isAffix
         title={
-          <Row
-            align="middle"
-            style={{ cursor: 'pointer' }}
-            onClick={() => history.push(ROUTES.ORDER_LIST)}
-          >
+          <Row align="middle" style={{ cursor: 'pointer' }} onClick={() => history.goBack()}>
             <ArrowLeftOutlined style={{ marginRight: 5 }} />
             Tạo đơn hàng
           </Row>

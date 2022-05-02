@@ -23,13 +23,12 @@ function App() {
   const domain = window.location.href
   let subDomain = domain.split(`.${process.env.REACT_APP_HOST}`)
   const token = localStorage.getItem('accessToken')
-
+  const refreshToken = localStorage.getItem('refreshToken')
   const [loadingCheckDomain, setLoadingCheckDomain] = useState(false)
 
   const getBusiness = async () => {
     try {
       const res = await getBusinesses({ _business: true })
-      console.log(res)
       if (res.status === 200)
         if (res.data.data)
           if (localStorage.getItem('accessToken')) {
@@ -104,22 +103,18 @@ function App() {
     setLoadingCheckDomain(false)
   }
 
-  const checkLogin = () => {
-    if (token) {
-      dispatch({ type: ACTION.LOGIN, data: { accessToken: token } })
-      const dataUser = jwt_decode(token)
-      if (dataUser) dispatch({ type: 'SET_BRANCH_ID', data: dataUser.data.store_id })
-    }
-  }
-
   const checkToken = async () => {
     if (token) {
-      const res = await refresh({ refreshToken: token })
+      const res = await refresh({ refreshToken: refreshToken })
       if (res.status === 404) {
         dispatch({ type: ACTION.LOGOUT })
-        history.push('/login')
+        history.push(ROUTES.LOGIN)
       } else {
-        if (res.data.success) dispatch({ type: ACTION.LOGIN, data: res.data })
+        if (res.data.success) {
+          dispatch({ type: ACTION.LOGIN, data: res.data })
+          const dataUser = jwt_decode(token)
+          if (dataUser) dispatch({ type: 'SET_BRANCH_ID', data: dataUser.data.store_id })
+        }
       }
     }
   }
@@ -133,7 +128,6 @@ function App() {
   }, [dataUser])
 
   useEffect(() => {
-    checkLogin()
     checkToken()
     checkSubdomain()
     clearBrowserCache()

@@ -35,6 +35,7 @@ import {
 
 //icons
 import {
+  CopyOutlined,
   DeleteOutlined,
   PrinterOutlined,
   SearchOutlined,
@@ -460,7 +461,7 @@ export default function ImportInventories() {
               style={{ top: 20 }}
               footer={null}
               title="Xuất file excel sản phẩm từ nhà cung cấp"
-              width='60%'
+              width="60%"
               visible={visibleProductsToSupplier}
               onCancel={toggleProductsToSupplier}
             >
@@ -745,7 +746,8 @@ export default function ImportInventories() {
                 ...column,
                 render: (text, record) =>
                   record._order_creator &&
-                  `${record._order_creator.first_name || ''} ${record._order_creator.last_name || ''
+                  `${record._order_creator.first_name || ''} ${
+                    record._order_creator.last_name || ''
                   }`,
               }
             if (column.key === 'verifier')
@@ -775,13 +777,22 @@ export default function ImportInventories() {
                 render: (text, record) => (
                   <Space direction="vertical">
                     <Space>
-                      <Tooltip title="Xóa đơn hàng">
+                      <Tooltip title="Xóa phiếu nhập hàng">
                         <Popconfirm
                           onConfirm={() => _deleteOrderImportInventory(record.order_id)}
                           title="Bạn có muốn xóa đơn nhập hàng này không?"
                         >
                           <Button icon={<DeleteOutlined />} danger type="primary" />
                         </Popconfirm>
+                      </Tooltip>
+                      <Tooltip title="Nhập lại đơn này">
+                        <Button
+                          onClick={() =>
+                            history.push(`${ROUTES.IMPORT_INVENTORY}?order_id=${record.order_id}`)
+                          }
+                          icon={<CopyOutlined />}
+                          type="primary"
+                        />
                       </Tooltip>
                       <Tooltip title="In hóa đơn">
                         <Button
@@ -816,15 +827,15 @@ export default function ImportInventories() {
                     products={
                       record.products
                         ? record.products.map(
-                          (e) =>
-                            e && {
-                              ...e.product_info,
-                              quantity: e.quantity,
-                              files: record.files,
-                              tags: record.tags,
-                              note: record.note,
-                            }
-                        )
+                            (e) =>
+                              e && {
+                                ...e.product_info,
+                                quantity: e.quantity,
+                                files: record.files,
+                                tags: record.tags,
+                                note: record.note,
+                              }
+                          )
                         : []
                     }
                   />

@@ -12,7 +12,6 @@ import {
 } from 'consts'
 import { compare, formatCash, compareCustom, tableSum } from 'utils'
 import { useReactToPrint } from 'react-to-print'
-import delay from 'delay'
 import { useSelector } from 'react-redux'
 
 //antd
@@ -31,6 +30,7 @@ import {
   Drawer,
   Collapse,
   Timeline,
+  Modal,
 } from 'antd'
 
 //icons
@@ -44,7 +44,7 @@ import columnsDelivery from './columnsDelivery'
 import TitlePage from 'components/title-page'
 
 //apis
-import { getOrders, deleteOrders, getStatusOrder } from 'apis/order'
+import { getOrders, deleteOrders, getStatusOrder, updateOrder } from 'apis/order'
 import { getEmployees } from 'apis/employee'
 import { getAllBranch } from 'apis/branch'
 import { getShippings } from 'apis/shipping'
@@ -84,6 +84,85 @@ export default function DeliveryControl() {
       <PrintOrder ref={printOrderRef} data={dataPrint} />
     </div>
   )
+
+  const ModalUpdateTrackingNumberOrShipping = ({
+    children,
+    id = '',
+    tracking_number = null,
+    shipping = null,
+  }) => {
+    const [visible, setVisible] = useState(false)
+    const toggle = () => setVisible(!visible)
+    const [value, setValue] = useState(tracking_number || shipping || '')
+
+    const _onUpdate = async () => {
+      try {
+        const shipping_info = {}
+        if (!value) {
+          notification.error({ message: 'Vui lòng nhập giá trị mới' })
+          return
+        } else {
+          if (tracking_number !== null || tracking_number === '')
+            shipping_info.tracking_number = value
+          if (shipping !== null || shipping === '') shipping_info.shipping_name = value
+        }
+        const body = { shipping_info }
+        const res = await updateOrder(body, id)
+        if (res.status === 200) {
+          if (res.data.success) {
+            _getDeliveryOrders()
+            notification.success({ message: 'Cập nhật thành công' })
+          } else
+            notification.error({
+              message: res.data.message || 'Cập nhật thất bại, vui lòng thử lại',
+            })
+        } else
+          notification.error({ message: res.data.message || 'Cập nhật thất bại, vui lòng thử lại' })
+      } catch (error) {
+        console.log(error)
+      }
+    }
+
+    return (
+      <>
+        <a onClick={toggle}>{children}</a>
+        <Modal
+          onOk={_onUpdate}
+          title={`Cập nhật ${
+            tracking_number !== null && (tracking_number !== '' || tracking_number === '')
+              ? 'mã vận đơn'
+              : ''
+          }${shipping !== null && (shipping !== '' || shipping === '') ? 'đơn vị vận chuyển' : ''}`}
+          onCancel={toggle}
+          visible={visible}
+        >
+          {tracking_number !== null && (tracking_number !== '' || tracking_number === '') && (
+            <Input
+              onChange={(e) => setValue(e.target.value)}
+              value={value}
+              placeholder="Nhập mã vận đơn"
+            />
+          )}
+
+          {shipping !== null && (shipping !== '' || shipping === '') && (
+            <Select
+              value={value || undefined}
+              onChange={setValue}
+              showSearch
+              placeholder="Chọn đơn vị vận chuyển mới"
+              style={{ width: '100%' }}
+            >
+              {shippingCompany.map((shipping, index) => (
+                <Select.Option value={shipping.name} key={index}>
+                  {shipping.name}
+                </Select.Option>
+              ))}
+            </Select>
+          )}
+        </Modal>
+      </>
+    )
+  }
 
   const _onSearch = (e) => {
     const value = e.target.value
@@ -125,9 +204,6 @@ export default function DeliveryControl() {
     }
     setParamsFilterOther({ ...paramsFilterOther })
   }
-
-  console.log(paramsFilterOther)
-  console.log(paramsFilter)
 
   const _submitFilterOther = () => {
     setParamsFilter({ ...paramsFilter, ...paramsFilterOther })
@@ -193,7 +269,6 @@ export default function DeliveryControl() {
     try {
       setLoading(true)
       const res = await getOrders({ ...paramsFilter, branch_id: branchIdApp, is_delivery: true })
-      console.log(res)
       if (res.status === 200) {
         setOrders(res.data.data)
         setCountOrder(res.data.count)
@@ -227,7 +302,6 @@ export default function DeliveryControl() {
   const _getPlatform = async () => {
     try {
       const res = await getEnumPlatform()
-      console.log(res)
       if (res.status === 200) setPlatForms(res.data.data)
     } catch (error) {
       console.log(error)
@@ -237,7 +311,6 @@ export default function DeliveryControl() {
   const _getBranch = async () => {
     try {
       const res = await getAllBranch()
-      console.log(res)
       if (res.status === 200) setBranches(res.data.data)
     } catch (error) {
       console.log(error)
@@ -251,12 +324,12 @@ export default function DeliveryControl() {
   const _getShippingStatus = async () => {
     try {
       const res = await getShippingStatus()
-      console.log(res)
       if (res.status === 200) setStatusShipping(res.data.data)
     } catch (error) {
       console.log(error)
     }
   }
+
   useEffect(() => {
     _getEmployees()
     _getBranch()
@@ -459,8 +532,18 @@ export default function DeliveryControl() {
                   style={{ width: '100%' }}
                   className="br-15__date-picker"
                   ranges={{
-                    Today: [moment(), moment()],
-                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                    'Hôm nay': [moment(), moment()],
+                    'Tuần này': [moment().startOf('week'), moment().endOf('week')],
+                    'Tháng trước': [
+                      moment().subtract(1, 'months').startOf('month'),
+                      moment().subtract(1, 'months').endOf('month'),
+                    ],
+                    'Tháng này': [moment().startOf('month'), moment().endOf('month')],
+                    'Năm này': [moment().startOf('year'), moment().endOf('year')],
+                    'Năm trước': [
+                      moment().subtract(1, 'years').startOf('year'),
+                      moment().subtract(1, 'years').endOf('year'),
+                    ],
                   }}
                   bordered={false}
                 />
@@ -538,7 +621,7 @@ export default function DeliveryControl() {
         size="small"
         rowKey="order_id"
         loading={loading}
-        scroll={{ x: 1500,y:400 }}
+        scroll={{ y: '48vh' }}
         expandable={{
           expandedRowRender: (record) => {
             return (
@@ -661,21 +744,26 @@ export default function DeliveryControl() {
               ...column,
               sorter: (a, b) =>
                 compareCustom(
-                  a.customer ? `${a.customer.first_name} ${a.customer.last_name}` : '',
-                  b.customer ? `${b.customer.first_name} ${b.customer.last_name}` : ''
+                  a.customer_info
+                    ? `${a.customer_info.first_name} ${a.customer_info.last_name}`
+                    : '',
+                  b.customer_info
+                    ? `${b.customer_info.first_name} ${b.customer_info.last_name}`
+                    : ''
                 ),
               render: (text, record) => (
-                // record.customer ? `${record.customer.first_name} ${record.customer.last_name}` : '',
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <span>
-                    {record.customer
-                      ? `${record.customer.first_name} ${record.customer.last_name}`
+                    {record.customer_info
+                      ? `${record.customer_info.first_name} ${record.customer_info.last_name}`
                       : ''}
                   </span>
-                  <span>{record.customer ? record.customer.phone : ''}</span>
+                  <span>{record.customer_info ? record.customer_info.phone : ''}</span>
                   <span>
-                    {record.customer.province || record.customer.district || record.customer.address
-                      ? `${record.customer.province} ${record.customer.district} ${record.customer.address}`
+                    {record.customer_info.province ||
+                    record.customer_info.district ||
+                    record.customer_info.address
+                      ? `${record.customer_info.province} ${record.customer_info.district} ${record.customer_info.address}`
                       : 'Chưa có địa chỉ'}
                   </span>
                 </div>
@@ -694,12 +782,27 @@ export default function DeliveryControl() {
             return {
               ...column,
               render: (text, record) =>
-                record.shipping_info && record.shipping_info?.tracking_number,
+                record.shipping_info && (
+                  <ModalUpdateTrackingNumberOrShipping
+                    id={record.order_id}
+                    tracking_number={record.shipping_info?.tracking_number || ''}
+                  >
+                    {record.shipping_info?.tracking_number || 'Chưa có'}
+                  </ModalUpdateTrackingNumberOrShipping>
+                ),
             }
           if (column.key === 'shipping_name')
             return {
               ...column,
-              render: (text, record) => record.shipping_info && record.shipping_info?.shipping_name,
+              render: (text, record) =>
+                record.shipping_info && (
+                  <ModalUpdateTrackingNumberOrShipping
+                    id={record.order_id}
+                    shipping={record.shipping_info?.shipping_name || ''}
+                  >
+                    {record.shipping_info?.shipping_name || 'Chưa có'}
+                  </ModalUpdateTrackingNumberOrShipping>
+                ),
             }
           if (column.key === 'total_cod')
             return {

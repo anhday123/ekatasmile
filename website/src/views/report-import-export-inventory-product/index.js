@@ -66,7 +66,7 @@ export default function ReportImportExportInventoryProduct() {
     {
       title: 'Nhóm',
       render: (text, record) =>
-      record._categories ? record._categories.map((category) => <Tag >{category.name}</Tag>) : '',
+        record._categories ? record._categories.map((category) => <Tag>{category.name}</Tag>) : '',
     },
     {
       title: 'Đầu kỳ',
@@ -270,7 +270,6 @@ export default function ReportImportExportInventoryProduct() {
           style={{ width: '100%' }}
           loading={loading}
           columns={columns}
-          scroll={{ y: 400 }}
           dataSource={reports}
           size="small"
           bordered

@@ -68,6 +68,7 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
         order_quantity: 0,
         order_total_cost: 0,
         first_name: values.first_name || '',
+        email: values.email || '',
         birthday: values.birthday ? new Date(values.birthday).toString() : null,
         address: values.address || '',
         province: values.province || '',
@@ -187,11 +188,9 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
     <Form layout="vertical" onFinish={onFinish} form={form}>
       <Row justify="space-between" align="middle">
         <Col xs={24} sm={24} md={11} lg={11} xl={11}>
-          <div>
-            <Form.Item label="Họ" name="first_name">
-              <Input allowClear size="large" placeholder="Nhập họ khách hàng" />
-            </Form.Item>
-          </div>
+          <Form.Item label="Họ" name="first_name">
+            <Input allowClear size="large" placeholder="Nhập họ khách hàng" />
+          </Form.Item>
         </Col>
         <Col xs={24} sm={24} md={11} lg={11} xl={11}>
           <Form.Item
@@ -204,7 +203,7 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
         </Col>
         <Col xs={24} sm={24} md={11} lg={11} xl={11}>
           <Form.Item
-            label="Số diện thọai"
+            label="Số điện thọai"
             name="phone"
             rules={[{ required: true, message: 'Vui lòng nhập số điện thoại!' }]}
           >
@@ -268,6 +267,12 @@ export default function CustomerForm({ record, close, reload, text = 'Thêm' }) 
         <Col xs={24} sm={24} md={11} lg={11} xl={11}>
           <Form.Item label="Địa chỉ" name="address">
             <Input allowClear placeholder="Nhập địa chỉ" size="large" />
+          </Form.Item>
+        </Col>
+
+        <Col xs={24} sm={24} md={11} lg={11} xl={11}>
+          <Form.Item label="Email" name="email">
+            <Input allowClear placeholder="Nhập email" size="large" />
           </Form.Item>
         </Col>
 

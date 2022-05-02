@@ -54,7 +54,7 @@ export default function Role() {
       pChildren: ['tao_don_hang'],
     },
     {
-      pParent: 'business_management',
+      pParent: 'nhap_hang',
     },
     {
       pParent: 'san_pham',

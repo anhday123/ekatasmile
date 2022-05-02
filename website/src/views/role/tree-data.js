@@ -20,6 +20,10 @@ const foo = [
     ],
   },
   {
+    title: 'Nhập hàng',
+    key: PERMISSIONS.nhap_hang,
+  },
+  {
     title: PERMISSIONS.giao_dien_nhap_hang_vao_vi_tri,
     key: PERMISSIONS.giao_dien_nhap_hang_vao_vi_tri,
     children: [

@@ -47,7 +47,11 @@ import { getAllBranch } from 'apis/branch'
 import { uploadFile } from 'apis/upload'
 import { getSuppliers } from 'apis/supplier'
 import { getEmployees } from 'apis/employee'
-import { createOrderImportInventory, updateOrderImportInventory } from 'apis/inventory'
+import {
+  createOrderImportInventory,
+  updateOrderImportInventory,
+  getOrdersImportInventory,
+} from 'apis/inventory'
 import { getTaxs } from 'apis/tax'
 
 //components
@@ -417,7 +421,6 @@ export default function ImportInventory() {
     try {
       dispatch({ type: ACTION.LOADING, data: true })
       const res = await getProducts({ merge: true, detach: true, bulk_query: ids })
-      console.log(res)
       if (res.status === 200) {
         const products = res.data.data.map((e) => ({
           ...e.variants,
@@ -494,17 +497,62 @@ export default function ImportInventory() {
   const _getTaxs = async () => {
     try {
       const res = await getTaxs({ branch_id: branchIdApp })
-      console.log(res)
       if (res.status === 200) {
-        setTax(res.data.data.filter(data => data.active === true))
+        setTax(res.data.data.filter((data) => data.active === true))
       }
     } catch (error) {
       console.log(error)
     }
   }
 
+  const _getOrderDetail = async (order_id) => {
+    try {
+      dispatch({ type: ACTION.LOADING, data: true })
+      const res = await getOrdersImportInventory({ order_id: order_id })
+      if (res.status === 200)
+        if (res.data.data && res.data.data.length) {
+          initOrder(res.data.data[0])
+          await delay(100)
+          form.setFieldsValue({ code: '', complete_date: '' })
+        }
+      dispatch({ type: ACTION.LOADING, data: false })
+    } catch (error) {
+      dispatch({ type: ACTION.LOADING, data: false })
+      console.log(error)
+    }
+  }
+
+  const initOrder = (orderDetail) => {
+    setOrderCreate({
+      order_details: orderDetail.products.map((e) => ({
+        ...e.variant_info,
+        product_name: e.product_info ? e.product_info.name : '',
+        quantity: e.quantity || 0,
+        import_price: e.import_price || 0,
+        sumCost: +e.import_price * +e.quantity,
+      })),
+      type_payment: orderDetail.payment_status || '',
+      sumCostPaid: orderDetail.total_cost || 0,
+      deliveryCharges: orderDetail.fee_shipping || 0,
+      moneyToBePaidByCustomer: orderDetail.final_cost || 0,
+    })
+    setImportLocation(orderDetail.import_location ? { ...orderDetail.import_location } : {})
+    form.setFieldsValue({
+      ...orderDetail,
+      import_location: orderDetail.import_location ? orderDetail.import_location.branch_id : '',
+      complete_date: orderDetail.complete_date ? moment(orderDetail.complete_date) : null,
+      moneyToBePaidByCustomer: orderDetail.payment_amount || 0,
+      paid: orderDetail.payment_amount || 0,
+      order_creator_id: orderDetail.order_creator_id,
+      receiver_id: orderDetail.receiver_id,
+    })
+  }
+
   useEffect(() => {
-    const product_ids = new URLSearchParams(location.search).get('product_ids')
+    const query = new URLSearchParams(location.search)
+    const product_ids = query.get('product_ids')
+    const order_id = query.get('order_id')
+    if (order_id) _getOrderDetail(order_id)
     if (product_ids) _getProductsByIds(product_ids)
   }, [])
 
@@ -517,36 +565,9 @@ export default function ImportInventory() {
   }, [])
 
   useEffect(() => {
-    console.log(location.state)
     if (!location.state)
       form.setFieldsValue({ payment_status: 'PAID', complete_date: moment(new Date()) })
-    else {
-      setOrderCreate({
-        order_details: location.state.products.map((e) => ({
-          ...e.variant_info,
-          product_name: e.product_info ? e.product_info.name : '',
-          quantity: e.quantity || 0,
-          import_price: e.import_price || 0,
-          sumCost: +e.import_price * +e.quantity,
-        })),
-        type_payment: location.state.payment_status || '',
-        sumCostPaid: location.state.total_cost || 0,
-        deliveryCharges: location.state.fee_shipping || 0,
-        moneyToBePaidByCustomer: location.state.final_cost || 0,
-      })
-      setImportLocation(location.state.import_location ? { ...location.state.import_location } : {})
-      form.setFieldsValue({
-        ...location.state,
-        import_location: location.state.import_location
-          ? location.state.import_location.branch_id
-          : '',
-        complete_date: location.state.complete_date ? moment(location.state.complete_date) : null,
-        moneyToBePaidByCustomer: location.state.payment_amount || 0,
-        paid: location.state.payment_amount || 0,
-        order_creator_id: location.state.order_creator_id,
-        receiver_id: location.state.receiver_id,
-      })
-    }
+    else initOrder(location.state)
   }, [])
 
   useEffect(() => {
@@ -811,16 +832,18 @@ export default function ImportInventory() {
                               optionFilterProp="children"
                               allowClear
                             >
-                              {
-                                tax.map(item =>
-                                  <Select.Option value={item.tax_id}>
-                                    <div onClick={() => {
+                              {tax.map((item) => (
+                                <Select.Option value={item.tax_id}>
+                                  <div
+                                    onClick={() => {
                                       setValueTax(item.value)
                                       _editOrder('tax', item.value)
-                                    }}>{item.name} {item.value} %</div>
-                                  </Select.Option>
-                                )
-                              }
+                                    }}
+                                  >
+                                    {item.name} {item.value} %
+                                  </div>
+                                </Select.Option>
+                              ))}
                             </Select>
                           </Row>
                           <Row wrap={false} justify="space-between">
@@ -974,7 +997,7 @@ export default function ImportInventory() {
                 rules={[{ required: true, message: 'Vui lòng chọn địa điểm nhận hàng!' }]}
               >
                 <Select
-                  value=''
+                  value=""
                   showSearch
                   optionFilterProp="children"
                   placeholder="Chọn địa điểm nhận hàng"

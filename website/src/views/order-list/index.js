@@ -601,10 +601,11 @@ export default function OrderList() {
                               <div>Chiết khấu</div>
                               <div>
                                 {record.promotion
-                                  ? `${formatCash(+(record.promotion.value || 0))} ${record.promotion.type && record.promotion.type !== 'VALUE'
-                                    ? '%'
-                                    : ''
-                                  }`
+                                  ? `${formatCash(+(record.promotion.value || 0))} ${
+                                      record.promotion.type && record.promotion.type !== 'VALUE'
+                                        ? '%'
+                                        : ''
+                                    }`
                                   : 0}
                               </div>
                             </Row>
@@ -696,35 +697,7 @@ export default function OrderList() {
           if (column.key === 'bill_status')
             return {
               ...column,
-              render: (text) => {
-                const status = statusOrder.find((s) => s.name === text)
-                let colorStatus = ''
-                if (status) {
-                  switch (status.name) {
-                    case 'DRAFT':
-                      colorStatus = '#fdaa3e'
-                      break
-                    case 'WAITING_FOR_SHIPPING':
-                      colorStatus = 'processing'
-                      break
-                    case 'COMPARED':
-                      colorStatus = '#5b6be8'
-                      break
-                    case 'SHIPPING':
-                      colorStatus = 'orange'
-                      break
-                    case 'COMPLETE':
-                      colorStatus = 'success'
-                      break
-                    case 'CANCEL':
-                      colorStatus = 'red'
-                      break
-                    default:
-                      colorStatus = 'purple'
-                  }
-                  return <Tag color={colorStatus}>{status.label}</Tag>
-                }
-              },
+              render: (text) => <Tag color={text === 'COMPLETE' && 'success'}>{text}</Tag>,
               sorter: (a, b) => compare(a, b, 'bill_status'),
             }
           if (column.key === 'payments_method')
