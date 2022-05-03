@@ -56,7 +56,7 @@ function App() {
     (domain === `https://${process.env.REACT_APP_HOST}/` ||
       domain === `https://${process.env.REACT_APP_HOST}` ||
       domain === `${process.env.REACT_APP_HOST}/` ||
-      domain === `${process.env.REACT_APP_HOST}`) &&
+      domain === process.env.REACT_APP_HOST) &&
     subDomain &&
     subDomain.length === 1
   )

@@ -66,6 +66,24 @@ export default function Login() {
     }
   }
 
+  //check url có subdomain hay không
+  const _isHaveSubdomain = () => {
+    try {
+      const domain = window.location.href
+      let subDomain = domain.split(`.${process.env.REACT_APP_HOST}`)
+      if (subDomain && subDomain.length === 1 && !localStorage.getItem('accessToken'))
+        window.location.href = `https://${process.env.REACT_APP_HOST}${ROUTES.CHECK_SUBDOMAIN}`
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  useEffect(() => {
+    setTimeout(() => {
+      _isHaveSubdomain()
+    }, [1000])
+  })
+
   useEffect(() => {
     //get username
     const username = new URLSearchParams(location.search).get('username')

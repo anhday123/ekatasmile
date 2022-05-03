@@ -742,28 +742,27 @@ export default function DeliveryControl() {
           if (column.key === 'customer')
             return {
               ...column,
-              sorter: (a, b) =>
-                compareCustom(
-                  a.customer_info
-                    ? `${a.customer_info.first_name} ${a.customer_info.last_name}`
-                    : '',
-                  b.customer_info
-                    ? `${b.customer_info.first_name} ${b.customer_info.last_name}`
-                    : ''
-                ),
               render: (text, record) => (
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <span>
                     {record.customer_info
                       ? `${record.customer_info.first_name} ${record.customer_info.last_name}`
+                      : record.customer
+                      ? `${record.customer.first_name} ${record.customer.last_name}`
                       : ''}
                   </span>
-                  <span>{record.customer_info ? record.customer_info.phone : ''}</span>
                   <span>
-                    {record.customer_info.province ||
-                    record.customer_info.district ||
-                    record.customer_info.address
+                    {record.customer_info
+                      ? record.customer_info.phone
+                      : record.customer
+                      ? record.customer.phone
+                      : ''}
+                  </span>
+                  <span>
+                    {record.customer_info
                       ? `${record.customer_info.province} ${record.customer_info.district} ${record.customer_info.address}`
+                      : record.customer
+                      ? `${record.customer.province} ${record.customer.district} ${record.customer.address}`
                       : 'Chưa có địa chỉ'}
                   </span>
                 </div>
